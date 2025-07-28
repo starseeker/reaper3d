@@ -1,11 +1,14 @@
 # CMake build artifacts
-build/
 CMakeFiles/
 CMakeCache.txt
 cmake_install.cmake
 Makefile
 *.cmake
 !CMakeLists.txt
+
+# CMake build directories (but not the source build/ directory)
+/build_*/
+/cmake-build-*/
 
 # Generated files
 install_manifest.txt
