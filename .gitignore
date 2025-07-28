@@ -1,0 +1,31 @@
+# CMake build artifacts
+build/
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+*.cmake
+!CMakeLists.txt
+
+# Generated files
+install_manifest.txt
+
+# IDE files
+.vscode/
+.idea/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Visual Studio Code
+.vscode/
+
+# Qt Creator
+CMakeLists.txt.user*
+
+# Temporary files
+*~
+*.swp
+*.swo
+.DS_Store
