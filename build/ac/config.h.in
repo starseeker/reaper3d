@@ -1,0 +1,71 @@
+/* config.h.in.  Generated automatically from configure.in by autoheader 2.13.  */
+
+/* Define if your C compiler doesn't accept -c and -o together.  */
+#undef NO_MINUS_C_MINUS_O
+
+/* Define if your Fortran 77 compiler doesn't accept -c and -o together. */
+#undef F77_NO_MINUS_C_MINUS_O
+
+/* Define to `unsigned' if <sys/types.h> doesn't define.  */
+#undef size_t
+
+/* Define if you have the ANSI C header files.  */
+#undef STDC_HEADERS
+
+/* Define if you have the <dlfcn.h> header file.  */
+#undef HAVE_DLFCN_H
+
+/* Define if you have the c_r library (-lc_r).  */
+#undef HAVE_LIBC_R
+
+/* Define if you have the dl library (-ldl).  */
+#undef HAVE_LIBDL
+
+/* Define if you have the lthread library (-llthread).  */
+#undef HAVE_LIBLTHREAD
+
+/* Define if you have the m library (-lm).  */
+#undef HAVE_LIBM
+
+/* Define if you have the png library (-lpng).  */
+#undef HAVE_LIBPNG
+
+/* Define if you have the pthread library (-lpthread).  */
+#undef HAVE_LIBPTHREAD
+
+/* Define if you have the rt library (-lrt).  */
+#undef HAVE_LIBRT
+
+/* Define if you have the z library (-lz).  */
+#undef HAVE_LIBZ
+
+/* Name of package */
+#undef PACKAGE
+
+/* Version number of package */
+#undef VERSION
+
+/* big endian? */
+#undef WORDS_BIGENDIAN
+
+/* No vertex array typedefs */
+#undef NO_VERTEX_ARRAY_TYPEDEFS
+
+/* No GLXFBConfig typedef */
+#undef NO_GLXFBCONFIG
+
+/* Unconditionally defined vertexarray prototypes */
+#undef NO_VERTEX_ARRAY_PROTOTYPES
+
+/* Old glx version, faking it */
+#undef NO_GLXGETCURRENTDISPLAY
+
+/* struct timespec not defined */
+#undef NO_TIME_H_TIMESPEC
+
+/* no prototype for nanosleep */
+#undef NO_TIME_H_NANOSLEEP
+
+/* Fix incomplete stl */
+#undef FIX_MISSING_STL_TRAITS
+

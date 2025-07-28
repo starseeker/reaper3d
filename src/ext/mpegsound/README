@@ -1,0 +1,12 @@
+
+This code is a subset of the mpegsound library,
+which is included in splay (http://splay.sourceforge.net) 
+
+Slightly adjusted for win32 and solaris,
+and a few patches from smpeg are applied.
+
+
+Peter Strand <d98peter@dtek.chalmers.se>
+
+
+

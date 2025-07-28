@@ -1,0 +1,91 @@
+************
+** REAPER **
+************
+
+Enlisted as a mercenary pilot for a greedy corporation,
+you are to do whatever is deemed necessary in order to
+ensure profit...
+
+
+GENERAL INFO:
+-------------
+You can alway find the latest version at:
+http://www.dtek.chalmers.se/groups/reaper/
+
+Report bugs/problems/suggestions to:
+reaper3d-devel@lists.sourceforge.net
+
+Or use any of the facilities at:
+http://sourceforge.net/projects/reaper3d
+
+
+
+CONTROLS:
+---------
+- Steer with mouse/joystick/arrow keys.
+- Set thrust with A/Z, 1-5 or Pageup/Pagedown.
+- Boost with Q, End, joystick btn 1 or right mouse button)
+- Fire missile with 'M', joystick btn 2 or middle mouse button
+- Fire laser with Space, delete or left mouse button
+
+- N/B   - Choose missile
+- R     - Radar range
+- F1-F8 - Camera  (F1, F2 - behind, F3 - hud)
+
+- W     - display timing/gfx statistics
+- 6     - enable/disable texturing
+- 7     - enable/disable lighting
+- 8     - enable/disable fog
+- 9     - enable/disable sky
+- 0     - enable/disable terrain
+- Y     - enable/disable shadow
+- U     - enable/disable effects
+
+- I     - take screenshot (stores in data/screenshots)
+
+- P     - Pause
+
+- S     - enable progressive mesh implementation
+          (will do a 10-60 sec calc, depending on CPU)
+
+The controls are quite sensitive, use small movements with the mouse.
+
+
+In split-screen mode, player 1 (left) controls with the mouse,
+player 2 (right) with arrow-keys (and pageup/pagedown/end/delete) or joystick.
+
+
+REQUIREMENTS:
+-------------
+- Good graphics card. (GeForce class for decent performance)
+  It starts in software mode also, with lots of features disabled.
+- 300+ MHz CPU
+- 64 Mb mem
+
+Reaper makes heavy use of OpenGL, so good drivers are a must.
+
+
+Following graphics systems have been confirmed to work
+- Nvidia (TNT, TNT2, GeForce,  GeForce 2 MX, GeForce 2)
+- Microsoft Software Implementation
+- Mesa
+- Sun Ultra60 (Creator/Elite 3d)
+
+Presently, we have unresolved issues with Matrox cards.
+
+
+
+BUGREPORTING:
+------------
+
+If you experience problems or crashes, please doublecheck your
+graphics settings and drivers before reporting problems.
+However, if you have problems which you cannot derive from
+misconfiguration or bad drivers, then please submit a 
+detailed bugreport so we can fix it.
+
+If reaper crashes seemingly randomly, it may help to turn off
+sound and/or various graphics features.
+
+
+

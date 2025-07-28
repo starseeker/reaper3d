@@ -1,0 +1,25 @@
+
+Denna katalog är avsedd för funktioner och klasser som kan vara generellt
+användbara.
+Dvs, de där små hjälpfunktionerna som alltid lyckas smyga sig i in ens
+program, utan att man har planerat det ;)
+
+
+Filer:
+
+
+sequence.h	Sekvenstyp som gör STL-iterator hantering något bekvämare,
+		Inspirerat av [Str97 §18.3.1]
+stlhelper.h	STL-hjälpfunktioner, mest för funktionsobjekt.
+maybe.h		Maybe-typ
+stringhelper.h	Stränghantering.
+
+
+
+
+
+
+[Str97] B. Stroustrup, The C++ Programming Language
+
+
+

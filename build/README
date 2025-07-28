@@ -1,0 +1,9 @@
+
+Directories:
+
+ac/     autoconf/automake setup
+vs/     Visual Studio 6 project files, and a few additional headers/libraries.
+
+dist/   Shellscripts for building distribution files.
+
+
