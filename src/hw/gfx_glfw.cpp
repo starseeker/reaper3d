@@ -15,6 +15,7 @@
 #include "hw/interfaces.h"
 #include "hw/exceptions.h"
 #include "hw/gl.h"
+#include "hw/glfw.h"
 
 #include <GLFW/glfw3.h>
 
@@ -189,6 +190,9 @@ bool Gfx_glfw::setup_mode(const gfx::VideoMode& mode)
         return false;
     }
     
+    // Update the global current window reference
+    glfw::set_current_window(window);
+    
     // Store current mode
     window_width = mode.width;
     window_height = mode.height;
@@ -217,12 +221,56 @@ void Gfx_glfw::update_screen()
 
 } // namespace lowlevel
 
+// GLFW utility functions implementation
+namespace glfw {
+
+static GLFWwindow* current_window = nullptr;
+
+bool initialize_glfw()
+{
+    glfwSetErrorCallback(lowlevel::glfw_error_callback);
+    if (!glfwInit()) {
+        return false;
+    }
+    
+    // Set default OpenGL context hints
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
+    glfwWindowHint(GLFW_DOUBLEBUFFER, GLFW_TRUE);
+    glfwWindowHint(GLFW_ALPHA_BITS, 8);
+    glfwWindowHint(GLFW_STENCIL_BITS, 8);
+    
+    return true;
+}
+
+void terminate_glfw()
+{
+    if (current_window) {
+        glfwDestroyWindow(current_window);
+        current_window = nullptr;
+    }
+    glfwTerminate();
+}
+
+GLFWwindow* get_current_window()
+{
+    return current_window;
+}
+
+void set_current_window(GLFWwindow* window)
+{
+    current_window = window;
+}
+
+} // namespace glfw
+
 // Factory function for creating GLFW graphics driver
 // This will be called by the graphics system
 extern "C" lowlevel::Gfx_driver* create_gfx_glfw(ifs::Gfx* m)
 {
     try {
-        return new lowlevel::Gfx_glfw(m);
+        auto* driver = new lowlevel::Gfx_glfw(m);
+        return driver;
     } catch (const std::exception& e) {
         std::cerr << "Failed to create GLFW graphics driver: " << e.what() << std::endl;
         return nullptr;

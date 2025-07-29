@@ -7,6 +7,7 @@
 
 #include "hw/debug.h"
 #include "hw/event_prim.h"
+#include "hw/glfw.h"
 
 #include <queue>
 #include <GLFW/glfw3.h>
