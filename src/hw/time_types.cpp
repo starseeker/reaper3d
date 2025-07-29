@@ -6,10 +6,10 @@
 #ifdef WIN32
 # include "hw/windows.h"
 #else
-
-#include <time.h>
-
-
+// Keep time.h for system compatibility, then add modern C++ headers
+#include <ctime>     // C time functions
+#include <thread>    // For std::this_thread::sleep_for
+#include <chrono>    // For std::chrono::milliseconds
 #endif
 
 #include "hw/time_types.h"
@@ -79,10 +79,8 @@ void msleep(long t) {
 #else
 
 void msleep(long t) {
-	struct timespec ts;
-	ts.tv_sec = t / 1000;
-	ts.tv_nsec = (t % 1000) * 1000000;
-	nanosleep(&ts, 0);
+	// Modernized: Using C++11 std::this_thread::sleep_for instead of nanosleep
+	std::this_thread::sleep_for(std::chrono::milliseconds(t));
 }
 
 #endif

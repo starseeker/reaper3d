@@ -7,7 +7,9 @@
 #include <fstream>
 #include <sstream>
 #include <map>
-#include <time.h>
+// Keep time.h for system compatibility, then add modern C++ headers
+#include <ctime>   // C time functions  
+#include <chrono>  // Modern C++11 time handling
 
 #include "hw/debug.h"
 #include "hw/osinfo.h"
@@ -83,10 +85,16 @@ string to_string(ResourceClass rc)
 
 string gen_name()
 {
+	// Modernized: Using C++11 std::chrono instead of legacy C time.h
 	char buf[100];
-	::time_t now;
-	::time(&now);
-	::strftime(buf, 100, "save_%Y-%m-%d_%H-%M", ::localtime(&now));
+	
+	// Get current time using std::chrono::system_clock
+	auto now = std::chrono::system_clock::now();
+	auto time_t_now = std::chrono::system_clock::to_time_t(now);
+	
+	// Format using C time functions (still needed for strftime)
+	std::tm* local_tm = ::localtime(&time_t_now);
+	::strftime(buf, 100, "save_%Y-%m-%d_%H-%M", local_tm);
 	return buf;
 }
 

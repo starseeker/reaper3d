@@ -21,7 +21,7 @@
 #include "config.h"
 #endif
 
-// Ensure system time functions are available before custom definitions
+// Legacy time functions still needed for system compatibility
 #include <time.h>
 
 #ifdef _WIN32
@@ -308,6 +308,7 @@ int snprintf(char*, unsigned int, const char*, ...);
 
 #ifdef NO_TIME_H_TIMESPEC
 #include <time.h>
+// Using legacy timespec structure for compatibility with systems that need it
 struct timespec
 {
         time_t tv_sec;
