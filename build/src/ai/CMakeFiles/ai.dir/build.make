@@ -226,10 +226,24 @@ src/ai/CMakeFiles/ai.dir/ship_fighter.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/ai.dir/ship_fighter.cpp.s"
 	cd /home/runner/work/reaper3d/reaper3d/build/src/ai && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/runner/work/reaper3d/reaper3d/src/ai/ship_fighter.cpp -o CMakeFiles/ai.dir/ship_fighter.cpp.s
 
+src/ai/CMakeFiles/ai.dir/steering.cpp.o: src/ai/CMakeFiles/ai.dir/flags.make
+src/ai/CMakeFiles/ai.dir/steering.cpp.o: /home/runner/work/reaper3d/reaper3d/src/ai/steering.cpp
+src/ai/CMakeFiles/ai.dir/steering.cpp.o: src/ai/CMakeFiles/ai.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/runner/work/reaper3d/reaper3d/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_12) "Building CXX object src/ai/CMakeFiles/ai.dir/steering.cpp.o"
+	cd /home/runner/work/reaper3d/reaper3d/build/src/ai && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT src/ai/CMakeFiles/ai.dir/steering.cpp.o -MF CMakeFiles/ai.dir/steering.cpp.o.d -o CMakeFiles/ai.dir/steering.cpp.o -c /home/runner/work/reaper3d/reaper3d/src/ai/steering.cpp
+
+src/ai/CMakeFiles/ai.dir/steering.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/ai.dir/steering.cpp.i"
+	cd /home/runner/work/reaper3d/reaper3d/build/src/ai && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/runner/work/reaper3d/reaper3d/src/ai/steering.cpp > CMakeFiles/ai.dir/steering.cpp.i
+
+src/ai/CMakeFiles/ai.dir/steering.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/ai.dir/steering.cpp.s"
+	cd /home/runner/work/reaper3d/reaper3d/build/src/ai && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/runner/work/reaper3d/reaper3d/src/ai/steering.cpp -o CMakeFiles/ai.dir/steering.cpp.s
+
 src/ai/CMakeFiles/ai.dir/turret.cpp.o: src/ai/CMakeFiles/ai.dir/flags.make
 src/ai/CMakeFiles/ai.dir/turret.cpp.o: /home/runner/work/reaper3d/reaper3d/src/ai/turret.cpp
 src/ai/CMakeFiles/ai.dir/turret.cpp.o: src/ai/CMakeFiles/ai.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/runner/work/reaper3d/reaper3d/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_12) "Building CXX object src/ai/CMakeFiles/ai.dir/turret.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/runner/work/reaper3d/reaper3d/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_13) "Building CXX object src/ai/CMakeFiles/ai.dir/turret.cpp.o"
 	cd /home/runner/work/reaper3d/reaper3d/build/src/ai && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT src/ai/CMakeFiles/ai.dir/turret.cpp.o -MF CMakeFiles/ai.dir/turret.cpp.o.d -o CMakeFiles/ai.dir/turret.cpp.o -c /home/runner/work/reaper3d/reaper3d/src/ai/turret.cpp
 
 src/ai/CMakeFiles/ai.dir/turret.cpp.i: cmake_force
@@ -253,6 +267,7 @@ ai_OBJECTS = \
 "CMakeFiles/ai.dir/ship_base.cpp.o" \
 "CMakeFiles/ai.dir/ship_bomber.cpp.o" \
 "CMakeFiles/ai.dir/ship_fighter.cpp.o" \
+"CMakeFiles/ai.dir/steering.cpp.o" \
 "CMakeFiles/ai.dir/turret.cpp.o"
 
 # External object files for target ai
@@ -269,10 +284,11 @@ src/ai/libai.a: src/ai/CMakeFiles/ai.dir/player.cpp.o
 src/ai/libai.a: src/ai/CMakeFiles/ai.dir/ship_base.cpp.o
 src/ai/libai.a: src/ai/CMakeFiles/ai.dir/ship_bomber.cpp.o
 src/ai/libai.a: src/ai/CMakeFiles/ai.dir/ship_fighter.cpp.o
+src/ai/libai.a: src/ai/CMakeFiles/ai.dir/steering.cpp.o
 src/ai/libai.a: src/ai/CMakeFiles/ai.dir/turret.cpp.o
 src/ai/libai.a: src/ai/CMakeFiles/ai.dir/build.make
 src/ai/libai.a: src/ai/CMakeFiles/ai.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/home/runner/work/reaper3d/reaper3d/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_13) "Linking CXX static library libai.a"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/home/runner/work/reaper3d/reaper3d/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_14) "Linking CXX static library libai.a"
 	cd /home/runner/work/reaper3d/reaper3d/build/src/ai && $(CMAKE_COMMAND) -P CMakeFiles/ai.dir/cmake_clean_target.cmake
 	cd /home/runner/work/reaper3d/reaper3d/build/src/ai && $(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/ai.dir/link.txt --verbose=$(VERBOSE)
 

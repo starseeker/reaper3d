@@ -19,6 +19,7 @@ set(CMAKE_DEPENDS_DEPENDENCY_FILES
   "/home/runner/work/reaper3d/reaper3d/src/ai/ship_base.cpp" "src/ai/CMakeFiles/ai.dir/ship_base.cpp.o" "gcc" "src/ai/CMakeFiles/ai.dir/ship_base.cpp.o.d"
   "/home/runner/work/reaper3d/reaper3d/src/ai/ship_bomber.cpp" "src/ai/CMakeFiles/ai.dir/ship_bomber.cpp.o" "gcc" "src/ai/CMakeFiles/ai.dir/ship_bomber.cpp.o.d"
   "/home/runner/work/reaper3d/reaper3d/src/ai/ship_fighter.cpp" "src/ai/CMakeFiles/ai.dir/ship_fighter.cpp.o" "gcc" "src/ai/CMakeFiles/ai.dir/ship_fighter.cpp.o.d"
+  "/home/runner/work/reaper3d/reaper3d/src/ai/steering.cpp" "src/ai/CMakeFiles/ai.dir/steering.cpp.o" "gcc" "src/ai/CMakeFiles/ai.dir/steering.cpp.o.d"
   "/home/runner/work/reaper3d/reaper3d/src/ai/turret.cpp" "src/ai/CMakeFiles/ai.dir/turret.cpp.o" "gcc" "src/ai/CMakeFiles/ai.dir/turret.cpp.o.d"
   )
 

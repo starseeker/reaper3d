@@ -394,6 +394,30 @@ ship_fighter.cpp.s:
 	cd /home/runner/work/reaper3d/reaper3d/build && $(MAKE) $(MAKESILENT) -f src/ai/CMakeFiles/ai.dir/build.make src/ai/CMakeFiles/ai.dir/ship_fighter.cpp.s
 .PHONY : ship_fighter.cpp.s
 
+steering.o: steering.cpp.o
+.PHONY : steering.o
+
+# target to build an object file
+steering.cpp.o:
+	cd /home/runner/work/reaper3d/reaper3d/build && $(MAKE) $(MAKESILENT) -f src/ai/CMakeFiles/ai.dir/build.make src/ai/CMakeFiles/ai.dir/steering.cpp.o
+.PHONY : steering.cpp.o
+
+steering.i: steering.cpp.i
+.PHONY : steering.i
+
+# target to preprocess a source file
+steering.cpp.i:
+	cd /home/runner/work/reaper3d/reaper3d/build && $(MAKE) $(MAKESILENT) -f src/ai/CMakeFiles/ai.dir/build.make src/ai/CMakeFiles/ai.dir/steering.cpp.i
+.PHONY : steering.cpp.i
+
+steering.s: steering.cpp.s
+.PHONY : steering.s
+
+# target to generate assembly for a file
+steering.cpp.s:
+	cd /home/runner/work/reaper3d/reaper3d/build && $(MAKE) $(MAKESILENT) -f src/ai/CMakeFiles/ai.dir/build.make src/ai/CMakeFiles/ai.dir/steering.cpp.s
+.PHONY : steering.cpp.s
+
 turret.o: turret.cpp.o
 .PHONY : turret.o
 
@@ -460,6 +484,9 @@ help:
 	@echo "... ship_fighter.o"
 	@echo "... ship_fighter.i"
 	@echo "... ship_fighter.s"
+	@echo "... steering.o"
+	@echo "... steering.i"
+	@echo "... steering.s"
 	@echo "... turret.o"
 	@echo "... turret.i"
 	@echo "... turret.s"

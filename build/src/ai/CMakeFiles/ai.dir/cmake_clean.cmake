@@ -21,6 +21,8 @@ file(REMOVE_RECURSE
   "CMakeFiles/ai.dir/ship_bomber.cpp.o.d"
   "CMakeFiles/ai.dir/ship_fighter.cpp.o"
   "CMakeFiles/ai.dir/ship_fighter.cpp.o.d"
+  "CMakeFiles/ai.dir/steering.cpp.o"
+  "CMakeFiles/ai.dir/steering.cpp.o.d"
   "CMakeFiles/ai.dir/turret.cpp.o"
   "CMakeFiles/ai.dir/turret.cpp.o.d"
   "libai.a"

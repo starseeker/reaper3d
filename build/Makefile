@@ -117,6 +117,19 @@ depend:
 .PHONY : depend
 
 #=============================================================================
+# Target rules for targets named reaper3d
+
+# Build rule for target.
+reaper3d: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 reaper3d
+.PHONY : reaper3d
+
+# fast build rule for target.
+reaper3d/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/reaper3d.dir/build.make CMakeFiles/reaper3d.dir/build
+.PHONY : reaper3d/fast
+
+#=============================================================================
 # Target rules for targets named ai
 
 # Build rule for target.
@@ -337,6 +350,30 @@ world/fast:
 	$(MAKE) $(MAKESILENT) -f src/world/CMakeFiles/world.dir/build.make src/world/CMakeFiles/world.dir/build
 .PHONY : world/fast
 
+src/public/prototype/prototype.o: src/public/prototype/prototype.cpp.o
+.PHONY : src/public/prototype/prototype.o
+
+# target to build an object file
+src/public/prototype/prototype.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/reaper3d.dir/build.make CMakeFiles/reaper3d.dir/src/public/prototype/prototype.cpp.o
+.PHONY : src/public/prototype/prototype.cpp.o
+
+src/public/prototype/prototype.i: src/public/prototype/prototype.cpp.i
+.PHONY : src/public/prototype/prototype.i
+
+# target to preprocess a source file
+src/public/prototype/prototype.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/reaper3d.dir/build.make CMakeFiles/reaper3d.dir/src/public/prototype/prototype.cpp.i
+.PHONY : src/public/prototype/prototype.cpp.i
+
+src/public/prototype/prototype.s: src/public/prototype/prototype.cpp.s
+.PHONY : src/public/prototype/prototype.s
+
+# target to generate assembly for a file
+src/public/prototype/prototype.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/reaper3d.dir/build.make CMakeFiles/reaper3d.dir/src/public/prototype/prototype.cpp.s
+.PHONY : src/public/prototype/prototype.cpp.s
+
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -358,10 +395,14 @@ help:
 	@echo "... phys"
 	@echo "... pm"
 	@echo "... prototype"
+	@echo "... reaper3d"
 	@echo "... res"
 	@echo "... shadow"
 	@echo "... snd"
 	@echo "... world"
+	@echo "... src/public/prototype/prototype.o"
+	@echo "... src/public/prototype/prototype.i"
+	@echo "... src/public/prototype/prototype.s"
 .PHONY : help
 
 
