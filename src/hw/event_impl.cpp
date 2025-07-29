@@ -34,6 +34,7 @@
 
 #ifdef MONOLITHIC
 extern "C" reaper::hw::event::InputDeviceModule* create_event_x11(void*);
+extern "C" reaper::hw::event::InputDeviceModule* create_event_glfw(void*);
 #endif
 
 
@@ -113,7 +114,7 @@ public:
 			if (hw::os_name() == "win32")
 	     	   sub = "win32";
 	        else
-	     	   sub = "x11";
+	     	   sub = "glfw";  // Default to GLFW instead of X11 for cross-platform support
 		}
 
 		res::ConfigEnv axis_conf(cnf["joystick"]);

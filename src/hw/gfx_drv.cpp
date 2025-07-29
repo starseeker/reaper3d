@@ -118,12 +118,12 @@ void Gfx::init()
 		if (os_name() == "win32")
 			sub = "win32";
 		else
-			sub = "x11";
+			sub = "glfw";  // Default to GLFW instead of X11 for cross-platform support
 	}
 	data->main = new Main(data->modes);
 
 #ifdef MONOLITHIC
-	driver = create_gfx_x11(data->main);
+	driver = create_gfx_glfw(data->main);  // Use GLFW driver by default instead of X11
 #else
 	data->gfx_plugin = new GfxPlugin();
 	driver = data->gfx_plugin->create(pfx+sub, data->main);
