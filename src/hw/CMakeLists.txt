@@ -21,6 +21,7 @@ add_library(hw STATIC
     osinfo.cpp
     profile.cpp
     snd_system.cpp
+    snd_dummy.cpp
     socket.cpp
     stacktrace.cpp
     time.cpp
