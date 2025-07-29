@@ -7,7 +7,7 @@
 #include "misc/sequence.h"
 #include "hw/socket.h"
 #include "net/nameservice.h"
-#include "hw/time.h"
+#include "hw/hwtime.h"
 
 using namespace reaper::hw::net;
 using namespace reaper::hw::time;

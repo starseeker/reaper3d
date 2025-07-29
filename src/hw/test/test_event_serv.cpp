@@ -8,7 +8,7 @@
 #include "hw/debug.h"
 #include "hw/gfx.h"
 #include "hw/event.h"
-#include "hw/time.h"
+#include "hw/hwtime.h"
 #include "main/types.h"
 
 #include "net/game_mgr.h"

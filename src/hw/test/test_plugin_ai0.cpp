@@ -7,7 +7,7 @@
 
 #include "misc/plugin.h"
 #include "world/world.h"
-#include "hw/time.h"
+#include "hw/hwtime.h"
 
 extern "C" {
 #include <caml/mlvalues.h>

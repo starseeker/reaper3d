@@ -77,7 +77,7 @@ int main(int argc, char *av[])
  * Moved all anonymous namespaces into the reaper-namespace
  *
  * Revision 1.23  2002/03/11 10:50:49  pstrand
- * hw/time.h -> reltime.h&abstime.h, and some more..
+ * hw/hwtime.h -> reltime.h&abstime.h, and some more..
  *
  * Revision 1.22  2002/02/15 16:22:02  peter
  * no message

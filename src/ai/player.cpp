@@ -6,7 +6,7 @@
  * turret aims better, and uses correct (barrel and laser) information
  *
  * Revision 1.9  2002/03/11 10:50:38  pstrand
- * hw/time.h -> reltime.h&abstime.h, and some more..
+ * hw/hwtime.h -> reltime.h&abstime.h, and some more..
  *
  * Revision 1.8  2002/02/21 15:29:35  peter
  * *** empty log message ***

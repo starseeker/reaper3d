@@ -20,7 +20,7 @@
 #include "hw/event.h"
 
 #include "misc/menu.h"
-#include "hw/time.h"
+#include "hw/hwtime.h"
 #include "hw/debug.h"
 #include "main/exceptions.h"
 #include "hw/gl.h"

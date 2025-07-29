@@ -97,7 +97,7 @@ const int running = 4;
  * network fixes
  *
  * Revision 1.25  2002/03/11 10:50:49  pstrand
- * hw/time.h -> reltime.h&abstime.h, and some more..
+ * hw/hwtime.h -> reltime.h&abstime.h, and some more..
  *
  * Revision 1.24  2001/08/20 17:08:23  peter
  * obj.ptr

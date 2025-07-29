@@ -5,7 +5,7 @@
 #include "hw/gl.h"
 
 #include "hw/gfx.h"
-#include "hw/time.h"
+#include "hw/hwtime.h"
 #include "hw/debug.h"
 
 #include "misc/test_main.h"

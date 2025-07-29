@@ -6,7 +6,7 @@
 
 #include "hw/gfx.h"
 #include "hw/event.h"
-#include "hw/time.h"
+#include "hw/hwtime.h"
 #include "hw/mapping.h"
 #include "hw/snd.h"
 #include "hw/video.h"

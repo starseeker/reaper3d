@@ -6,7 +6,7 @@
 #include "hw/event.h"
 #include "hw/mapping.h"
 #include "hw/debug.h"
-#include "hw/time.h"
+#include "hw/hwtime.h"
 
 #include "misc/test_main.h"
 

@@ -3,7 +3,7 @@
 
 #include <vector>
 #include "world/query_obj.h"
-#include "hw/time.h"
+#include "hw/hwtime.h"
 #include "object/base.h"
 #include "gfx/texture.h"
 

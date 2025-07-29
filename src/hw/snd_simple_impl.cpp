@@ -6,7 +6,7 @@
  * *** empty log message ***
  *
  * Revision 1.25  2002/03/11 10:50:48  pstrand
- * hw/time.h -> reltime.h&abstime.h, and some more..
+ * hw/hwtime.h -> reltime.h&abstime.h, and some more..
  *
  * Revision 1.24  2002/02/05 16:41:43  peter
  * freebsd

@@ -313,17 +313,6 @@ int snprintf(char*, unsigned int, const char*, ...);
 #endif
 #endif
 
-
-#ifdef NO_TIME_H_TIMESPEC
-// Using legacy timespec structure for compatibility with systems that need it
-// time_t is available from the <ctime> header included above
-struct timespec
-{
-        time_t tv_sec;
-	long tv_nsec;
-};
-#endif
-
 #ifdef NO_TIME_H_NANOSLEEP
 
 extern "C" int nanosleep(const struct timespec *req, struct timespec *rem) throw ();

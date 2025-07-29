@@ -12,7 +12,7 @@
 #include "hw/gfx.h"
 #include "hw/gl.h"
 #include "hw/profile.h"
-#include "hw/time.h"
+#include "hw/hwtime.h"
 #include "misc/font.h"
 #include "misc/parse.h"
 #include "misc/sequence.h"

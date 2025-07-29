@@ -1,13 +1,12 @@
 /* $Id: profile.cpp,v 1.6 2002/08/11 10:45:48 pstrand Exp $ */
 
-#include "hw/compat.h"
-#include "hw/debug.h"
-#include <limits>
-
+#include <chrono>
 #include <iomanip>
 #include <iostream>
+#include <limits>
 #include <sstream>
 
+#include "hw/debug.h"
 #include "misc/font.h"
 #include "gfx/misc.h"
 #include "hw/profile.h"

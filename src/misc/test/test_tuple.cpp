@@ -1,7 +1,7 @@
 
 #include "hw/compat.h"
 
-#include "hw/time.h"
+#include "hw/hwtime.h"
 #include "misc/tuple.h"
 #include "misc/test_main.h"
 

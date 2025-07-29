@@ -2,8 +2,7 @@
 
 #include "hw/compat.h"
 
-// Modern C++ time handling headers - keep ctime for compatibility
-#include <ctime>     // C time functions in std namespace  
+// Modern C++ time handling headers
 #include <chrono>    // Modern C++11 time handling
 #include <sstream>   // For std::stringstream
 #include <iomanip>   // For std::put_time

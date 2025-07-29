@@ -7,8 +7,7 @@
 #include <fstream>
 #include <sstream>
 #include <map>
-// Modern C++ time handling headers - keep ctime for compatibility
-#include <ctime>     // C time functions  
+// Modern C++ time handling headers
 #include <chrono>    // Modern C++11 time handling
 #include <iomanip>   // For std::put_time
 

@@ -9,7 +9,7 @@
 #include "gfx/gfx.h"
 #include "hw/gfx.h"
 #include "hw/event.h"
-#include "hw/time.h"
+#include "hw/hwtime.h"
 #include "hw/mapping.h"
 #include "world/world.h"
 #include "gfx/object.h"

@@ -3,7 +3,7 @@
  * $Date: 2002/03/11 10:50:48 $
  * $Log: video_helper.cpp,v $
  * Revision 1.8  2002/03/11 10:50:48  pstrand
- * hw/time.h -> reltime.h&abstime.h, and some more..
+ * hw/hwtime.h -> reltime.h&abstime.h, and some more..
  *
  * Revision 1.7  2001/11/26 02:20:11  peter
  * ljudfixar (smartptr), andra mindre fixar..

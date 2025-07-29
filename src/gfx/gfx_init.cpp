@@ -144,7 +144,7 @@ pm::Pmd* Renderer::get_pmd()
  * fog-typer lokaliserade...
  *
  * Revision 1.7  2002/03/11 10:50:48  pstrand
- * hw/time.h -> reltime.h&abstime.h, and some more..
+ * hw/hwtime.h -> reltime.h&abstime.h, and some more..
  *
  * Revision 1.6  2002/02/26 22:41:17  pstrand
  * mackefix

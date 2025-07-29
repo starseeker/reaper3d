@@ -21,7 +21,7 @@
 #include "net/nameservice.h"
 #include "hw/fdstream.h"
 #include "net/sockstream.h"
-#include "hw/time.h"
+#include "hw/hwtime.h"
 
 using namespace reaper::hw;
 using namespace reaper::net;

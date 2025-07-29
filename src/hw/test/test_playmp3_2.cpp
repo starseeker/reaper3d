@@ -40,7 +40,7 @@
 
 #include "hw/debug.h"
 #include "hw/snd.h"
-#include "hw/time.h"
+#include "hw/hwtime.h"
 #include "hw/worker.h"
 
 #include <iostream>

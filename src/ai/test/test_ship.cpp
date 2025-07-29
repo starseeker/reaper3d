@@ -2,7 +2,7 @@
 #include "gfx/gfx.h"
 #include "hw/gfx.h"
 #include "hw/event.h"
-#include "hw/time.h"
+#include "hw/hwtime.h"
 #include "hw/font.h"
 #include "world/world.h"
 #include "gfx/main.h"

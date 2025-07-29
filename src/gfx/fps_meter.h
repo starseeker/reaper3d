@@ -52,7 +52,7 @@ namespace gfx
  * valarray -> vector<float>  (just for compat with egcs, with is the only place valarray is used...)
  *
  * Revision 1.9  2002/03/11 10:50:48  pstrand
- * hw/time.h -> reltime.h&abstime.h, and some more..
+ * hw/hwtime.h -> reltime.h&abstime.h, and some more..
  *
  * Revision 1.8  2001/12/18 14:14:16  macke
  * cancel last commit

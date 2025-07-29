@@ -9,7 +9,7 @@
  * res_stream exceptions
  *
  * Revision 1.13  2002/03/11 10:50:48  pstrand
- * hw/time.h -> reltime.h&abstime.h, and some more..
+ * hw/hwtime.h -> reltime.h&abstime.h, and some more..
  *
  * Revision 1.12  2002/01/11 23:11:08  peter
  * upprensning, mm

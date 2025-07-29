@@ -1,6 +1,6 @@
 
 #include "hw/compat.h"
-#include "hw/time.h"
+#include "hw/hwtime.h"
 
 #include <string>
 #include <iostream>

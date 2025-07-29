@@ -4,7 +4,7 @@
 
 
 #include "hw/gfx.h"
-#include "hw/time.h"
+#include "hw/hwtime.h"
 #include "misc/test_main.h"
 #include "main/types_io.h"
 

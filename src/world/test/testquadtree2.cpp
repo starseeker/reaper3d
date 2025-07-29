@@ -6,7 +6,7 @@
 #include "hw/gfx.h"
 #include "hw/event.h"
 #include "misc/font.h"
-#include "hw/time.h"
+#include "hw/hwtime.h"
 #include "world/world.h"
 #include "world/quadtree.h"
 

@@ -285,7 +285,7 @@ glh - is a platform-indepenedent C++ OpenGL helper library
  * dynamic environment mapping!
  *
  * Revision 1.19  2002/03/11 10:50:48  pstrand
- * hw/time.h -> reltime.h&abstime.h, and some more..
+ * hw/hwtime.h -> reltime.h&abstime.h, and some more..
  *
  * Revision 1.18  2002/01/28 00:50:16  macke
  * gl_state stuff should be in gl_state, not here as well...

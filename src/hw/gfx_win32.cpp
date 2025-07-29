@@ -13,7 +13,7 @@
  * *** empty log message ***
  *
  * Revision 1.70  2002/03/11 10:50:48  pstrand
- * hw/time.h -> reltime.h&abstime.h, and some more..
+ * hw/hwtime.h -> reltime.h&abstime.h, and some more..
  *
  * Revision 1.69  2002/02/13 14:17:47  peter
  * alpha info..

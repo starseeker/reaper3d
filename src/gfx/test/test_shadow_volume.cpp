@@ -21,7 +21,7 @@
 #include "hw/gfx.h"
 #include "hw/gl.h"
 #include "hw/event.h"
-#include "hw/time.h"
+#include "hw/hwtime.h"
 
 #include "gfx/geometry.h"
 

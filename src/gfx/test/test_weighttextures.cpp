@@ -16,7 +16,7 @@
 #include "hw/gfx.h"
 #include "hw/gl.h"
 #include "hw/event.h"
-#include "hw/time.h"
+#include "hw/hwtime.h"
 #include "res/res.h"
 #include "res/config.h"
 #include "misc/stlhelper.h"

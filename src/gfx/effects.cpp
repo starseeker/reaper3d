@@ -792,7 +792,7 @@ SimEffectPtr dynamic_light(const Matrix &m, const Point &o, const Color &color,
  * fix. for old gcc:s
  *
  * Revision 1.68  2002/03/11 10:50:48  pstrand
- * hw/time.h -> reltime.h&abstime.h, and some more..
+ * hw/hwtime.h -> reltime.h&abstime.h, and some more..
  *
  * Revision 1.67  2002/02/26 22:41:17  pstrand
  * mackefix

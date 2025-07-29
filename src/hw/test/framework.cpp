@@ -10,7 +10,7 @@
 #include "hw/font.h"
 #include "hw/gfx.h"
 #include "hw/gl.h"
-#include "hw/time.h"
+#include "hw/hwtime.h"
 #include "world/world.h"
 
 using namespace std;

@@ -6,7 +6,7 @@
 
 #include "world/geometry.h"
 #include "misc/parse.h"
-#include "hw/time.h"
+#include "hw/hwtime.h"
 #include "misc/test_main.h"
 
 using namespace reaper;

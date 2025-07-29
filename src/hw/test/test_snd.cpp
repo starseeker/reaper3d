@@ -11,7 +11,7 @@
 
 #include "hw/gfx.h"
 #include "hw/event.h"
-#include "hw/time.h"
+#include "hw/hwtime.h"
 #include "misc/test_main.h"
 
 using namespace reaper;
