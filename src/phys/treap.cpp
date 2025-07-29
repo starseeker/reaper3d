@@ -242,7 +242,7 @@ bool Treap< T,CmpPrio, dif,CmpData,Eq >::rec_print(Treap_node<T>* node)
 {
 	if(node == NULL)return true;
 	rec_print(node->left);
-	cout << node->dat << endl;
+	std::cout << node->dat << std::endl;
 	rec_print(node->right);
 	return false;
 }

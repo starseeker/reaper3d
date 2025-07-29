@@ -2,6 +2,7 @@
 #include "hw/compat.h"
 
 #include <vector>
+#include <climits>
 
 #include "hw/gl.h"
 #include "hw/gl_info.h"

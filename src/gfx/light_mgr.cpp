@@ -28,7 +28,10 @@
 #include <iterator>
 
 namespace reaper {
-namespace misc { UniquePtr<gfx::LightMgr>::I UniquePtr<gfx::LightMgr>::inst; }
+namespace misc { 
+	template <> 
+	UniquePtr<gfx::LightMgr>::I UniquePtr<gfx::LightMgr>::inst; 
+}
 namespace gfx {
 namespace lowlevel {
 namespace {
@@ -382,7 +385,7 @@ Color LightMgr::calc_diffuse_light(const Point &p, const Vector &n, const Materi
  * reversed last two revs
  *
  * Revision 1.12  2002/01/16 00:25:26  picon
- * terrängbelysning
+ * terrï¿½ngbelysning
  *
  * Revision 1.11  2002/01/11 23:11:09  peter
  * upprensning, mm
@@ -400,10 +403,10 @@ Color LightMgr::calc_diffuse_light(const Point &p, const Vector &n, const Materi
  * quadtree & world-iter fix
  *
  * Revision 1.6  2001/08/09 18:11:40  macke
- * Fyllefix.. lite här å där..
+ * Fyllefix.. lite hï¿½r ï¿½ dï¿½r..
  *
  * Revision 1.5  2001/08/06 12:16:14  peter
- * MegaMerge (se strandy_test-grenen för diffar...)
+ * MegaMerge (se strandy_test-grenen fï¿½r diffar...)
  *
  * Revision 1.4.2.2  2001/08/05 14:01:25  peter
  * objektmeck...
@@ -412,7 +415,7 @@ Color LightMgr::calc_diffuse_light(const Point &p, const Vector &n, const Materi
  * testgren...
  *
  * Revision 1.4  2001/07/30 23:43:16  macke
- * Häpp, då var det kört.
+ * Hï¿½pp, dï¿½ var det kï¿½rt.
  *
  * Revision 1.3  2001/07/23 23:48:10  macke
  * Slimmad grafikhantering samt lite namnbyten
@@ -421,7 +424,7 @@ Color LightMgr::calc_diffuse_light(const Point &p, const Vector &n, const Materi
  * gcc-3.0 fixar
  *
  * Revision 1.1  2001/07/06 01:47:12  macke
- * Refptrfix/headerfilsstäd/objekt-skapande/mm
+ * Refptrfix/headerfilsstï¿½d/objekt-skapande/mm
  *
  * Revision 1.21  2001/06/09 01:58:48  macke
  * Grafikmotor reorg

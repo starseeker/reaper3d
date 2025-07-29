@@ -6,7 +6,7 @@
 
 namespace reaper {
 
-inline std::istream& operator>>(std::istream &is, Matrix4 &m) throw(io_error)
+inline std::istream& operator>>(std::istream &is, Matrix4 &m)
 {
 	io_hlp::read(is, m.get(), 16);
 	if(is.bad()) 
