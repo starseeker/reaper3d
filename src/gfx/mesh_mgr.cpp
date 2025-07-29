@@ -24,22 +24,22 @@
  * Lite mer benchmarking i grafikmotorn...
  *
  * Revision 1.2  2001/07/30 23:43:17  macke
- * Häpp, då var det kört.
+ * Hï¿½pp, dï¿½ var det kï¿½rt.
  *
  * Revision 1.1  2001/07/23 23:49:36  macke
  * Namnbyte...
  *
  * Revision 1.2  2001/07/06 01:47:12  macke
- * Refptrfix/headerfilsstäd/objekt-skapande/mm
+ * Refptrfix/headerfilsstï¿½d/objekt-skapande/mm
  *
  * Revision 1.1  2001/06/09 01:58:50  macke
  * Grafikmotor reorg
  *
  * Revision 1.15  2001/05/14 20:00:52  macke
- * bugfix och rök på missiler..
+ * bugfix och rï¿½k pï¿½ missiler..
  *
  * Revision 1.14  2001/05/10 11:40:14  macke
- * häpp
+ * hï¿½pp
  *
  */
 
@@ -58,7 +58,10 @@
 #include "misc/creator.h"
 
 namespace reaper {
-namespace misc { UniquePtr<gfx::MeshMgr>::I UniquePtr<gfx::MeshMgr>::inst; }
+namespace misc { 
+	template <>
+	UniquePtr<gfx::MeshMgr>::I UniquePtr<gfx::MeshMgr>::inst; 
+}
 namespace gfx {
 namespace {
 debug::DebugOutput dout("gfx::object::Manager",0);

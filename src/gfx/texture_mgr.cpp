@@ -32,22 +32,22 @@
  * rendering reorg and silhouette shadows!
  *
  * Revision 1.6  2002/01/10 23:09:09  macke
- * massa bök
+ * massa bï¿½k
  *
  * Revision 1.5  2001/12/14 16:31:25  macke
- * meck å pul
+ * meck ï¿½ pul
  *
  * Revision 1.4  2001/11/10 21:10:52  peter
  * minnesfixar..
  *
  * Revision 1.3  2001/08/06 12:16:16  peter
- * MegaMerge (se strandy_test-grenen för diffar...)
+ * MegaMerge (se strandy_test-grenen fï¿½r diffar...)
  *
  * Revision 1.2.4.1  2001/08/04 23:19:31  peter
  * *** empty log message ***
  *
  * Revision 1.2  2001/07/06 01:47:15  macke
- * Refptrfix/headerfilsstäd/objekt-skapande/mm
+ * Refptrfix/headerfilsstï¿½d/objekt-skapande/mm
  *
  * Revision 1.1  2001/06/09 01:58:54  macke
  * Grafikmotor reorg
@@ -56,7 +56,7 @@
  * Reaper v0.9
  *
  * Revision 1.19  2001/05/10 11:40:18  macke
- * häpp
+ * hï¿½pp
  *
  */
 
@@ -83,6 +83,7 @@ namespace {
         debug::DebugOutput dout("gfx::texture::Manager",0);
 }
 namespace misc { 
+	template <>
     UniquePtr<gfx::TextureMgr>::I UniquePtr<gfx::TextureMgr>::inst;
 }
 namespace gfx {

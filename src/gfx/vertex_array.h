@@ -74,7 +74,7 @@ inline VertexArray<T>::~VertexArray()
 template<class T>
 inline void VertexArray<T>::free()
 {
-	if(ptr != null) ref->free(ptr);
+	if(ptr != nullptr) ref->free(ptr);
 	ptr = 0;
 	size = 0;
 }
@@ -161,7 +161,7 @@ inline void VertexArray<T>::glDrawElements_stripe(GLenum mode, GLsizei count, co
  * no message
  *
  * Revision 1.17  2002/05/20 20:44:25  myrzlok
- * free på null verkar inte alltid funka
+ * free pï¿½ null verkar inte alltid funka
  *
  * Revision 1.16  2002/04/11 01:17:49  pstrand
  * Changed to more explicit handling of refptr/uniqueptrs. Destruction is not automatic.
@@ -172,19 +172,19 @@ inline void VertexArray<T>::glDrawElements_stripe(GLenum mode, GLsizei count, co
  * STLPort 4.5.1 Win32-fix + shadow & render reorg
  *
  * Revision 1.14  2002/01/10 23:09:09  macke
- * massa bök
+ * massa bï¿½k
  *
  * Revision 1.13  2001/12/14 16:31:25  macke
- * meck å pul
+ * meck ï¿½ pul
  *
  * Revision 1.12  2001/08/06 12:16:17  peter
- * MegaMerge (se strandy_test-grenen för diffar...)
+ * MegaMerge (se strandy_test-grenen fï¿½r diffar...)
  *
  * Revision 1.11.4.1  2001/08/03 13:43:54  peter
  * pragma once obsolete...
  *
  * Revision 1.11  2001/07/06 01:47:15  macke
- * Refptrfix/headerfilsstäd/objekt-skapande/mm
+ * Refptrfix/headerfilsstï¿½d/objekt-skapande/mm
  *
  * Revision 1.10  2001/06/09 01:58:55  macke
  * Grafikmotor reorg
@@ -193,7 +193,7 @@ inline void VertexArray<T>::glDrawElements_stripe(GLenum mode, GLsizei count, co
  * Reaper v0.9
  *
  * Revision 1.8  2001/05/10 11:40:19  macke
- * häpp
+ * hï¿½pp
  *
  */
 

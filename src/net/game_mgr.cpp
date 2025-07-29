@@ -178,8 +178,8 @@ void GameMgr_impl::diffify(const ObjState& st)
 	}
 	oa.set_mtx(om);
 
-	oa.vel     = diff_to_big(dvv) ? st.vel     : oa.vel + dvv;
-	oa.rot_vel = diff_to_big(dvr) ? st.rot_vel : oa.rot_vel + dvr;
+	oa.vel     = diff_to_big(dvv) ? static_cast<Vector>(st.vel)     : oa.vel + dvv;
+	oa.rot_vel = diff_to_big(dvr) ? static_cast<Vector>(st.rot_vel) : oa.rot_vel + dvr;
 
 	sv.pop_front();
 }

@@ -100,7 +100,7 @@ void str2point(cstrr str, Point& p)
 	for(int i=0; i<3; i++){
 		pos1 = str.find_first_of(numeric,pos2);
 		pos2 = str.find_first_not_of(numeric, pos1);
-		f[i] = stof(str.substr(pos1,pos2-1));		
+		f[i] = std::stof(str.substr(pos1,pos2-1));		
 	}
 
 	p.x = f[0];
