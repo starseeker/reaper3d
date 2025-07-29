@@ -24,13 +24,13 @@
  * musikfixar, mm..
  *
  * Revision 1.12  2002/01/17 05:04:02  peter
- * mp3 i meny (inte igång men funkar), pluginfix..
+ * mp3 i meny (inte igï¿½ng men funkar), pluginfix..
  *
  * Revision 1.11  2002/01/11 21:30:21  peter
  * *** empty log message ***
  *
  * Revision 1.10  2002/01/10 23:09:13  macke
- * massa bök
+ * massa bï¿½k
  *
  * Revision 1.9  2002/01/10 22:30:27  peter
  * resursfixar.. mm..
@@ -57,7 +57,7 @@
  * menu.cpp
  *
  * Revision 1.1  2001/12/11 18:57:22  macke
- * bök
+ * bï¿½k
  *
  * Revision 1.42  2001/12/11 18:46:40  macke
  * Menusystem refactored..
@@ -84,6 +84,7 @@
 #include "hw/compat.h"
 
 #include <cmath>
+#include <memory>
 
 #include "hw/gl.h"
 #include "hw/event.h"
@@ -167,7 +168,7 @@ class MenuSystem::Impl
 	hw::snd::SoundPtr mp3;
 	hw::snd::EffectPtr select;
 	hw::snd::EffectPtr press;
-	std::auto_ptr<hw::event::EventProxy> ep;
+	std::unique_ptr<hw::event::EventProxy> ep;
 	gfx::texture::Texture mouse_ptr;
 public:
 	Impl();
@@ -190,7 +191,7 @@ public:
 
 MenuSystem::Impl::Impl()
 : gx(), es(gx), sm(), mp3(0),
-  ep(0), mouse_ptr("arrow")
+  ep(nullptr), mouse_ptr("arrow")
 {
 	mp3 = sm.prepare_music("reaper.small");
 	sm.init();
@@ -198,7 +199,7 @@ MenuSystem::Impl::Impl()
 	press = sm.prepare_effect("menu_press");
 	using namespace hw::event;
 	es.set_mapping(create_mapping(menu_map()));
-	ep = std::auto_ptr<EventProxy>(new EventProxy(EventSystem::get_ref(0)));
+	ep = std::make_unique<EventProxy>(EventSystem::get_ref(0));
 
 	glClearColor(0.0, 0.0, 0.0, 0.0);
 	glViewport(0, 0, gx.current_mode().width,

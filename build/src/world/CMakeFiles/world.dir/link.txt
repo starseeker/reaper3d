@@ -1,0 +1,2 @@
+/usr/bin/ar qc libworld.a CMakeFiles/world.dir/geometry.cpp.o CMakeFiles/world.dir/level.cpp.o CMakeFiles/world.dir/quadtree.cpp.o CMakeFiles/world.dir/search.cpp.o CMakeFiles/world.dir/world.cpp.o CMakeFiles/world.dir/world_impl.cpp.o
+/usr/bin/ranlib libworld.a

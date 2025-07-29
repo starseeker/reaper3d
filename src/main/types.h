@@ -86,8 +86,8 @@ public:
                 return *this;
         }
 
-	const T* get() const { return &x; }
-	      T* get() { return &x; }
+	const T* get() const { return &v1; }
+	      T* get() { return &v1; }
 };       
 
 /// %Triangle with references to vertices
@@ -255,7 +255,7 @@ struct TMap { typedef T Org; };
 * test
 *
 * Revision 1.51  2002/01/10 23:09:11  macke
-* massa bök
+* massa bï¿½k
 *
 * Revision 1.50  2002/01/09 13:57:35  peter
 * Yet Another Vector Implementation, this time SimpleYetFlexible(tm)  ;)
@@ -273,7 +273,7 @@ struct TMap { typedef T Org; };
 * get_row -> get_col
 *
 * Revision 1.45  2001/08/06 12:16:27  peter
-* MegaMerge (se strandy_test-grenen för diffar...)
+* MegaMerge (se strandy_test-grenen fï¿½r diffar...)
 *
 * Revision 1.44.2.5  2001/08/05 14:01:27  peter
 * objektmeck...
@@ -291,13 +291,13 @@ struct TMap { typedef T Org; };
 * testgren...
 *
 * Revision 1.44  2001/07/30 23:43:23  macke
-* Häpp, då var det kört.
+* Hï¿½pp, dï¿½ var det kï¿½rt.
 *
 * Revision 1.43  2001/07/21 23:09:36  peter
 * intel fix..
 *
 * Revision 1.42  2001/07/06 01:47:24  macke
-* Refptrfix/headerfilsstäd/objekt-skapande/mm
+* Refptrfix/headerfilsstï¿½d/objekt-skapande/mm
 *
 * Revision 1.41  2001/05/10 00:09:15  peter
 * *** empty log message ***
@@ -306,7 +306,7 @@ struct TMap { typedef T Org; };
 * *** empty log message ***
 *
 * Revision 1.39  2001/05/08 00:14:57  macke
-* dynamiska ljus.. buggar lite dock, så de är bortkommenterade..
+* dynamiska ljus.. buggar lite dock, sï¿½ de ï¿½r bortkommenterade..
 *
 */
 

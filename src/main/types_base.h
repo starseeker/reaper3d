@@ -2,6 +2,8 @@
 #ifndef REAPER_MAIN_TYPES_BASE_H
 #define REAPER_MAIN_TYPES_BASE_H
 
+#include <cstring>
+
 namespace reaper {
 
 
@@ -14,16 +16,16 @@ public:
 
 	Vec() { }
 	Vec(const value_type* p) {
-		memcpy(get(), p, sizeof(value_type)*Impl::N);
+		memcpy(this->get(), p, sizeof(value_type)*Impl::N);
 	}
 	Vec(value_type a, value_type b, value_type c) {
-		get()[0] = a;
-		get()[1] = b;
-		get()[2] = c;
+		this->get()[0] = a;
+		this->get()[1] = b;
+		this->get()[2] = c;
 	}
 
-	const value_type& operator[] (const int i) const { return get()[i]; }
-	      value_type& operator[] (const int i)       { return get()[i]; }
+	const value_type& operator[] (const int i) const { return this->get()[i]; }
+	      value_type& operator[] (const int i)       { return this->get()[i]; }
 
 };
 
@@ -51,8 +53,8 @@ struct Vec4
 template<class I>
 struct GetX : public I
 {
-	typename I::value_type* get() { return &x; }
-	const typename I::value_type* get() const { return &x; }
+	typename I::value_type* get() { return &this->x; }
+	const typename I::value_type* get() const { return &this->x; }
 };
 
 

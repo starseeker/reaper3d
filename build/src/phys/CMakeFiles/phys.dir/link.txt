@@ -1,0 +1,2 @@
+/usr/bin/ar qc libphys.a CMakeFiles/phys.dir/collisionQueue.cpp.o CMakeFiles/phys.dir/engine.cpp.o CMakeFiles/phys.dir/pairs.cpp.o
+/usr/bin/ranlib libphys.a

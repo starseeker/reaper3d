@@ -808,7 +808,7 @@ int MenuItemMeshView<V>::draw_inactive()
 
 	glClear(GL_DEPTH_BUFFER_BIT);
 
-	const menu::Box &b = get_box();
+	const menu::Box &b = this->get_box();
 	
 	glPushMatrix();		
 	glTranslatef(b.x1, 1 - b.y1, 0);
