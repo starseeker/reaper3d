@@ -38,7 +38,7 @@ namespace { debug::DebugOutput derr("cloud"); }
 using namespace reaper::misc;
 
 
-Light::Light(Point p, Color c) : pos(p), color(c) { }
+Light::Light(const Point& p, const Color& c) : pos(p), color(c) { }
 
 
 class SetupGL
@@ -203,7 +203,7 @@ float phase(const Vector& v1, const Vector& v2)
 	return 3.0 / 4.0 * (1 + cos_theta*cos_theta);
 }
 
-void Cloud::prelight(Light light)
+void Cloud::prelight(const Light& light)
 {
 	derr << "Prelighting " << particles.size() << " particles\n";
 	Vector l = pos - light.pos;

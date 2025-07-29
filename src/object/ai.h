@@ -224,7 +224,7 @@ class DummyTurret
 	controls::Turret &tc;
 
 public:
-	DummyTurret(controls::Turret &c) : tc(c) {}
+	explicit DummyTurret(controls::Turret &c) : tc(c) {}
 	void think();
 	void receive(Message m) {}
 };
@@ -242,7 +242,7 @@ public:
  * turretss aims a bit bett
  *
  * Revision 1.37  2001/11/26 10:46:05  peter
- * kompilatorgnäll... ;)
+ * kompilatorgnï¿½ll... ;)
  *
  * Revision 1.36  2001/11/11 01:23:11  peter
  * minnesfixar..
@@ -263,7 +263,7 @@ public:
  * obj.ptr & fix...
  *
  * Revision 1.30  2001/08/06 12:16:35  peter
- * MegaMerge (se strandy_test-grenen för diffar...)
+ * MegaMerge (se strandy_test-grenen fï¿½r diffar...)
  *
  * Revision 1.29.2.2  2001/08/05 14:01:29  peter
  * objektmeck...
@@ -272,23 +272,23 @@ public:
  * pragma once obsolete...
  *
  * Revision 1.29  2001/07/30 23:43:25  macke
- * Häpp, då var det kört.
+ * Hï¿½pp, dï¿½ var det kï¿½rt.
  *
  * Revision 1.28  2001/07/06 01:47:30  macke
- * Refptrfix/headerfilsstäd/objekt-skapande/mm
+ * Refptrfix/headerfilsstï¿½d/objekt-skapande/mm
  *
  * Revision 1.27  2001/05/10 10:15:08  niklas
  * egen ai till GroundTurret
  *
  * Revision 1.26  2001/05/10 02:04:55  niklas
- * Två olika skepp-ai
+ * Tvï¿½ olika skepp-ai
  *
  * Revision 1.25  2001/05/09 21:05:31  niklas
  * ai till GroundOrdinary
  *
  * Revision 1.24  2001/05/09 00:32:11  niklas
- * Betydligt bättre skepp-AI. Hastighetsanpassning, bättre terräng-undvikning,
- * lösning på "ringdansproblemet" m.m.
+ * Betydligt bï¿½ttre skepp-AI. Hastighetsanpassning, bï¿½ttre terrï¿½ng-undvikning,
+ * lï¿½sning pï¿½ "ringdansproblemet" m.m.
  *
  */
 

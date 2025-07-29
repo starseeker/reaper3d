@@ -24,7 +24,7 @@ struct Light
 	Point pos;
 	Color color;
 
-	Light(Point, Color);
+	Light(const Point& pos, const Color& color);
 };
 
 typedef std::deque<Light> Lights;
@@ -41,7 +41,7 @@ class Cloud
 public:
 	Cloud(const Point& pos, float radius);
 	void init();
-	void prelight(Light);
+	void prelight(const Light& light);
 	int render(const Lights&, const Camera& cam, float z_min, float z_max);
 	const Point& get_pos() const { return pos; }
 	float get_radius() const { return radius; }

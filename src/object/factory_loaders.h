@@ -39,12 +39,12 @@ class pos_loader
 	typedef T (*CREATE_FUNC)(const Matrix &m, CompanyID c);
 	CREATE_FUNC create;
 public:
-	pos_loader(CREATE_FUNC f) : create(f) {}
+	explicit pos_loader(CREATE_FUNC f) : create(f) {}
 
 	T operator()(std::istream& is) {
 		Point p;
 		read_spec_line(is, "position", p);
-		return create(Matrix(p), None);
+		return create(Matrix(p), Nature);
 	}
 };
 
@@ -57,8 +57,8 @@ class static_loader
 	typedef T (*CREATE_FUNC)(const Matrix &m, CompanyID c);
 	CREATE_FUNC create;
 public:
-	static_loader(int i) {}
-	static_loader(CREATE_FUNC f) : create(f) {}
+	explicit static_loader(int i) {}
+	explicit static_loader(CREATE_FUNC f) : create(f) {}
 
 	T operator()(std::istream& is) {
 		
@@ -84,7 +84,7 @@ class dynamic_loader
 	typedef T (*CREATE_FUNC)(const Matrix &m, CompanyID c);
 	CREATE_FUNC create;
 public:
-	dynamic_loader(CREATE_FUNC f) : create(f) {}
+	explicit dynamic_loader(CREATE_FUNC f) : create(f) {}
 
 	T operator()(std::istream& is) {
 		
