@@ -10,6 +10,7 @@
 #include "net/nameservice.h"
 
 #include <iostream>
+#include <cstring>  // for memmove, memcpy
 
 #include <errno.h>
 

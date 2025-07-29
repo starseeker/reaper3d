@@ -8,8 +8,6 @@
 #include <iostream>
 #include <sstream>
 
-#include <time.h>  /* Use old-style for compatibility */
-
 #include "misc/font.h"
 #include "gfx/misc.h"
 #include "hw/profile.h"
