@@ -46,11 +46,11 @@ inline std::ostream& operator<<(std::ostream& os, const Color& v)  {
 	return io_hlp::write<4>(os, v.get(), 1.0f);
 }
 
-inline std::istream& operator>>(std::istream& is, Color& v) throw(io_error) {
+inline std::istream& operator>>(std::istream& is, Color& v) {
 	return io_hlp::read(is, v.get(), 4, 1.0f);
 }
 
-inline std::istream& operator>>(std::istream &is, TexCoord &t) throw(io_error) {
+inline std::istream& operator>>(std::istream &is, TexCoord &t) {
 	// Assumes no padding...
 	return io_hlp::read(is, &t.s, 2);
 }
@@ -93,22 +93,22 @@ void read_terrain(const std::string &file, std::vector<Point> &points,
  * std::
  *
  * Revision 1.11  2001/11/26 10:46:03  peter
- * kompilatorgnäll... ;)
+ * kompilatorgnï¿½ll... ;)
  *
  * Revision 1.10  2001/11/21 00:27:51  picon
  * missile smoke / ship tail / misc
  *
  * Revision 1.9  2001/08/06 12:16:13  peter
- * MegaMerge (se strandy_test-grenen för diffar...)
+ * MegaMerge (se strandy_test-grenen fï¿½r diffar...)
  *
  * Revision 1.8.2.1  2001/08/03 13:43:52  peter
  * pragma once obsolete...
  *
  * Revision 1.8  2001/07/30 23:43:16  macke
- * Häpp, då var det kört.
+ * Hï¿½pp, dï¿½ var det kï¿½rt.
  *
  * Revision 1.7  2001/07/06 01:47:11  macke
- * Refptrfix/headerfilsstäd/objekt-skapande/mm
+ * Refptrfix/headerfilsstï¿½d/objekt-skapande/mm
  *
  * Revision 1.6  2001/06/09 01:58:48  macke
  * Grafikmotor reorg
@@ -117,7 +117,7 @@ void read_terrain(const std::string &file, std::vector<Point> &points,
  * hmm...
  *
  * Revision 1.4  2001/05/10 11:40:12  macke
- * häpp
+ * hï¿½pp
  *
  */
 

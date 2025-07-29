@@ -45,8 +45,8 @@ std::string ftos(float f);
 CompanyID str2company(cstrr str);
 void str2point(cstrr str, Point& id);
 
-template<class E> std::binder1st<std::equal_to<E> > equals(const E& e) {
-	return std::bind1st(std::equal_to<E>(), e);
+template<class E> auto equals(const E& e) {
+	return [e](const E& val) { return val == e; };
 }
 
 template<class Out>
@@ -58,11 +58,11 @@ int split(cstrr s, Out iter, int n = 0, char c = ' ')
 	str_ci p = s.begin();
 	str_ci e = s.end();
 	str_ci p2;
-	p = std::find_if(p, e, std::not1(equals(c)));
+	p = std::find_if(p, e, [c](char val) { return val != c; });
 	while (p != e) {
 		p2 = std::find_if(p, e, equals(c));
 		*iter++ = std::string(p, p2);
-		p = std::find_if(p2, e, std::not1(equals(c)));
+		p = std::find_if(p2, e, [c](char val) { return val != c; });
 		i++;
 		if (i == n)
 			break;
@@ -275,7 +275,7 @@ bool strequal(const std::string& s1, const std::string& s2);
  * objektmeck...
  *
  * Revision 1.16  2001/08/06 12:16:32  peter
- * MegaMerge (se strandy_test-grenen för diffar...)
+ * MegaMerge (se strandy_test-grenen fï¿½r diffar...)
  *
  * Revision 1.15.4.2  2001/08/05 14:01:28  peter
  * objektmeck...
@@ -284,16 +284,16 @@ bool strequal(const std::string& s1, const std::string& s2);
  * pragma once obsolete...
  *
  * Revision 1.15  2001/07/15 21:43:31  peter
- * småfixar
+ * smï¿½fixar
  *
  * Revision 1.14  2001/07/06 01:47:27  macke
- * Refptrfix/headerfilsstäd/objekt-skapande/mm
+ * Refptrfix/headerfilsstï¿½d/objekt-skapande/mm
  *
  * Revision 1.13  2001/05/06 22:19:22  peter
  * *** empty log message ***
  *
  * Revision 1.12  2001/05/04 18:15:50  niklas
- * la till två funktioner, str2company och str2point
+ * la till tvï¿½ funktioner, str2company och str2point
  *
  */
 

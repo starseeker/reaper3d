@@ -188,8 +188,8 @@ void Mpegtoraw::initialize()
 {
   static bool initialized=false;
 
-  register int i;
-  register REAL *s1,*s2;
+  int i;
+  REAL *s1,*s2;
   REAL *s3,*s4;
 
   scalefactor=SCALE;
@@ -295,7 +295,7 @@ void Mpegtoraw::clearbuffer(void)
 
 bool Mpegtoraw::loadheader(void)
 {
-  register int c;
+  int c;
   bool flag;
 
   sync();

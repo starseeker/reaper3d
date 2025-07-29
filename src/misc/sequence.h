@@ -117,9 +117,9 @@ void map_snd(Seq<T> seq, F f) {
 }
 
 
-// Resten är bara wrappers för olika algoritmer för sekvenser,
-// för att spara ett argument...
-// Lägg gärna till efter behov.
+// Resten ï¿½r bara wrappers fï¿½r olika algoritmer fï¿½r sekvenser,
+// fï¿½r att spara ett argument...
+// Lï¿½gg gï¿½rna till efter behov.
 
 template<class T, class F>
 F copy(Seq<T> seq, F f) {
@@ -167,8 +167,8 @@ Iter remove_if(Seq<Iter> s, Pred p) {
 	return std::remove_if(s.first, s.second, p);
 }
 
-template<class Iter, class Pred>
-Iter remove_copy_if(Seq<Iter> s, class Out o, Pred p) {
+template<class Iter, class Pred, class Out>
+Iter remove_copy_if(Seq<Iter> s, Out o, Pred p) {
 	return std::remove_copy_if(s.first, s.second, o, p);
 }
 

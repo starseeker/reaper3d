@@ -6,6 +6,7 @@
 #include "game/menus.h"
 #include "game/helpers.h"
 #include "res/res.h"
+#include <memory>
 
 #include "game/forked.h"
 
@@ -28,9 +29,9 @@ public:
 		debug::debug_priority(-1);
 		
 		try {
-			auto_ptr<hw::gfx::Gfx> gx(new hw::gfx::Gfx());
+			std::unique_ptr<hw::gfx::Gfx> gx = std::make_unique<hw::gfx::Gfx>();
 			Args args;
-			auto_ptr<game::Game> go(new game::Game(*gx, args));
+			std::unique_ptr<game::Game> go = std::make_unique<game::Game>(*gx, args);
 			init_done.signal();
 			go->game_init();
 			go->game_start();

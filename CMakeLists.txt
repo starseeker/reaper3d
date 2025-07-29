@@ -5,6 +5,9 @@ project(reaper3d)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+# Add permissive compiler flags to handle legacy C++ code
+add_compile_options(-fpermissive -Wno-deprecated -Wno-deprecated-declarations)
+
 # Add src directory to include path for the whole project
 include_directories(${CMAKE_SOURCE_DIR}/src)
 

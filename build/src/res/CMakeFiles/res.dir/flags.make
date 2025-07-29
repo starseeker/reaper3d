@@ -6,5 +6,5 @@ CXX_DEFINES =
 
 CXX_INCLUDES = -I/home/runner/work/reaper3d/reaper3d/src -I/home/runner/work/reaper3d/reaper3d/src/res
 
-CXX_FLAGS = -std=gnu++17
+CXX_FLAGS = -std=gnu++17 -fpermissive -Wno-deprecated -Wno-deprecated-declarations
 

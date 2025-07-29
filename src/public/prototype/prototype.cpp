@@ -9,6 +9,7 @@
 #include "res/config.h"
 #include "game/state.h"
 #include "hw/stacktrace.h"
+#include <memory>
 
 using namespace reaper;
 using namespace object;
@@ -20,7 +21,7 @@ void single_player_game(bool load)
 	if (load) {
 		game::state::restore("last");
 	}
-	auto_ptr<game::Game> go(new game::Game(gx, args));
+	std::unique_ptr<game::Game> go = std::make_unique<game::Game>(gx, args);
 
 	go->game_init();
 	if (go->game_start()) {

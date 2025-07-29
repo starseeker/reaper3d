@@ -12,15 +12,15 @@ namespace gfx {
 template<typename I>
 struct GetR : public I
 {
-	typename I::value_type* get() { return &r; }
-	const typename I::value_type* get() const { return &r; }
+	typename I::value_type* get() { return &this->r; }
+	const typename I::value_type* get() const { return &this->r; }
 };
 
 template<typename I>
 struct GetS : public I
 {
-	typename I::value_type* get() { return &s; }
-	const typename I::value_type* get() const { return &s; }
+	typename I::value_type* get() { return &this->s; }
+	const typename I::value_type* get() const { return &this->s; }
 };
 
 template<typename T, int uc>
@@ -156,12 +156,12 @@ inline Vec<Impl>& clamp(Vec<Impl> &c) {
 * gcc-2 is happier this way..
 *
 * Revision 1.3  2002/01/16 00:25:25  picon
-* terrängbelysning
+* terrï¿½ngbelysning
 *
 * Revision 1.2  2001/11/21 00:27:51  picon
 * missile smoke / ship tail / misc
 *
 * Revision 1.1  2001/07/30 23:43:15  macke
-* Häpp, då var det kört.
+* Hï¿½pp, dï¿½ var det kï¿½rt.
 *
 */

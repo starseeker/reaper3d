@@ -260,7 +260,9 @@ inline bool operator!=(const Vec<Impl>& a, const Vec<Impl>& b)
 template<class T1, class T2>
 struct Conv { typedef Point res; typedef Point pres; };
 
+template<>
 struct Conv<Point, Point> { typedef Vector res; typedef Point pres; };
+template<>
 struct Conv<Vector, Vector> { typedef Vector res; typedef Vector pres; };
 
 
@@ -673,7 +675,7 @@ int itrunc(float f)
  * no message
  *
  * Revision 1.2  2001/08/06 12:16:29  peter
- * MegaMerge (se strandy_test-grenen för diffar...)
+ * MegaMerge (se strandy_test-grenen fï¿½r diffar...)
  *
  * Revision 1.1.2.5  2001/08/05 14:01:27  peter
  * objektmeck...
@@ -691,7 +693,7 @@ int itrunc(float f)
  * testgren...
  *
  * Revision 1.1  2001/07/30 23:43:24  macke
- * Häpp, då var det kört.
+ * Hï¿½pp, dï¿½ var det kï¿½rt.
  *
  */
 
