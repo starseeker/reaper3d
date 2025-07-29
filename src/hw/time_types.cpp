@@ -6,7 +6,8 @@
 #ifdef WIN32
 # include "hw/windows.h"
 #else
-#include <ctime>     // Include before chrono to ensure C time functions are available
+// Keep time.h for system compatibility, then add modern C++ headers
+#include <ctime>     // C time functions
 #include <thread>    // For std::this_thread::sleep_for
 #include <chrono>    // For std::chrono::milliseconds
 #endif

@@ -7,7 +7,8 @@
 #include <fstream>
 #include <sstream>
 #include <map>
-#include <ctime>   // Include before chrono to ensure C time functions are available
+// Keep time.h for system compatibility, then add modern C++ headers
+#include <ctime>   // C time functions  
 #include <chrono>  // Modern C++11 time handling
 
 #include "hw/debug.h"

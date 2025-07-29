@@ -2,7 +2,8 @@
 
 #include "hw/compat.h"
 
-#include <ctime>   // Include before chrono to ensure C time functions are available  
+// Keep time.h for system compatibility, then add modern C++ headers
+#include <ctime>   // C time functions in std namespace  
 #include <chrono>  // Modern C++11 time handling
 #include <limits>
 #include <iostream>
