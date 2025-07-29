@@ -1,4 +1,18 @@
 
+/*
+ * LEGACY X11-BASED EVENT HANDLING
+ * 
+ * NOTE: This X11-based event implementation is being migrated to GLFW
+ * for cross-platform compatibility. The new GLFW implementation can be 
+ * found in event_glfw.cpp.
+ * 
+ * Migration Status: IN PROGRESS  
+ * - GLFW event callbacks: IMPLEMENTED
+ * - GLFW input device classes: BASIC IMPLEMENTATION COMPLETE
+ * - Full integration with existing event system: TODO
+ * - X11 code removal: TODO (keeping in place during transition)
+ */
+
 #include "hw/compat.h"
 
 #include "hw/debug.h"
