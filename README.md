@@ -2,6 +2,12 @@
 
 Reaper3D is a 3D space combat game that has been modernized to build with CMake and C++17 on modern Linux systems.
 
+## Architecture
+
+**Graphics and Input:** The engine uses GLFW directly for all graphics and input handling. The previous plugin architecture for backend selection has been removed in favor of a simplified, GLFW-only approach that provides better cross-platform compatibility and maintainability.
+
+**Sound:** The engine uses a dummy sound system by default. While the original plugin architecture for sound drivers has been simplified, the interface remains for potential future enhancements.
+
 ## Build Requirements
 
 ### System Dependencies (Ubuntu/Debian)

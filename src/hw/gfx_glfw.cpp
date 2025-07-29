@@ -1,6 +1,6 @@
 /*
  * GLFW-based graphics driver implementation
- * Migrating from X11 to GLFW for cross-platform windowing support
+ * Direct GLFW integration - plugin architecture removed
  */
 
 #include "hw/compat.h"
