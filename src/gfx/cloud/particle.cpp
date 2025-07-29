@@ -14,6 +14,13 @@ Particle::Particle(const Point& p, float r)
  : pos(p), radius(r)
 { }
 
+Particle::Particle(const Point& p, float r, float lifetime, float alpha)
+ : pos(p), radius(r)
+{
+	// For modernization, we'll ignore the lifetime and alpha parameters
+	// since they're not stored in the current struct
+}
+
 
 
 }

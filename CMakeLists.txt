@@ -47,9 +47,9 @@ add_executable(reaper3d
 
 # The main function is provided by test_main.h which is included in prototype.cpp
 target_link_libraries(reaper3d 
-    ai ext game gfx main net object phys prototype res 
+    ext game main net object phys prototype res 
     # Group libraries with potential circular dependencies
-    -Wl,--start-group misc snd world hw -Wl,--end-group
+    -Wl,--start-group ai gfx misc snd world hw pm shadow cloud -Wl,--end-group
     # System libraries
     ${OPENGL_LIBRARIES}
     ${X11_LIBRARIES}

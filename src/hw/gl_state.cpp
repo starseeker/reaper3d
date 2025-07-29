@@ -124,14 +124,14 @@ GLvoid glActiveTextureARB(GLenum unit)
 {
 	if(unit != active_texture_unit) {
 		active_texture_unit = unit;
-		::glActiveTextureARB(unit);
+		glActiveTextureARB(unit);
 	}
 }
 GLvoid glClientActiveTextureARB(GLenum unit)
 {
 	if(unit != active_client_texture_unit) {
 		active_client_texture_unit = unit;
-		::glClientActiveTextureARB(unit);
+		glClientActiveTextureARB(unit);
 	}
 }
 
