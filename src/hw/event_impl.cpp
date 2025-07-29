@@ -20,7 +20,6 @@
 #include "hw/exceptions.h"
 #include "hw/reltime.h"
 #include "hw/abstime.h"
-#include "hw/osinfo.h"
 #include "misc/stlhelper.h"
 #include "misc/free.h"
 #include "misc/parse.h"
@@ -32,10 +31,8 @@
 
 #include "misc/sequence.h"
 
-#ifdef MONOLITHIC
-extern "C" reaper::hw::event::InputDeviceModule* create_event_x11(void*);
+// Direct function declaration for GLFW event driver
 extern "C" reaper::hw::event::InputDeviceModule* create_event_glfw(void*);
-#endif
 
 
 namespace reaper
@@ -99,28 +96,17 @@ class InputReader : public EventFilter {
 	lowlevel::Gfx_driver_data* gx;
 	InputDevices inputs;
 	InputDevices::iterator current;
-	InputModule input_mod;
 	std::auto_ptr<MainEvIF_impl> mev;
 public:
 	InputReader(lowlevel::Gfx_driver_data* g)
 	 : gx(g), mev(new MainEvIF_impl())
 	{
 		res::ConfigEnv cnf("hw_input");
-
-		std::string pfx("event_");
-		std::string sub(cnf["subsystem"]);
-
-		if (sub.empty()) {
-			if (hw::os_name() == "win32")
-	     	   sub = "win32";
-	        else
-	     	   sub = "glfw";  // Default to GLFW instead of X11 for cross-platform support
-		}
-
 		res::ConfigEnv axis_conf(cnf["joystick"]);
 		mev->read_axis_config(2, axis_conf);
 
-		std::auto_ptr<InputDeviceModule> inp(input_mod.create(pfx+sub, mev.get()));
+		// Always use GLFW input system - plugin architecture removed
+		std::auto_ptr<InputDeviceModule> inp(create_event_glfw(mev.get()));
 
 		inp->scan_inputdevices(gx, std::back_inserter(inputs));
 		current = inputs.begin();
