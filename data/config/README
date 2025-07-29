@@ -1,0 +1,43 @@
+
+Konfigurationsfiler.
+
+
+Filer som slutar på .defaults innehåller standardvärden,
+vill man ändra något värde gör man det genom att
+skapa en fil med samma (bas)namn som .defaults filen och
+lägga in de inställningar man vill ändra på.
+
+
+Exempel 1:
+hw_input.defaults innehåller inställningen "joystick_debug",
+som normalt är av.
+Vill man slå på det skriver man "joystick_debug = true" i en
+fil vid namn hw_input
+
+Exempel 2:
+Joystickinställningar läses från den fil som omnämns i
+hw_input på joystick raden. Vill man ändra detta (vilket man
+troligen vill) skapar man en ny fil som innehåller alla
+inställningar från hw_joystick_standard, och skapar sig en
+hw_input fil innehållande raden "joystick = min_joystick".
+
+
+
+På detta sätt kan standardvärdena ändras globalt utan att
+ens lokala inställningar påverkas.
+
+
+Inläsning av dessa filer görs lämpligen med ConfigEnv i res/config.h
+
+
+
+
+Filformat:
+
+Tomma rader och rader som börjar på '#' ignoreras.
+Ordet före ':' eller '=' används som identifierare för
+inställningen, och ordet efter som värde. Värdet kan vara av
+typ sträng, flyttal, heltal eller boolskt.
+
+
+

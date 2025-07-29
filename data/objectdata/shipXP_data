@@ -1,0 +1,30 @@
+mesh: shipX
+min_thrust:  40000
+max_thrust: 130000
+afterburner: 2.5
+burn_rate: 0.2
+afterburner_recharge: 0.1
+mass: 2000
+max_accel: 40
+max_vel: 400
+drag: 1400
+rudder_drag: 500
+max_yaw_rate: 60
+max_pitch_rate: 60
+max_roll_rate: 260
+damage_mult: 0
+health: 10
+shield: 10
+shield_recharge: 0.1
+engine_pos: [0, 0.2, 3]
+
+
+
+rate_of_fire: 10
+pos1: [ 0.0, -0.4, -1.1]
+pos2: [ 0.45, -0.38, -0.64]
+pos3: [-0.45, -0.38, -0.64]
+pos4: [ 0.8, -0.34, -0.1]
+pos5: [-0.8, -0.34, -0.1]
+
+

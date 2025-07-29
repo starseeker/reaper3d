@@ -1,0 +1,7 @@
+speed: 400
+lifetime: 3.0
+damage: .2
+color: [0, 1, 0, 1]
+sound: laser
+magic1: -1.5
+light_radius: 5

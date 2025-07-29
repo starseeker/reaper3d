@@ -1,0 +1,38 @@
+
+
+active = main
+
+[main]
+
+
+[rec]
+
+record = true
+fixed_dt = true
+
+[pb]
+
+playback = true
+fixed_dt = true
+
+[srv]
+
+networked = true
+server = true
+fixed_dt = true
+scenario = none
+
+[obs]
+
+networked = true
+observer = true
+fixed_dt = true
+scenario = none
+
+[cli]
+
+networked = true
+fixed_dt = true
+scenario = none
+
+

@@ -1,0 +1,9 @@
+speed: 200
+lifetime: 8.0
+damage: 18
+trail_size: 0.8
+engine_pos: [0, 0, 1.2]
+sound: missile_heavy
+exp_intensity: 0
+color: [1, .2, 0, 1]
+light_radius: 30

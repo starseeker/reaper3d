@@ -1,0 +1,6 @@
+Name: directionalLight1
+Transform: [0, 1, 0, 0]
+Diffuse: [1, 1, 1, 0]
+Specular: [1, 1, 1, 0]
+Ambient: [0.1, 0.1, 0.1, 0]
+Constant attenuation: 2
