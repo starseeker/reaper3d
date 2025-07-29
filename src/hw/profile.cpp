@@ -6,9 +6,9 @@
 
 #include <iomanip>
 #include <iostream>
-
-#include <ctime>
 #include <sstream>
+
+#include <time.h>  /* Use old-style for compatibility */
 
 #include "misc/font.h"
 #include "gfx/misc.h"
