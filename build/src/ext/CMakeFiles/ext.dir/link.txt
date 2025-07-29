@@ -1,2 +1,0 @@
-/usr/bin/ar qc libext.a CMakeFiles/ext.dir/mpegsound/bitwindow.cpp.o CMakeFiles/ext.dir/mpegsound/filter.cpp.o CMakeFiles/ext.dir/mpegsound/filter_2.cpp.o CMakeFiles/ext.dir/mpegsound/huffmantable.cpp.o CMakeFiles/ext.dir/mpegsound/mpeglayer1.cpp.o CMakeFiles/ext.dir/mpegsound/mpeglayer2.cpp.o CMakeFiles/ext.dir/mpegsound/mpeglayer3.cpp.o CMakeFiles/ext.dir/mpegsound/mpegtable.cpp.o CMakeFiles/ext.dir/mpegsound/mpegtoraw.cpp.o CMakeFiles/ext.dir/mpegsound/soundplayer.cpp.o
-/usr/bin/ranlib libext.a

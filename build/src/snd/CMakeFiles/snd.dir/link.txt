@@ -1,2 +1,0 @@
-/usr/bin/ar qc libsnd.a CMakeFiles/snd.dir/sound_system.cpp.o
-/usr/bin/ranlib libsnd.a

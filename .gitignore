@@ -1,34 +1,15 @@
 # Build directories
 build/
-Build/
-BUILD/
-out/
+cmake-build-*/
 
-# CMake generated files
-CMakeCache.txt
-CMakeFiles/
-cmake_install.cmake
-Makefile
-*.cmake
-!CMakeLists.txt
-
-# Compiled Object files
+# Generated files
 *.o
-*.obj
-*.lo
-*.la
-*.a
-*.lib
 *.so
-*.dll
+*.a
 *.dylib
-
-# Executables
+*.dll
 *.exe
-*.out
-*.app
-reaper
-reaper3d
+*.bak
 
 # IDE files
 .vscode/
@@ -37,11 +18,25 @@ reaper3d
 *.swo
 *~
 
-# OS generated files
+# Generated SVG files
+*.svg
+
+# CMake files
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
+
+# macOS
 .DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db
+
+# Test files and databases
+test_*.db
+test_*.db-lock
+test_*.pdf
+test_error_handling/
+test_1x1.png
+
+# LMDB database files (created by application)
+*.db
+*.db-lock

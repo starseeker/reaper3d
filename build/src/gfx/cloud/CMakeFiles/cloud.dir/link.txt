@@ -1,2 +1,0 @@
-/usr/bin/ar qc libcloud.a CMakeFiles/cloud.dir/cloud.cpp.o CMakeFiles/cloud.dir/impostor.cpp.o CMakeFiles/cloud.dir/particle.cpp.o CMakeFiles/cloud.dir/simulate.cpp.o
-/usr/bin/ranlib libcloud.a

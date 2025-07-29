@@ -1,2 +1,0 @@
-/usr/bin/ar qc libpm.a CMakeFiles/pm.dir/badheap.cpp.o CMakeFiles/pm.dir/pm.cpp.o CMakeFiles/pm.dir/treap.cpp.o
-/usr/bin/ranlib libpm.a

@@ -1,2 +1,0 @@
-/usr/bin/ar qc libgame.a CMakeFiles/game.dir/forked.cpp.o CMakeFiles/game.dir/helpers.cpp.o CMakeFiles/game.dir/menus.cpp.o CMakeFiles/game.dir/mission.cpp.o CMakeFiles/game.dir/object_mgr.cpp.o CMakeFiles/game.dir/scenario_mgr.cpp.o CMakeFiles/game.dir/state.cpp.o CMakeFiles/game.dir/state_base.cpp.o
-/usr/bin/ranlib libgame.a

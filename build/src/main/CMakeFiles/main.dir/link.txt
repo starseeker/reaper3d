@@ -1,2 +1,0 @@
-/usr/bin/ar qc libmain.a CMakeFiles/main.dir/types_io.cpp.o CMakeFiles/main.dir/types_ops.cpp.o
-/usr/bin/ranlib libmain.a

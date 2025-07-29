@@ -1,2 +1,0 @@
-/usr/bin/ar qc libprototype.a CMakeFiles/prototype.dir/prototype.cpp.o
-/usr/bin/ranlib libprototype.a

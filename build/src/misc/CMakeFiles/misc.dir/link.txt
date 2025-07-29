@@ -1,2 +1,0 @@
-/usr/bin/ar qc libmisc.a CMakeFiles/misc.dir/font.cpp.o CMakeFiles/misc.dir/menu_system.cpp.o CMakeFiles/misc.dir/parse.cpp.o CMakeFiles/misc.dir/plugin.cpp.o CMakeFiles/misc.dir/ptrstats.cpp.o CMakeFiles/misc.dir/unique.cpp.o CMakeFiles/misc.dir/utility.cpp.o
-/usr/bin/ranlib libmisc.a
