@@ -28,6 +28,7 @@
 
 #ifdef MONOLITHIC
 extern "C" reaper::hw::lowlevel::Gfx_driver* create_gfx_x11(reaper::hw::ifs::Gfx* m);
+extern "C" reaper::hw::lowlevel::Gfx_driver* create_gfx_glfw(reaper::hw::ifs::Gfx* m);
 #endif
 
 namespace reaper

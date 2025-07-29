@@ -1,5 +1,19 @@
 
 
+/*
+ * LEGACY X11-BASED GRAPHICS DRIVER
+ * 
+ * NOTE: This X11-based graphics implementation is being migrated to GLFW
+ * for cross-platform compatibility. The new GLFW implementation can be 
+ * found in gfx_glfw.cpp and event_glfw.cpp.
+ * 
+ * Migration Status: IN PROGRESS
+ * - GLFW windowing and OpenGL context setup: IMPLEMENTED
+ * - GLFW event handling: BASIC IMPLEMENTATION COMPLETE
+ * - Full integration with existing game loop: TODO
+ * - X11 code removal: TODO (keeping in place during transition)
+ */
+
 
 #include "hw/compat.h"
 

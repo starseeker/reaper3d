@@ -17,6 +17,7 @@ sudo apt-get update && sudo apt-get install -y \
     libxinerama-dev \
     libxcursor-dev \
     libxi-dev \
+    libglfw3-dev \
     zlib1g-dev \
     libpng-dev \
     libopenal-dev \
@@ -60,6 +61,7 @@ make -j$(nproc)
 - **Smart Pointer Migration**: Some auto_ptr instances remain in headers and complex template code
 - **String Conversions**: Most ConfVal to string assignments fixed, some remain
 - **Library Compilation**: Several libraries (ai, ext) build successfully
+- **GLFW Migration**: GLFW windowing and OpenGL context setup implemented (basic window creation working)
 
 ### ❌ Remaining Work
 
@@ -67,6 +69,33 @@ make -j$(nproc)
 - **Smart Pointer Issues**: Hash table implementations need copy constructor fixes
 - **Missing Includes**: Some files need additional standard library includes
 - **Complete Build**: Full executable linking not yet complete
+- **GLFW Integration**: Complete migration from X11 to GLFW (event system integration, legacy code removal)
+
+## GLFW Migration
+
+The project is currently migrating from X11-based windowing to GLFW for cross-platform compatibility.
+
+### Current Status
+- ✅ **GLFW Dependency**: Added to CMake build system and linked properly
+- ✅ **Basic Window Creation**: GLFW window and OpenGL context setup implemented
+- ✅ **Event Handling Framework**: Basic GLFW event callbacks and input device classes
+- ✅ **Error Handling**: GLFW error callback and basic logging
+- 🚧 **Integration**: GLFW code exists alongside X11 code during transition
+- ❌ **Complete Migration**: X11 code removal and full GLFW integration pending
+
+### Files Added/Modified
+- **New**: `src/hw/gfx_glfw.cpp` - GLFW-based graphics driver
+- **New**: `src/hw/event_glfw.cpp` - GLFW-based event handling  
+- **Modified**: `CMakeLists.txt` - Added GLFW dependency
+- **Modified**: `src/hw/CMakeLists.txt` - Updated to build GLFW modules
+- **Commented**: `src/hw/gfx_x11.cpp` and `src/hw/event_x11.cpp` - Marked as legacy
+
+### GLFW Features Implemented
+- Window creation with configurable resolution and fullscreen support
+- OpenGL context setup with double buffering, alpha, and stencil buffers
+- Basic event callbacks for keyboard, mouse, and window close events
+- Desktop resolution detection and common video mode registration
+- Proper GLFW initialization and cleanup
 
 ## Architecture
 

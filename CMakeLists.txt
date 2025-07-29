@@ -18,6 +18,9 @@ find_package(ZLIB REQUIRED)
 find_package(PNG REQUIRED)
 find_package(Threads REQUIRED)
 
+# Find GLFW for new windowing backend
+find_package(glfw3 REQUIRED)
+
 # Try to find OpenAL (may not be available on all systems)
 find_package(PkgConfig QUIET)
 if(PKG_CONFIG_FOUND)
@@ -53,6 +56,7 @@ target_link_libraries(reaper3d
     # System libraries
     ${OPENGL_LIBRARIES}
     ${X11_LIBRARIES}
+    glfw
     ZLIB::ZLIB
     PNG::PNG
     Threads::Threads
