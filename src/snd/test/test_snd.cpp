@@ -4,7 +4,6 @@
 #include <iostream>
 #include <valarray>
 #include <sstream>
-#include <ctime>
 
 #include "gfx/gfx.h"
 #include "hw/gfx.h"

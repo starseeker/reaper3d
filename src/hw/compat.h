@@ -21,8 +21,16 @@
 #include "config.h"
 #endif
 
-// Legacy time functions still needed for system compatibility
-#include <time.h>
+// Define feature test macros for proper time function availability
+#ifndef _POSIX_C_SOURCE
+#define _POSIX_C_SOURCE 200809L
+#endif
+#ifndef _GNU_SOURCE
+#define _GNU_SOURCE
+#endif
+
+// Include C time header for system compatibility
+#include <time.h>  // C time functions
 
 #ifdef _WIN32
 
@@ -307,8 +315,8 @@ int snprintf(char*, unsigned int, const char*, ...);
 
 
 #ifdef NO_TIME_H_TIMESPEC
-#include <time.h>
 // Using legacy timespec structure for compatibility with systems that need it
+// time_t is available from the <ctime> header included above
 struct timespec
 {
         time_t tv_sec;

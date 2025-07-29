@@ -2,9 +2,11 @@
 
 #include "hw/compat.h"
 
-// Keep time.h for system compatibility, then add modern C++ headers
-#include <ctime>   // C time functions in std namespace  
-#include <chrono>  // Modern C++11 time handling
+// Modern C++ time handling headers - keep ctime for compatibility
+#include <ctime>     // C time functions in std namespace  
+#include <chrono>    // Modern C++11 time handling
+#include <sstream>   // For std::stringstream
+#include <iomanip>   // For std::put_time
 #include <limits>
 #include <iostream>
 
@@ -131,19 +133,34 @@ void stop_time()
 
 std::string strtime(const std::string& format)
 {
-	// Modernized: Using C++11 std::chrono instead of legacy C time.h
+	// Modernized: Using C++17 std::chrono with improved error handling
 	std::string fmt = format.empty() ? "%d %H:%M:%S" : format;
 	
 	// Get current time using std::chrono::system_clock
 	auto now = std::chrono::system_clock::now();
 	auto time_t_now = std::chrono::system_clock::to_time_t(now);
 	
-	// Format using C time functions (still needed for strftime)
-	std::tm* local_tm = ::localtime(&time_t_now);
+	// Use modern C++ approach with safer time conversion
+	std::tm local_tm = {};
 	
-	static char buf[100];
-	::strftime(buf, 100, fmt.c_str(), local_tm);
-	return std::string(buf);
+	#ifdef WIN32
+		// Windows has localtime_s which is thread-safe
+		if (localtime_s(&local_tm, &time_t_now) == 0) {
+			std::stringstream ss;
+			ss << std::put_time(&local_tm, fmt.c_str());
+			return ss.str();
+		}
+	#else
+		// Use localtime_r for thread-safe operation on POSIX systems
+		if (localtime_r(&time_t_now, &local_tm) != nullptr) {
+			std::stringstream ss;
+			ss << std::put_time(&local_tm, fmt.c_str());
+			return ss.str();
+		}
+	#endif
+	
+	// Fallback: return a simple timestamp if conversion fails
+	return "time_error";
 }
 
 
