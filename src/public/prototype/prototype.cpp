@@ -46,13 +46,11 @@ int test_main()
 		res::add_datapath(i->second);
 
 	Args::iterator j = args.find("-p");
-	if (j != args.end())
-		res::add_pluginpath(j->second);
+	// -p option removed (plugin paths no longer supported)
 
 	Args::iterator ri = args.find("-r");
 	if (ri != args.end()) {
 		res::add_datapath(ri->second + "/data/");
-		res::add_pluginpath(ri->second + "/plugins/");
 	}
 	if (args.count("-h") || args.count("-help") || args.count("--help")) {
 		std::cout
@@ -62,7 +60,6 @@ int test_main()
 		     << "   -g       print all debug messages on stdout\n"
 		     << "   -r <dir> use alternate reaper-root directory\n"
 		     << "   -d <dir> use alternate data directory\n"
-		     << "   -p <dir> use alternate plugin directory\n"
 		     << "   module:variable=value    set a config-variable\n"
 		     << "\n\n"
 		     << "Homepage:    http://www.dtek.chalmers.se/groups/reaper\n"

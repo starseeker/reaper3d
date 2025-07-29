@@ -9,7 +9,6 @@
 #include "hw/event.h"
 #include "hw/gfx_driver.h"
 #include "hw/interfaces.h"
-#include "misc/plugin.h"
 #include "misc/smartptr.h"
 #include "hw/event_prim.h"
 
@@ -23,9 +22,6 @@ namespace gfx { class Gfx; }
 namespace event {
 
 
-
-
-typedef misc::Plugin<InputDeviceModule, ifs::Event> InputModule;
 
 class MainEvIF_impl;
 

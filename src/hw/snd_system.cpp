@@ -13,13 +13,11 @@
 #include "hw/snd_wave.h"
 #include "hw/snd_mp3.h"
 #include "hw/snd_subsystem.h"
-#include "hw/osinfo.h"
 
 #include "res/config.h"
 #include "res/res.h"
 #include "misc/free.h"
 #include "misc/sequence.h"
-#include "misc/plugin.h"
 #include "hw/interfaces.h"
 #include "world/world.h"
 #include "res/resource.h"
@@ -27,9 +25,8 @@
 #include "hw/debug.h"
 #include "hw/worker.h"
 
-#ifdef MONOLITHIC
+// Direct function declaration for dummy sound system
 extern "C" reaper::hw::snd::Subsystem* create_snd_dummy(void*);
-#endif
 
 namespace reaper {
 namespace hw {
@@ -45,8 +42,6 @@ using misc::for_each;
 using misc::delete_it;
 
 using std::string;
-
-typedef misc::Plugin<Subsystem, void, misc::Cache> SndProxy;
 
 
 class Main
@@ -66,69 +61,26 @@ public:
 	}
 };
 
-template<class T>
-class LazyLoad
-{
-	typedef misc::Plugin<T, void> Plugin;
-	std::unique_ptr<Plugin> plugin;
-
-public:
-	LazyLoad() : plugin(nullptr) { }
-
-	Plugin& get()
-	{
-		if (!plugin.get()) {
-			plugin = std::make_unique<Plugin>();
-		}
-		return *plugin;
-	}
-};
-
 using namespace res;
 
-
-typedef LazyLoad<AudioDecoder> SndDec;
 
 class AudioDecoderCreator : public NodeConfig<AudioDecoder>
 {
 	typedef tp<AudioDecoder>::ptr Ptr;
 
-	SndDec snd_dec;
 public:
 	
 	Ptr create(IdentRef id) {
-		res::res_stream* rs = 0;
-		AudioDecoder* dec = 0;
-
-		try {
-			rs = new res::res_stream(res::Sound, id);
-			dec = snd_dec.get().create("snd_wave", (void*)0);
-		} catch (res::resource_not_found) {
-			try {
-				rs = new res::res_stream(res::Music, id);
-				dec = snd_dec.get().create("snd_mp3", (void*)0);
-			} catch (res::resource_not_found) { }
-		}
-		if (dec) {
-			dec->init(rs);
-			return Ptr(dec);
-		} else {
-			delete rs;
-			return Ptr(0);
-		}
-
+		// Simplified - just return null since we're using dummy sound
+		return Ptr(0);
 	}
 };
 
 
 struct SoundSystem_impl
 {
-	SndProxy snd_proxy;
-
 	float glob_volume;
 	float ratio;
-
-	SndDec snd_dec;
 
 	Subsystem* music_player;
 	Subsystem* sound_player;
@@ -144,39 +96,12 @@ struct SoundSystem_impl
 	   dummy(0)
 	{
 		dlog << "SoundSystem_impl enter\n";
-		res::ConfigEnv env("hw_snd_system");
-
-		string pfx("snd_");
-
-#ifdef MONOLITHIC
+		
+		// Always use dummy sound system - plugin architecture removed
 		dummy = music_player = sound_player = create_snd_dummy(&main);
-#else
-		dummy = snd_proxy.create(pfx + "dummy", &main);
 
-		string music = res::withdefault(env, "music", "simple");
-		string sound = res::withdefault(env, "sound", "openal");
-		if ((os_name() != "win32") && (sound == "dsound"))
-			sound = "openal";
-		try {
-			music_player = snd_proxy.create(pfx + music, &main);
-			dlog << "using " << music << " for music\n";
-		} catch (error_base& e) {
-			derr << "failed to load: " << music
-			     << " for music, reason: " << e.what() << '\n';
-			music_player = dummy;
-		}
-		try {
-			sound_player = snd_proxy.create(pfx + sound, &main);
-			dlog << "using " << sound << " for sound\n";
-		} catch (error_base& e) {
-			derr << "failed to load: " << sound
-			     << " for sound, reason: " << e.what() << '\n';
-			sound_player = dummy;
-		}
-#endif
-
-		sound_player->set_volume(res::withdefault(env, "sound_volume", 0.8));
-		music_player->set_volume(res::withdefault(env, "music_volume", 0.3));
+		sound_player->set_volume(0.8);
+		music_player->set_volume(0.3);
 		
 		dlog << "SoundSystem_impl done\n";
 
@@ -200,29 +125,8 @@ struct SoundSystem_impl
 
 	AudioSourcePtr load(const string& id)
 	{
-		std::map<string, AudioDecoder*>::iterator i = decoders.find(id);
-		if (i != decoders.end())
-			return i->second->get();
-
-		res::res_stream* rs = 0;
-		AudioDecoder* dec = 0;
-		try {
-			rs = new res::res_stream(res::Sound, id, res::throw_on_error);
-			dec = snd_dec.get().create("snd_wave", (void*)0);
-		} catch (res::resource_not_found) {
-			try {
-				rs = new res::res_stream(res::Music, id, res::throw_on_error);
-				dec = snd_dec.get().create("snd_mp3", (void*)0);
-			} catch (res::resource_not_found) { }
-		}
-		if (dec) {
-			dec->init(rs);
-			decoders[id] = dec;
-			return dec->get();
-		} else {
-			delete rs;
-			return 0;
-		}
+		// Simplified - just return null since we're using dummy sound
+		return 0;
 	}
 /*
 	AudioSourcePtr load(const string& id)

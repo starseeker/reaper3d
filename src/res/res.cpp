@@ -163,7 +163,6 @@ class Paths
 	typedef std::deque<string> Stack;
 	typedef Stack::iterator Iter;
 	Stack datadirs;
-	Stack plugindirs;
 public:
 	Paths()
 	{
@@ -173,17 +172,11 @@ public:
 	void reinit()
 	{
 		datadirs.clear();
-		plugindirs.clear();
 #ifdef DATADIR
 		push_datadir(DATADIR);
 #endif
-#ifdef LIBDIR
-		push_plugindir(LIBDIR);
-#endif
 		string root = find_root_path();
 		push_datadir(path_cat(root, "data"));
-		push_plugindir("plugins");
-		push_plugindir(path_cat(root, "plugins"));
 
 		const char* p = getenv("HOME");
 		if (p && *p) {
@@ -213,27 +206,6 @@ public:
 	{
 		datadirs.push_front(addslash(dir));
 	}
-
-	string find_plugin(string ident, string alt_ext)
-	{
-		Iter c, e = plugindirs.end();
-		for (c = plugindirs.begin(); c != e; ++c) {
-			string t_def = path_cat(*c, ident, ".rp");
-			if (is_file(t_def))
-				return t_def;
-			string t_alt = path_cat(*c, ident, alt_ext);
-			if (is_file(t_alt))
-				return t_alt;
-		}
-		throw resource_not_found(ident);
-	}
-
-	void push_plugindir(string d)
-	{
-		string dir = addslash(d);
-		plugindirs.push_front(dir);
-		plugindirs.push_front(dir + addslash(hw::os_name()));
-	}
 };
 
 Paths& paths()
@@ -245,16 +217,6 @@ Paths& paths()
 void add_datapath(const std::string& dir)
 {
 	paths().push_datadir(dir);
-}
-
-void add_pluginpath(const std::string& dir)
-{
-	paths().push_plugindir(dir);
-}
-
-string find_plugin(const std::string& id, const std::string& alt_ext)
-{
-	return paths().find_plugin(id, alt_ext);
 }
 
 string flatten(string p)
@@ -319,8 +281,6 @@ res_file res_resolver(ResourceClass rc, const string& id, bool force_homedir = f
 	case AI:
 		p = res_file("ai", id, ".ng");
 		break;
-	case Plugin:
-		throw resource_not_found(id + " - do not use res_resolver for plugins");
 	default:
 		throw resource_not_found(id);
 	}

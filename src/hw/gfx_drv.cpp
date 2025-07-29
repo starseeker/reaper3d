@@ -15,10 +15,8 @@
 #include "hw/gfx_driver.h"
 #include "hw/exceptions.h"
 #include "hw/interfaces.h"
-#include "hw/gfxplugin.h"
 #include "hw/gl.h"
 #include "hw/gl_info.h"
-#include "hw/osinfo.h"
 
 #include "res/config.h"
 
@@ -26,10 +24,8 @@
 #undef None
 #include "misc/parse.h"
 
-#ifdef MONOLITHIC
-extern "C" reaper::hw::lowlevel::Gfx_driver* create_gfx_x11(reaper::hw::ifs::Gfx* m);
+// Direct function declaration for GLFW driver
 extern "C" reaper::hw::lowlevel::Gfx_driver* create_gfx_glfw(reaper::hw::ifs::Gfx* m);
-#endif
 
 namespace reaper
 {
@@ -99,38 +95,23 @@ public:
 
 struct Gfx_data
 {
-	GfxPlugin* gfx_plugin;
 	std::set<VideoMode> modes;
 	Main* main;
 
 	Gfx_data()
-	 : gfx_plugin(0), main(0)
+	 : main(0)
 	{ }
 };
 
 void Gfx::init()
 {
-	res::ConfigEnv cnf("hw_gfx");
-	string pfx("gfx_");
-	string sub(cnf["subsystem"]);
-
-	if (sub.empty()) {
-		if (os_name() == "win32")
-			sub = "win32";
-		else
-			sub = "glfw";  // Default to GLFW instead of X11 for cross-platform support
-	}
 	data->main = new Main(data->modes);
 
-#ifdef MONOLITHIC
-	driver = create_gfx_glfw(data->main);  // Use GLFW driver by default instead of X11
-#else
-	data->gfx_plugin = new GfxPlugin();
-	driver = data->gfx_plugin->create(pfx+sub, data->main);
-#endif
+	// Always use GLFW driver - plugin architecture removed
+	driver = create_gfx_glfw(data->main);
 
 	if (driver == 0)
-		throw hw_error(string("Failed to create gfx subsystem."));
+		throw hw_error(string("Failed to create GLFW graphics subsystem."));
 
 }
 
@@ -176,7 +157,6 @@ Gfx::~Gfx()
 {
 	driver->restore_mode();
 	delete driver;
-	delete data->gfx_plugin;
 	delete data->main;
 	delete data;
 }

@@ -1,6 +1,6 @@
 /*
  * GLFW-based event handling implementation
- * Migrating from X11 to GLFW for cross-platform input support
+ * Direct GLFW integration - plugin architecture removed
  */
 
 #include "hw/compat.h"

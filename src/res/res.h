@@ -29,7 +29,6 @@ enum ResourceClass {
 	Screenshot,     ///< Screenshots (raw pictures)
 	Scenario,	///< Object data and dialogs for the scenario
 	Shader,         ///< Shader specification
-	Plugin,		///< Plugin
 	AI		///< AI data
 };
 
@@ -97,9 +96,6 @@ public:
 };
 
 void add_datapath(const std::string&);
-void add_pluginpath(const std::string&);
-
-std::string find_plugin(const std::string& id, const std::string& alt_ext = "");
 
 bool is_newer(ResourceClass rc, const std::string& id1, const std::string& id2);
 

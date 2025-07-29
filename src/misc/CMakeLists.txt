@@ -5,7 +5,6 @@ add_library(misc STATIC
     font.cpp
     menu_system.cpp
     parse.cpp
-    plugin.cpp
     ptrstats.cpp
     unique.cpp
     utility.cpp

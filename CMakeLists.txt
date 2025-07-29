@@ -8,7 +8,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # Add permissive compiler flags to handle legacy C++ code
 add_compile_options(-fpermissive -Wno-deprecated -Wno-deprecated-declarations)
 
-# Enable monolithic build to use hardcoded drivers instead of dynamic plugins
+# Enable monolithic build - plugin architecture removed, using GLFW directly
 add_compile_definitions(MONOLITHIC)
 
 # Add src directory to include path for the whole project
@@ -21,7 +21,7 @@ find_package(ZLIB REQUIRED)
 find_package(PNG REQUIRED)
 find_package(Threads REQUIRED)
 
-# Find GLFW for new windowing backend
+# Find GLFW for windowing and input handling
 find_package(glfw3 REQUIRED)
 
 # Try to find OpenAL (may not be available on all systems)
