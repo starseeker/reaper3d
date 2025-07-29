@@ -1,0 +1,2 @@
+/usr/bin/ar qc libai.a CMakeFiles/ai.dir/astar.cpp.o CMakeFiles/ai.dir/fsm.cpp.o CMakeFiles/ai.dir/gvbase.cpp.o CMakeFiles/ai.dir/gvcontainer.cpp.o CMakeFiles/ai.dir/gvordinary.cpp.o CMakeFiles/ai.dir/gvturret.cpp.o CMakeFiles/ai.dir/navigation_graph.cpp.o CMakeFiles/ai.dir/player.cpp.o CMakeFiles/ai.dir/ship_base.cpp.o CMakeFiles/ai.dir/ship_bomber.cpp.o CMakeFiles/ai.dir/ship_fighter.cpp.o CMakeFiles/ai.dir/turret.cpp.o
+/usr/bin/ranlib libai.a

@@ -1,0 +1,2 @@
+/usr/bin/ar qc libres.a CMakeFiles/res.dir/config.cpp.o CMakeFiles/res.dir/res.cpp.o CMakeFiles/res.dir/resource.cpp.o CMakeFiles/res.dir/zstream.cpp.o
+/usr/bin/ranlib libres.a

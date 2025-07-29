@@ -1,0 +1,2 @@
+/usr/bin/ar qc libshadow.a CMakeFiles/shadow.dir/main.cpp.o CMakeFiles/shadow.dir/silhouette_all.cpp.o CMakeFiles/shadow.dir/silhouette_dynamic.cpp.o CMakeFiles/shadow.dir/silhouette_player.cpp.o CMakeFiles/shadow.dir/simple_dynamic.cpp.o CMakeFiles/shadow.dir/simple_player.cpp.o CMakeFiles/shadow.dir/types.cpp.o CMakeFiles/shadow.dir/utility.cpp.o
+/usr/bin/ranlib libshadow.a
