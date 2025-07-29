@@ -23,6 +23,7 @@ namespace reaper
 {
 namespace hw
 {
+namespace event { void setup_glfw_callbacks(GLFWwindow* window); }
 namespace lowlevel
 {
 
@@ -193,6 +194,9 @@ bool Gfx_glfw::setup_mode(const gfx::VideoMode& mode)
     // Update the global current window reference
     glfw::set_current_window(window);
     
+    // Setup GLFW event callbacks for input handling
+    glfw::setup_glfw_callbacks(window);
+    
     // Store current mode
     window_width = mode.width;
     window_height = mode.height;
@@ -260,6 +264,12 @@ GLFWwindow* get_current_window()
 void set_current_window(GLFWwindow* window)
 {
     current_window = window;
+}
+
+void setup_glfw_callbacks(GLFWwindow* window)
+{
+    // Forward to the event namespace implementation
+    event::setup_glfw_callbacks(window);
 }
 
 } // namespace glfw

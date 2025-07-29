@@ -61,34 +61,37 @@ make -j$(nproc)
 - **Smart Pointer Migration**: Some auto_ptr instances remain in headers and complex template code
 - **String Conversions**: Most ConfVal to string assignments fixed, some remain
 - **Library Compilation**: Several libraries (ai, ext) build successfully
-- **GLFW Migration**: GLFW windowing and OpenGL context setup implemented (basic window creation working)
+- ✅ **GLFW Migration**: GLFW is now the default graphics and event backend (complete integration)
 
 ### ❌ Remaining Work
 
 - **Template Metaprogramming**: Some complex template code needs further C++17 updates
 - **Smart Pointer Issues**: Hash table implementations need copy constructor fixes
 - **Missing Includes**: Some files need additional standard library includes
-- **Complete Build**: Full executable linking not yet complete
-- **GLFW Integration**: Complete migration from X11 to GLFW (event system integration, legacy code removal)
+- **Legacy Code Cleanup**: X11 and platform-specific driver code removal (not critical)
 
 ## GLFW Migration
 
-The project is currently migrating from X11-based windowing to GLFW for cross-platform compatibility.
+The project has migrated from X11-based windowing to GLFW for cross-platform compatibility.
 
 ### Current Status
 - ✅ **GLFW Dependency**: Added to CMake build system and linked properly
 - ✅ **Basic Window Creation**: GLFW window and OpenGL context setup implemented
 - ✅ **Event Handling Framework**: Basic GLFW event callbacks and input device classes
 - ✅ **Error Handling**: GLFW error callback and basic logging
-- 🚧 **Integration**: GLFW code exists alongside X11 code during transition
-- ❌ **Complete Migration**: X11 code removal and full GLFW integration pending
+- ✅ **Default Backend**: GLFW is now the default graphics and event backend
+- ✅ **Main Loop Integration**: GLFW integrates cleanly with existing game loop
+- 🚧 **Legacy Code**: X11 code remains but is not used by default
+- ❌ **Legacy Code Removal**: X11 and platform-specific code cleanup pending
 
 ### Files Added/Modified
-- **New**: `src/hw/gfx_glfw.cpp` - GLFW-based graphics driver
-- **New**: `src/hw/event_glfw.cpp` - GLFW-based event handling  
-- **Modified**: `CMakeLists.txt` - Added GLFW dependency
-- **Modified**: `src/hw/CMakeLists.txt` - Updated to build GLFW modules
-- **Commented**: `src/hw/gfx_x11.cpp` and `src/hw/event_x11.cpp` - Marked as legacy
+- **New**: `src/hw/gfx_glfw.cpp` - GLFW-based graphics driver (now default)
+- **New**: `src/hw/event_glfw.cpp` - GLFW-based event handling (now default)
+- **Modified**: `CMakeLists.txt` - Added GLFW dependency and MONOLITHIC build mode
+- **Modified**: `src/hw/CMakeLists.txt` - Updated to build GLFW modules and sound drivers
+- **Modified**: `src/hw/gfx_drv.cpp` - Changed default driver from X11 to GLFW
+- **Modified**: `src/hw/event_impl.cpp` - Changed default event system from X11 to GLFW
+- **Legacy**: `src/hw/gfx_x11.cpp` and `src/hw/event_x11.cpp` - Available but not default
 
 ### GLFW Features Implemented
 - Window creation with configurable resolution and fullscreen support
@@ -96,6 +99,7 @@ The project is currently migrating from X11-based windowing to GLFW for cross-pl
 - Basic event callbacks for keyboard, mouse, and window close events
 - Desktop resolution detection and common video mode registration
 - Proper GLFW initialization and cleanup
+- Full integration with existing game main loop and event processing
 
 ## Architecture
 
