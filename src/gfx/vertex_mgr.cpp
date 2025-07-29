@@ -98,7 +98,7 @@ namespace {
 }
 namespace misc { 
 	template <>
-        UniquePtr<gfx::VertexMgr>::I UniquePtr<gfx::VertexMgr>::inst; 
+        UniquePtr<gfx::VertexMgr>::I UniquePtr<gfx::VertexMgr>::inst = {}; 
 }
 namespace gfx {
 namespace lowlevel {

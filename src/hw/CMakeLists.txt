@@ -3,6 +3,7 @@
 
 add_library(hw STATIC
     compat.cpp
+    conc_pthread.cpp
     debug.cpp
     dynload.cpp
     event.cpp

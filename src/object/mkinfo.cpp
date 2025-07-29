@@ -37,10 +37,10 @@ std::istream& operator>>(std::istream& is, MkInfo& mk)
 {
 	do {
 		res::ConfigEnv obj(is, true);
-		mk.name = obj["object"];
+		mk.name = static_cast<std::string>(obj["object"]);
 		if (mk.name.empty())
 			continue;
-		mk.mtx  = obj["matrix"];
+		mk.mtx  = static_cast<Matrix>(obj["matrix"]);
 		mk.cid  = read<CompanyID>(res::withdefault(obj, "company", "Nature"));
 		mk.id   = res::withdefault(obj, "id", -1);
 		mk.info = factory::inst().info(mk.name);

@@ -84,7 +84,7 @@ namespace {
 }
 namespace misc { 
 	template <>
-    UniquePtr<gfx::TextureMgr>::I UniquePtr<gfx::TextureMgr>::inst;
+    UniquePtr<gfx::TextureMgr>::I UniquePtr<gfx::TextureMgr>::inst = {};
 }
 namespace gfx {
 namespace lowlevel {

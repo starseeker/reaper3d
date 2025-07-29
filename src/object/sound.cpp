@@ -57,7 +57,7 @@
  * engine pos...
  *
  * Revision 1.26  2001/08/06 12:16:40  peter
- * MegaMerge (se strandy_test-grenen för diffar...)
+ * MegaMerge (se strandy_test-grenen fï¿½r diffar...)
  *
  * Revision 1.25.2.3  2001/08/05 14:01:33  peter
  * objektmeck...
@@ -69,13 +69,14 @@
  * objfix...
  *
  * Revision 1.25  2001/07/30 23:43:30  macke
- * Häpp, då var det kört.
+ * Hï¿½pp, dï¿½ var det kï¿½rt.
  *
  *
  */
 
 #include "hw/compat.h"
 
+#include <utility>
 #include "hw/debug.h"
 
 #include "main/types.h"
@@ -104,7 +105,7 @@ class StaticImpl : public Static
 {
 	EffectPtr eff;
 public:
-	StaticImpl(EffectPtr e) : eff(e) { }
+	StaticImpl(EffectPtr e) : eff(std::move(e)) { }
 	StaticImpl(const std::string& name, const Point& pos)
 	 : eff(snd::Manager::get_ref()->load(name, 1.0))
 	{
@@ -137,7 +138,7 @@ class EngineSound
 			return *snd_outside;
 	}
 public:
-	EngineSound() : snd_inside(0), snd_outside(0), inside(false) { }
+	EngineSound() : snd_inside(nullptr), snd_outside(nullptr), inside(false) { }
 	EngineSound(const Point& pos)
 	{
 		snd::SoundRef si = snd::Manager::get_ref();
@@ -262,9 +263,9 @@ class ProjectileImpl : public Projectile
 {
 	snd::EffectPtr snd;
 public:
-	ProjectileImpl(snd::EffectPtr s) : snd(s) { }
+	ProjectileImpl(snd::EffectPtr s) : snd(std::move(s)) { }
 	ProjectileImpl(snd::EffectPtr s, const Matrix& mat, const Vector& v)
-	 : snd(s)
+	 : snd(std::move(s))
 	 {
 		snd->set_position(mat.pos());
 		snd->set_velocity(v);
@@ -301,11 +302,11 @@ Projectile* create_proj(const std::string& name, const Matrix& mat, const Vector
 	if (snd::Manager::get_ref().valid()) {
 		snd::EffectPtr snd = snd::Manager::get_ref()->load(name, 0.5, true);
 		if (snd.get())
-			return new ProjectileImpl(snd, mat, vel);
+			return new ProjectileImpl(std::move(snd), mat, vel);
 		else
 			return new DummyImpl();
 	} else {
-		return 0;
+		return nullptr;
 	}
 }
 

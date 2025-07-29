@@ -190,7 +190,7 @@ public:
 
 
 MenuSystem::Impl::Impl()
-: gx(), es(gx), sm(), mp3(0),
+: gx(), es(gx), sm(), mp3(nullptr),
   ep(nullptr), mouse_ptr("arrow")
 {
 	mp3 = sm.prepare_music("reaper.small");
