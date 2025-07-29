@@ -67,7 +67,7 @@ protected:
 
 	void int_dump(std::ostream&) const;
 public:
-	GenShip(MkInfo);
+	explicit GenShip(MkInfo);
 	~GenShip();
 
 	void collide(const CollisionInfo& cI);
@@ -92,7 +92,7 @@ protected:
 	hull::Standard hull;
 	void int_dump(std::ostream&) const;
 public:
-	SillyImpl(const MkInfo& mk);
+	explicit SillyImpl(const MkInfo& mk);
 	const gfx::RenderInfo* render(bool effects) const { return &ri; }
 	void collide(const CollisionInfo&);
 };

@@ -21,6 +21,9 @@
 #include "config.h"
 #endif
 
+// Ensure system time functions are available before custom definitions
+#include <time.h>
+
 #ifdef _WIN32
 
 # ifndef WIN32
