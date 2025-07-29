@@ -547,6 +547,7 @@ src/game/CMakeFiles/game.dir/helpers.cpp.o: /home/runner/work/reaper3d/reaper3d/
   /usr/include/c++/13/cstddef \
   /usr/include/c++/13/cstdio \
   /usr/include/c++/13/cstdlib \
+  /usr/include/c++/13/cstring \
   /usr/include/c++/13/ctime \
   /usr/include/c++/13/cwchar \
   /usr/include/c++/13/cwctype \
@@ -897,6 +898,7 @@ src/game/CMakeFiles/game.dir/menus.cpp.o: /home/runner/work/reaper3d/reaper3d/sr
   /usr/include/c++/13/cstddef \
   /usr/include/c++/13/cstdio \
   /usr/include/c++/13/cstdlib \
+  /usr/include/c++/13/cstring \
   /usr/include/c++/13/cwchar \
   /usr/include/c++/13/cwctype \
   /usr/include/c++/13/debug/assertions.h \

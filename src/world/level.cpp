@@ -47,7 +47,7 @@ LevelInfo::LevelInfo(const string &n)
 	try {
 		const ConfigEnv& env = resource<ConfigEnv>("levels/" + n + ".rl");
 
-		sky_texture  = env["SkyTexture"];
+		sky_texture  = static_cast<std::string>(env["SkyTexture"]);
 		sky_color    = read<Color>(env["SkyColor"]);
 		sky_altitude = env["SkyAltitude"];
 		sky_width    = env["SkyDensity"];
@@ -65,18 +65,18 @@ LevelInfo::LevelInfo(const string &n)
 		else
 			throw level_error("invalid fog type: " + ftype);
 		
-		terrain_mesh           = env["TerrainMesh"];
-		terrain_main_texture   = env["TerrainMainTexture"];
-		terrain_detail_texture = env["TerrainDetailTexture"];
+		terrain_mesh           = static_cast<std::string>(env["TerrainMesh"]);
+		terrain_main_texture   = static_cast<std::string>(env["TerrainMainTexture"]);
+		terrain_detail_texture = static_cast<std::string>(env["TerrainDetailTexture"]);
 		terrain_detail_size    = env["TerrainDetailRepeats"];
 		dout << terrain_main_texture << ' ' << terrain_detail_texture << '\n';
 		for (int i = 0;; ++i) {
 			string pfx = "lake" + misc::ltos(i) + "_";
 			Lake lake;
-			lake.mesh     = env[pfx+"LakeMesh"];
+			lake.mesh     = static_cast<std::string>(env[pfx+"LakeMesh"]);
 			if (lake.mesh.empty())
 				break;
-			lake.texture  = env[pfx+"LakeTexture"];
+			lake.texture  = static_cast<std::string>(env[pfx+"LakeTexture"]);
 			lake.wave_dir = env[pfx+"LakeAmplitude"];
 			lakes.push_back(lake);
 		}
@@ -88,7 +88,7 @@ LevelInfo::LevelInfo(const string &n)
 
 		std::string ogs = env["ObjectGroups"];
 		misc::split(ogs, std::back_inserter(objectgroups));
-		scenario = env["Scenario"];
+		scenario = static_cast<std::string>(env["Scenario"]);
 	}
 	catch (const resource_not_found& e) {
 		throw level_error(string("LevelInfo: ") + name + " not found!  " + e.what());
