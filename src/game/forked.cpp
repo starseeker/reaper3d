@@ -76,7 +76,6 @@ Reaper::Reaper(const std::string& root)
 {
 	if (!root.empty()) {
 		res::add_datapath(root + "/data/");
-		res::add_pluginpath(root + "/plugins/");
 	}
 }
 
