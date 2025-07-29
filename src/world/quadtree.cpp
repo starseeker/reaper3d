@@ -45,10 +45,10 @@
  * fix
  *
  * Revision 1.60  2002/04/15 16:15:55  pstrand
- * linjesökningsfix
+ * linjesï¿½kningsfix
  *
  * Revision 1.59  2002/04/14 21:18:53  pstrand
- * nöt
+ * nï¿½t
  *
  * Revision 1.58  2002/04/14 18:37:28  pstrand
  * *** empty log message ***
@@ -104,6 +104,7 @@
 
 #include <limits>
 #include <iostream>
+#include <algorithm>
 
 namespace reaper
 {
@@ -249,6 +250,7 @@ using world::maxtri2;
 
 /** Quad-helper for triangles */
 
+template <>
 struct Geom<world::Triangle*>
 {
 	typedef world::Triangle Tri;
@@ -402,7 +404,7 @@ float Acceptable<E>::min_height() const {
 	case Sphere:
 		return bsp.p.y - bsp.r;
 	case Line:
-		return min(p1.y, p2.y);
+		return std::min(p1.y, p2.y);
 	default:
 		return -1e20; // FIXME
 	}
@@ -843,6 +845,7 @@ void QuadTree<E>::show()
 	template class Acceptable<T>; \
 	template class Node<T>; \
 	template class QuadTree_dfs_iterator<T>; \
+	template <> \
 	struct QuadTreeInfo<T> { \
 		enum { max_depth = N }; \
 		enum { max_tmp_elems = M }; \

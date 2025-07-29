@@ -161,7 +161,7 @@ template<class T,class CmpPrio, class dif,class CmpData ,class Eq  >
 bool Treap< T,CmpPrio,dif, CmpData,Eq >::rot_up(Treap_node<T>* node)
 {
 	if(node->parent == NULL){
-		cout << "Cannot rot_up top node" << endl;
+		std::cout << "Cannot rot_up top node" << std::endl;
 		return true;
 	}
 

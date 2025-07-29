@@ -82,7 +82,7 @@ public:
 	{ }
 
 	virtual int draw_inactive() {
-		draw_header(get_box(), text);
+		draw_header(get_box(), this->text);
 		return 1;
 	}
 };
@@ -128,16 +128,16 @@ public:
 	virtual bool modify(hw::event::id::EventID id)
 	{
 		if (id == hw::event::id::Backspace) {
-			if(text.size() > 0) {
-				text.resize(text.size() - 1);
+			if(this->text.size() > 0) {
+				this->text.resize(this->text.size() - 1);
 			}
 		} else if (id < 128) {
-			text += id;
+			this->text += id;
 		} else if (id == hw::event::id::Enter) {
-			*s_val = text;
+			*s_val = this->text;
 			return true;
 		} else if (id == hw::event::id::Escape) {
-			text = *s_val;
+			this->text = *s_val;
 			return true;
 		}
 		return false;
@@ -165,7 +165,7 @@ class MenuItemMultiChoice : public MenuItem<V>
 		if(current == end) {
 			current = begin;
 		}
-		text = current->first;
+		this->text = current->first;
 	}
 public:
 	
@@ -198,7 +198,7 @@ public:
 			return true;
 		}
 			
-		text   = current->first;
+		this->text   = current->first;
 		return false;
 	}
 };
@@ -214,7 +214,7 @@ public:
 	 : MenuItem<V>(b, on, false, true), text2(off), b_val(val)
 	{
 		if(!*val) {
-			std::swap(text, text2);
+			std::swap(this->text, text2);
 		}
 	}
 
@@ -224,7 +224,7 @@ public:
 		    id == hw::event::id::Btn1 ||
 		    id == hw::event::id::Left ||
 		    id == hw::event::id::Right) {
-			std::swap(text, text2);
+			std::swap(this->text, text2);
 			*b_val = !(*b_val);
 		} else if (id == hw::event::id::Enter 
 			   || id == hw::event::id::Btn0) {
@@ -472,7 +472,7 @@ void Menuexec<It, T>::clear_events()
  * mackefix
  *
  * Revision 1.48  2002/01/17 05:04:01  peter
- * mp3 i meny (inte igång men funkar), pluginfix..
+ * mp3 i meny (inte igï¿½ng men funkar), pluginfix..
  *
  * Revision 1.47  2002/01/07 14:00:30  peter
  * resurs och ljudmeck
@@ -487,10 +487,10 @@ void Menuexec<It, T>::clear_events()
  * Profiler refactoring...
  *
  * Revision 1.43  2001/12/11 19:03:28  macke
- * mer bök
+ * mer bï¿½k
  *
  * Revision 1.42  2001/12/11 18:57:22  macke
- * bök
+ * bï¿½k
  *
  * Revision 1.41  2001/12/11 18:46:40  macke
  * Menusystem refactored..
@@ -511,7 +511,7 @@ void Menuexec<It, T>::clear_events()
  * *** empty log message ***
  *
  * Revision 1.35  2001/08/06 12:16:31  peter
- * MegaMerge (se strandy_test-grenen för diffar...)
+ * MegaMerge (se strandy_test-grenen fï¿½r diffar...)
  *
  * Revision 1.34.2.1  2001/08/03 13:44:07  peter
  * pragma once obsolete...
@@ -520,7 +520,7 @@ void Menuexec<It, T>::clear_events()
  * gfx..
  *
  * Revision 1.33  2001/07/06 01:47:26  macke
- * Refptrfix/headerfilsstäd/objekt-skapande/mm
+ * Refptrfix/headerfilsstï¿½d/objekt-skapande/mm
  *
  * Revision 1.32  2001/05/14 12:49:12  peter
  * *** empty log message ***
