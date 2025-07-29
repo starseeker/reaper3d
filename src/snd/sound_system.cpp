@@ -23,7 +23,7 @@ namespace reaper
 {
 namespace misc {
 	template <>
-	UniquePtr<sound::Manager>::I UniquePtr<sound::Manager>::inst;
+	UniquePtr<sound::Manager>::I UniquePtr<sound::Manager>::inst = {};
 }
 namespace sound
 {

@@ -60,7 +60,7 @@
 namespace reaper {
 namespace misc { 
 	template <>
-	UniquePtr<gfx::MeshMgr>::I UniquePtr<gfx::MeshMgr>::inst; 
+	UniquePtr<gfx::MeshMgr>::I UniquePtr<gfx::MeshMgr>::inst = {}; 
 }
 namespace gfx {
 namespace {

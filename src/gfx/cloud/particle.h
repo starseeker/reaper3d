@@ -19,6 +19,7 @@ struct Particle
 	std::deque<Color> colors;
 
 	Particle(const Point& p, float r);
+	Particle(const Point& p, float r, float lifetime, float alpha);
 };
 
 

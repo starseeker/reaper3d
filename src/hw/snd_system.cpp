@@ -7,6 +7,7 @@
 #include <map>
 #include <functional>
 #include <string>
+#include <memory>
 
 #include "hw/snd.h"
 #include "hw/snd_wave.h"
@@ -69,15 +70,15 @@ template<class T>
 class LazyLoad
 {
 	typedef misc::Plugin<T, void> Plugin;
-	std::auto_ptr<Plugin> plugin;
+	std::unique_ptr<Plugin> plugin;
 
 public:
-	LazyLoad() : plugin(0) { }
+	LazyLoad() : plugin(nullptr) { }
 
 	Plugin& get()
 	{
 		if (!plugin.get()) {
-			plugin = std::auto_ptr<Plugin>(new Plugin());
+			plugin = std::make_unique<Plugin>();
 		}
 		return *plugin;
 	}
@@ -273,9 +274,9 @@ SoundPtr SoundSystem::prepare_music(const string& id)
 			return impl->music_player->prepare_streaming(src);
 	} catch (error_base& e) {
 		derr << "failed to load music: " << e.what() << '\n';
-		return SoundPtr(dummysound().release());
+		return std::unique_ptr<Sound>(dummysound().release());
 	}
-	return SoundPtr(0);
+	return SoundPtr(nullptr);
 }
 
 EffectPtr SoundSystem::dummysound()

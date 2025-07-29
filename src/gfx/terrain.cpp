@@ -30,16 +30,16 @@
  * reversed last two revs
  *
  * Revision 1.71  2002/01/16 00:25:28  picon
- * terrängbelysning
+ * terrï¿½ngbelysning
  *
  * Revision 1.70  2002/01/10 23:09:09  macke
- * massa bök
+ * massa bï¿½k
  *
  * Revision 1.69  2001/12/14 16:31:25  macke
- * meck å pul
+ * meck ï¿½ pul
  *
  * Revision 1.68  2001/10/01 17:36:32  macke
- * Hmm.. grafikmotorn äger objekt som håller en ref-ptr till grafikmotorn.. fel!
+ * Hmm.. grafikmotorn ï¿½ger objekt som hï¿½ller en ref-ptr till grafikmotorn.. fel!
  *
  * Revision 1.67  2001/08/20 16:12:52  peter
  * stop time..
@@ -48,10 +48,10 @@
  * Lite mer benchmarking i grafikmotorn...
  *
  * Revision 1.65  2001/07/31 21:57:56  macke
- * Nytt försök med vertexarrays..
+ * Nytt fï¿½rsï¿½k med vertexarrays..
  *
  * Revision 1.64  2001/07/30 23:43:19  macke
- * Häpp, då var det kört.
+ * Hï¿½pp, dï¿½ var det kï¿½rt.
  *
  * Revision 1.63  2001/07/12 13:53:48  peter
  * glDrawElements...
@@ -60,7 +60,7 @@
  * gcc-3.0 fixar
  *
  * Revision 1.61  2001/07/06 01:47:14  macke
- * Refptrfix/headerfilsstäd/objekt-skapande/mm
+ * Refptrfix/headerfilsstï¿½d/objekt-skapande/mm
  *
  * Revision 1.60  2001/06/09 01:58:53  macke
  * Grafikmotor reorg
@@ -75,13 +75,13 @@
  * *** empty log message ***
  *
  * Revision 1.56  2001/05/15 01:42:27  peter
- * minskade ner på debugutskrifterna
+ * minskade ner pï¿½ debugutskrifterna
  *
  * Revision 1.55  2001/05/15 01:28:08  truls
  * terrain->render does it all...
  *
  * Revision 1.54  2001/05/14 20:00:53  macke
- * bugfix och rök på missiler..
+ * bugfix och rï¿½k pï¿½ missiler..
  *
  * Revision 1.53  2001/05/14 15:05:46  truls
  * time flows like a river
@@ -90,7 +90,7 @@
  * no message
  *
  * Revision 1.51  2001/05/10 11:40:17  macke
- * häpp
+ * hï¿½pp
  *
  */
 

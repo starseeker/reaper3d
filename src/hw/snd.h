@@ -24,8 +24,8 @@ public:
 };
 
 class Effect;
-typedef std::auto_ptr<Effect> EffectPtr;
-typedef std::auto_ptr<Sound> SoundPtr;
+typedef std::unique_ptr<Effect> EffectPtr;
+typedef std::unique_ptr<Sound> SoundPtr;
 
 /// 3d sound effect.
 class Effect
@@ -75,7 +75,7 @@ public:
 	void do_stuff();
 
 	/// Dummy implementation of effects, 
-	std::auto_ptr<Effect> dummysound();
+	std::unique_ptr<Effect> dummysound();
 };
 
 
@@ -112,22 +112,22 @@ public:
  * ljudfixar (smartptr), andra mindre fixar..
  *
  * Revision 1.28  2001/08/06 12:16:23  peter
- * MegaMerge (se strandy_test-grenen för diffar...)
+ * MegaMerge (se strandy_test-grenen fï¿½r diffar...)
  *
  * Revision 1.27.2.1  2001/08/03 13:43:59  peter
  * pragma once obsolete...
  *
  * Revision 1.27  2001/07/30 23:43:21  macke
- * Häpp, då var det kört.
+ * Hï¿½pp, dï¿½ var det kï¿½rt.
  *
  * Revision 1.26  2001/07/27 15:47:35  peter
  * massive reorg...
  *
  * Revision 1.25  2001/07/06 01:47:21  macke
- * Refptrfix/headerfilsstäd/objekt-skapande/mm
+ * Refptrfix/headerfilsstï¿½d/objekt-skapande/mm
  *
  * Revision 1.24  2001/05/30 01:02:11  peter
- * ljudet funkar (bra) igen, för mig i alla fall =)
+ * ljudet funkar (bra) igen, fï¿½r mig i alla fall =)
  *
  * Revision 1.23  2001/05/19 10:31:27  peter
  * ljudomorg..

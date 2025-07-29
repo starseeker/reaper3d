@@ -24,6 +24,7 @@
 #include "hw/compat.h"
 
 #include <cfloat>
+#include <cmath>
 #include <iostream>
 
 #include "main/types.h"
@@ -161,7 +162,7 @@ void Turret::simulate(double dt){
 void GroundShip::simulate(const double dt){
 	Matrix cm = data.get_mtx();
 
-	//Nollställ translation för att kunna rotera kring lokala koordinatsystemet
+	//Nollstï¿½ll translation fï¿½r att kunna rotera kring lokala koordinatsystemet
 	cm.pos() = Point(0, 0, 0);
 
 	Vector loc_z = cm.col(2);
@@ -215,7 +216,7 @@ void GroundShip::simulate(const double dt){
                                 roll*= -1; 
                 }
                 
-                if(isnan(roll)) {
+                if(std::isnan(roll)) {
                         dout << "Singalong 1: Vi hatar, vi hatar flyttal, vi hatar de som flyttal skapat har.. !\n";
                         roll = 0;
                 }
@@ -313,7 +314,7 @@ Vector GroundShip::compute_acc(const Vector v,const double& dt)
 void GroundTurret::simulate(const double dt){
 	Matrix cm = m;
 
-	//Nollställ translation för att kunna rotera kring lokala koordinatsystemet
+	//Nollstï¿½ll translation fï¿½r att kunna rotera kring lokala koordinatsystemet
 	cm[3][0] = 0;
 	cm[3][1] = 0;
 	cm[3][2] = 0;
@@ -545,7 +546,7 @@ void Ship::simulate(double dt)
 {
 	Matrix cm = data.get_mtx();
 
-	//Nollställ translation för att kunna rotera kring lokala koordinatsystemet
+	//Nollstï¿½ll translation fï¿½r att kunna rotera kring lokala koordinatsystemet
 	cm.pos() = Point(0, 0, 0);
 
 	Vector loc_z = cm.col(2);
@@ -639,7 +640,7 @@ void Ship::simulate(double dt)
 			angle*= -1; 
 	}
 
-	if(isnan(angle)) {
+	if(std::isnan(angle)) {
 		dout << "Singalong 2: Vi hatar, vi hatar flyttal, vi hatar de som flyttal skapat har.. !\n";
 		angle = 0;
 	}

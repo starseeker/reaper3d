@@ -30,7 +30,7 @@ namespace {
 }
 namespace misc {
 	template <>
-	UniquePtr<phys::Engine>::I UniquePtr<phys::Engine>::inst;
+	UniquePtr<phys::Engine>::I UniquePtr<phys::Engine>::inst = {};
 }
 
 

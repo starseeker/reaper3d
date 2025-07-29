@@ -25,7 +25,7 @@ namespace {
 }
 namespace misc {
 	template <>
-	UniquePtr<world::World>::I UniquePtr<world::World>::inst;
+	UniquePtr<world::World>::I UniquePtr<world::World>::inst = {};
 }
 namespace object { int get_obj_count(); }
 namespace world

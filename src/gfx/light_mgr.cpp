@@ -30,7 +30,7 @@
 namespace reaper {
 namespace misc { 
 	template <> 
-	UniquePtr<gfx::LightMgr>::I UniquePtr<gfx::LightMgr>::inst; 
+	UniquePtr<gfx::LightMgr>::I UniquePtr<gfx::LightMgr>::inst = {}; 
 }
 namespace gfx {
 namespace lowlevel {

@@ -1,6 +1,7 @@
 #ifndef REAPER_GFX_INSTANCES_H
 #define REAPER_GFX_INSTANCES_H
 
+#include <memory>
 #include "gfx/gfx.h"
 #include "gfx/gfx_types.h"
 #include "gfx/abstracts.h"
@@ -20,9 +21,9 @@ protected:
 template<class T>
 class smart_ptr : protected impl_accessor {
 protected:
-	mutable std::auto_ptr<T> ptr;
+	mutable std::unique_ptr<T> ptr;
 	smart_ptr(T* p) : impl_accessor(), ptr(p) {}
-	smart_ptr(const smart_ptr<T> &p) : impl_accessor(), ptr(p.ptr) {}
+	smart_ptr(const smart_ptr<T> &p) : impl_accessor(), ptr(const_cast<smart_ptr<T>&>(p).ptr.release()) {}
 public:
 	T* get() const { return ptr.get(); }
 	T* release() { return ptr.release(); }

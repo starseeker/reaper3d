@@ -24,7 +24,7 @@
 namespace reaper {
 namespace misc {
 	template <>
-	UniquePtr<gfx::Renderer>::I UniquePtr<gfx::Renderer>::inst;
+	UniquePtr<gfx::Renderer>::I UniquePtr<gfx::Renderer>::inst = {};
 }
 
 namespace gfx {	
