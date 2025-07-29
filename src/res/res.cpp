@@ -7,9 +7,10 @@
 #include <fstream>
 #include <sstream>
 #include <map>
-// Keep time.h for system compatibility, then add modern C++ headers
-#include <ctime>   // C time functions  
-#include <chrono>  // Modern C++11 time handling
+// Modern C++ time handling headers - keep ctime for compatibility
+#include <ctime>     // C time functions  
+#include <chrono>    // Modern C++11 time handling
+#include <iomanip>   // For std::put_time
 
 #include "hw/debug.h"
 #include "hw/osinfo.h"
@@ -85,17 +86,32 @@ string to_string(ResourceClass rc)
 
 string gen_name()
 {
-	// Modernized: Using C++11 std::chrono instead of legacy C time.h
-	char buf[100];
-	
+	// Modernized: Using C++17 std::chrono with improved error handling
 	// Get current time using std::chrono::system_clock
 	auto now = std::chrono::system_clock::now();
 	auto time_t_now = std::chrono::system_clock::to_time_t(now);
 	
-	// Format using C time functions (still needed for strftime)
-	std::tm* local_tm = ::localtime(&time_t_now);
-	::strftime(buf, 100, "save_%Y-%m-%d_%H-%M", local_tm);
-	return buf;
+	// Use modern C++ approach with safer time conversion
+	std::tm local_tm = {};
+	
+	#ifdef WIN32
+		// Windows has localtime_s which is thread-safe
+		if (localtime_s(&local_tm, &time_t_now) == 0) {
+			std::stringstream ss;
+			ss << std::put_time(&local_tm, "save_%Y-%m-%d_%H-%M");
+			return ss.str();
+		}
+	#else
+		// Use localtime_r for thread-safe operation on POSIX systems
+		if (localtime_r(&time_t_now, &local_tm) != nullptr) {
+			std::stringstream ss;
+			ss << std::put_time(&local_tm, "save_%Y-%m-%d_%H-%M");
+			return ss.str();
+		}
+	#endif
+	
+	// Fallback: create a simple name if time conversion fails
+	return "save_error";
 }
 
 string path_cat(string a, string b, string c = "")
