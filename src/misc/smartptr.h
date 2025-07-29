@@ -15,8 +15,8 @@ struct Internal
 	Internal() : count(0) { }
 	void init(int* c) { count = c; *count = 1; }
 	void kill() { }
-	int inc() { return ++(*count); }
-	int dec() { return --(*count); }
+	int inc() noexcept { return ++(*count); }
+	int dec() noexcept { return --(*count); }
 };
 
 struct External
@@ -31,8 +31,8 @@ struct External
 		count = (int*)0xdead;
 	}
 	External(const External& e) : count(e.count) { }
-	int inc() { return ++(*count); }
-	int dec() { return --(*count); }
+	int inc() noexcept { return ++(*count); }
+	int dec() noexcept { return --(*count); }
 };
 
 struct Normal {
@@ -171,16 +171,16 @@ public:
 
 #if _MSC_VER < 1300
 	// non-const for vc to accept both, may cause evil things...
-	SmartPtr(SmartPtr& sp)
+	SmartPtr(SmartPtr& sp) noexcept
 #else
-	SmartPtr(const SmartPtr& sp)
+	SmartPtr(const SmartPtr& sp) noexcept
 #endif
 	{
 		assign(sp);
 	}
 
 	template<class U>
-	SmartPtr(const SmartPtr<U, R, D>& sp)
+	SmartPtr(const SmartPtr<U, R, D>& sp) noexcept
 	{
 		assign(sp);
 	}

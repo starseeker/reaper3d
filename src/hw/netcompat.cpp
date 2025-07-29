@@ -11,6 +11,7 @@
 #include "hw/compat.h"
 
 #include <string>
+#include <cstring>
 
 #include "hw/netcompat.h"
 

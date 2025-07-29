@@ -60,14 +60,14 @@ public:
 		const_iterator(const typename C::const_iterator &i) : iter_base(i) {}
 		const_iterator(const const_iterator &i) : iter_base(i.iter) {}
 
-		const T& operator*() const { return *iter->second; }
-		const T* operator->() const { return iter->second; }
+		const T& operator*() const { return *this->iter->second; }
+		const T* operator->() const { return this->iter->second; }
 
 		bool operator!=(const const_iterator& i) const {
-			return iter != i.iter;
+			return this->iter != i.iter;
 		}
 		bool operator==(const const_iterator& i) const {
-			return iter == i.iter;
+			return this->iter == i.iter;
 		}
 	};
 
@@ -78,14 +78,14 @@ public:
 		iterator(const typename C::iterator &i) : iter_base(i) {}
 		iterator(const iterator &i) : iter_base(i.iter) {}
 
-		T& operator*() const { return *iter->second; }
-		T* operator->() const { return iter->second; }
+		T& operator*() const { return *this->iter->second; }
+		T* operator->() const { return this->iter->second; }
 
 		bool operator!=(const iterator& i) const {
-			return iter != i.iter;
+			return this->iter != i.iter;
 		}
 		bool operator==(const iterator& i) const {
-			return iter == i.iter;
+			return this->iter == i.iter;
 		}
 	};
 
@@ -96,14 +96,14 @@ public:
 		key_iterator(const typename C::iterator &i) : iter_base(i) {}
 		key_iterator(const key_iterator &i) : iter_base(i.iter) {}
 
-		const ID & operator*() { return iter->first; }
-		const ID * operator->() { return iter->first; }
+		const ID & operator*() { return this->iter->first; }
+		const ID * operator->() { return this->iter->first; }
 
 		bool operator!=(const key_iterator& i) const {
-			return iter != i.iter;
+			return this->iter != i.iter;
 		}
 		bool operator==(const key_iterator& i) const {
-			return iter == i.iter;
+			return this->iter == i.iter;
 		}
 	};
 
@@ -275,25 +275,25 @@ void Map<ID,T>::purge()
  * *** empty log message ***
  *
  * Revision 1.16  2001/12/13 17:03:29  peter
- * småfixar...
+ * smï¿½fixar...
  *
  * Revision 1.15  2001/08/06 12:16:30  peter
- * MegaMerge (se strandy_test-grenen för diffar...)
+ * MegaMerge (se strandy_test-grenen fï¿½r diffar...)
  *
  * Revision 1.14.4.1  2001/08/03 13:44:06  peter
  * pragma once obsolete...
  *
  * Revision 1.14  2001/07/06 01:47:26  macke
- * Refptrfix/headerfilsstäd/objekt-skapande/mm
+ * Refptrfix/headerfilsstï¿½d/objekt-skapande/mm
  *
  * Revision 1.13  2001/05/08 00:14:57  macke
- * dynamiska ljus.. buggar lite dock, så de är bortkommenterade..
+ * dynamiska ljus.. buggar lite dock, sï¿½ de ï¿½r bortkommenterade..
  *
  * Revision 1.12  2001/04/24 12:11:32  peter
  * hmm...
  *
  * Revision 1.11  2001/04/24 10:07:11  peter
- * gcc blev förvirrad, vet inte varför (delvis)...
+ * gcc blev fï¿½rvirrad, vet inte varfï¿½r (delvis)...
  *
  */
 

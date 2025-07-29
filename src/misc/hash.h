@@ -7,7 +7,7 @@
 namespace reaper {
 namespace misc {
 
-/* A very naïve and simplistic hashtable, improve! */
+/* A very naï¿½ve and simplistic hashtable, improve! */
 
 
 /* Default hasher, just xor the representation,
@@ -66,9 +66,9 @@ private:
 
 		Node() : next(0), used(false) { }
 		Node(const std::pair<K,T>& p, Node* n = 0)
-		 : next(n), data(p), used(true)
+		 : next(n), data(p.first, p.second), used(true)
 		{ }
-		Node(const Node& n) : next(n.next), data(n.data), used(n.used) { }
+		Node(const Node& n) : next(n.next), data(n.data.first, n.data.second), used(n.used) { }
 		Node& operator=(const Node& n) {
 			next = n.next;
 			data.first = n.data.first;

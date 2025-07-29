@@ -29,6 +29,7 @@ namespace {
 	debug::DebugOutput dout("phys::Engine", 5);
 }
 namespace misc {
+	template <>
 	UniquePtr<phys::Engine>::I UniquePtr<phys::Engine>::inst;
 }
 

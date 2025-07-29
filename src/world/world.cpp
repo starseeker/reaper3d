@@ -24,6 +24,7 @@ namespace {
         reaper::debug::DebugOutput dlog("world", 5); 
 }
 namespace misc {
+	template <>
 	UniquePtr<world::World>::I UniquePtr<world::World>::inst;
 }
 namespace object { int get_obj_count(); }
@@ -195,7 +196,7 @@ void World::update()
 }
 
 
-// blä, usch, urk, tvi... 
+// blï¿½, usch, urk, tvi... 
 
 tri_iterator World::begin_tri() { return impl->tri_tree->begin(); }
 tri_iterator World::end_tri()   { return impl->tri_tree->end(); }

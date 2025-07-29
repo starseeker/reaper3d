@@ -123,7 +123,7 @@ void read(const ConfigEnv& env, Scenario* scen, string pfx)
 		return;
 	Mission* m = new Mission();
 	m->name = pfx;
-	m->dialog = env[pfx+"_dialog"];
+	m->dialog = static_cast<std::string>(env[pfx+"_dialog"]);
 	misc::split(env[pfx+"_objects"], back_inserter(m->objectgroups));
 	int i = 1;
 	do {

@@ -11,6 +11,7 @@
 
 namespace reaper {
 namespace misc {
+	template <>
 	UniquePtr<game::scenario::ScenarioMgr>::I UniquePtr<game::scenario::ScenarioMgr>::inst;
 }
 

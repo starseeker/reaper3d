@@ -23,6 +23,7 @@
 //-----------------------------------------------------------------
 namespace reaper {
 namespace misc {
+	template <>
 	UniquePtr<gfx::Renderer>::I UniquePtr<gfx::Renderer>::inst;
 }
 
@@ -163,7 +164,7 @@ Settings& Renderer::settings() { return Settings::current; }
  * disable debug
  *
  * Revision 1.71  2002/01/10 23:09:06  macke
- * massa bök
+ * massa bï¿½k
  *
  * Revision 1.70  2002/01/01 23:29:00  peter
  * 3-stage startup..

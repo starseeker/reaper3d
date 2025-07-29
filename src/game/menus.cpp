@@ -68,7 +68,7 @@ string object_to_mesh(const string &obj)
 }
 
 inline pair<string, string> make_strp(const string &s1, const string &s2) {
-	return make_pair<string, string>(s1,s2);
+	return make_pair(s1, s2);
 }
 
 reaper::debug::DebugOutput dout("menu",0);

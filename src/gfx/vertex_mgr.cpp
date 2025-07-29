@@ -35,13 +35,13 @@
  * reversed last two revs
  *
  * Revision 1.9  2002/01/10 23:09:10  macke
- * massa bök
+ * massa bï¿½k
  *
  * Revision 1.8  2001/12/14 16:31:25  macke
- * meck å pul
+ * meck ï¿½ pul
  *
  * Revision 1.7  2001/12/13 17:03:29  peter
- * småfixar...
+ * smï¿½fixar...
  *
  * Revision 1.6  2001/10/02 15:22:27  macke
  * mhm!
@@ -50,13 +50,13 @@
  * Dum intel..
  *
  * Revision 1.4  2001/07/31 21:57:57  macke
- * Nytt försök med vertexarrays..
+ * Nytt fï¿½rsï¿½k med vertexarrays..
  *
  * Revision 1.3  2001/07/31 00:31:45  macke
  * Do'h
  *
  * Revision 1.2  2001/07/06 01:47:15  macke
- * Refptrfix/headerfilsstäd/objekt-skapande/mm
+ * Refptrfix/headerfilsstï¿½d/objekt-skapande/mm
  *
  * Revision 1.1  2001/06/09 01:58:55  macke
  * Grafikmotor reorg
@@ -65,10 +65,10 @@
  * Reaper v0.9
  *
  * Revision 1.7  2001/05/15 01:42:27  peter
- * minskade ner på debugutskrifterna
+ * minskade ner pï¿½ debugutskrifterna
  *
  * Revision 1.6  2001/05/10 11:40:18  macke
- * häpp
+ * hï¿½pp
  *
  */
 
@@ -97,6 +97,7 @@ namespace {
         debug::DebugOutput dout("gfx::vertex_array",2);
 }
 namespace misc { 
+	template <>
         UniquePtr<gfx::VertexMgr>::I UniquePtr<gfx::VertexMgr>::inst; 
 }
 namespace gfx {
