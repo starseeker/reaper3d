@@ -4,9 +4,6 @@
 #include "hw/debug.h"
 #include <limits>
 
-// Ensure system time functions are available before C++ standard library headers
-#include <time.h>
-
 #include <iomanip>
 #include <iostream>
 #include <sstream>

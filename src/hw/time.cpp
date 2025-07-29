@@ -2,7 +2,8 @@
 
 #include "hw/compat.h"
 
-#include <time.h>
+#include <ctime>   // Include before chrono to ensure C time functions are available  
+#include <chrono>  // Modern C++11 time handling
 #include <limits>
 #include <iostream>
 
@@ -129,11 +130,18 @@ void stop_time()
 
 std::string strtime(const std::string& format)
 {
+	// Modernized: Using C++11 std::chrono instead of legacy C time.h
 	std::string fmt = format.empty() ? "%d %H:%M:%S" : format;
+	
+	// Get current time using std::chrono::system_clock
+	auto now = std::chrono::system_clock::now();
+	auto time_t_now = std::chrono::system_clock::to_time_t(now);
+	
+	// Format using C time functions (still needed for strftime)
+	std::tm* local_tm = ::localtime(&time_t_now);
+	
 	static char buf[100];
-	time_t now;
-	::time(&now);
-	::strftime(buf, 100, fmt.c_str(), ::localtime(&now));
+	::strftime(buf, 100, fmt.c_str(), local_tm);
 	return std::string(buf);
 }
 

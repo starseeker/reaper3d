@@ -3,7 +3,7 @@
 #include <queue>
 //#include <locale>
 #include <GL/glut.h>
-#include <time.h>
+#include <chrono>  // Modern C++11 time handling
 #include <iostream.h>
 #include <math.h>
 
@@ -13,13 +13,18 @@ using namespace reaper;
 
 void update_world(double frame_start,double dt);
 
-
-inline float timer() {return (float)clock()/(float)CLOCKS_PER_SEC;}
+// Modernized: Using std::chrono instead of legacy clock()
+inline float timer() {
+	static auto start_time = std::chrono::steady_clock::now();
+	auto now = std::chrono::steady_clock::now();
+	auto duration = std::chrono::duration_cast<std::chrono::microseconds>(now - start_time);
+	return duration.count() / 1000000.0f;
+}
 double frameTime = 1/20.0, min_dt = 0.005, current_time = 0.0;
 
 
-///Håller information om trianglar för kollisionsdetektering med sfär
-///Trianglarnas verticer måste specificeras motsols
+///Hï¿½ller information om trianglar fï¿½r kollisionsdetektering med sfï¿½r
+///Trianglarnas verticer mï¿½ste specificeras motsols
 class PhysTriangle
 {
 public:
@@ -32,14 +37,14 @@ public:
 
         Vector normal;
 
-        //Vectorer för edges. edge_1 är vektorn mellan p1 och p2, 
+        //Vectorer fï¿½r edges. edge_1 ï¿½r vektorn mellan p1 och p2, 
         //edge 2 vektorn mellan p2 och p3, edge_3 mellan p3 och p1
         Vector edge_1;
         Vector edge_2;
         Vector edge_3;
 
-        //Normaler för planen som går genom normalen för trianglarna och
-        //respektive edge. Normalerna går utåt.
+        //Normaler fï¿½r planen som gï¿½r genom normalen fï¿½r trianglarna och
+        //respektive edge. Normalerna gï¿½r utï¿½t.
         Vector norm_1;
         Vector norm_2;
         Vector norm_3;
@@ -96,7 +101,7 @@ public:
 
 	//Prestanda parametrar, ala krafter, rate of fire o.s.v.
 
-	//Reglage inställningar
+	//Reglage instï¿½llningar
         
 };
 
@@ -186,24 +191,24 @@ double ObjectPair::sim_time()
 
 void ObjectPair::collide(const Collision& col)
 {
-        double e = 0.4;  //stötcoefficient
+        double e = 0.4;  //stï¿½tcoefficient
 
-	//Vid sned central stöt kommer följande att ske. 
+	//Vid sned central stï¿½t kommer fï¿½ljande att ske. 
 	//De individuella objekten kommer att ha samma hastighet i tangentplanet 
-	//före som efter stöt. Enbart hastigheten i normalriktingen kommer att ändras.
+	//fï¿½re som efter stï¿½t. Enbart hastigheten i normalriktingen kommer att ï¿½ndras.
 
-	//tag först reda på hastigheterna i normalriktningen. Räkna därefer ut de nya 
-	//hastigheterna. Addera en hastighetsvektor i normalriktningen som gör att 
-	//objekten får de korrekta hastigheterna
+	//tag fï¿½rst reda pï¿½ hastigheterna i normalriktningen. Rï¿½kna dï¿½refer ut de nya 
+	//hastigheterna. Addera en hastighetsvektor i normalriktningen som gï¿½r att 
+	//objekten fï¿½r de korrekta hastigheterna
 
-	//I detta enkla fall är normalriktningen samma som vektorn från centrum till
-	//punkten där kollisionen har skett.
+	//I detta enkla fall ï¿½r normalriktningen samma som vektorn frï¿½n centrum till
+	//punkten dï¿½r kollisionen har skett.
 
 	Vector r_pos1 = col.pos - obj1.pos;
 	Vector r_pos2 = col.pos - obj2.pos;
 
 	Vector n1 = normalize_3(r_pos1);
-	//vi behöver bara en normalvektor
+	//vi behï¿½ver bara en normalvektor
 
 	//Hastigheterna i normalriktninen
 
@@ -386,7 +391,7 @@ void ObjectTrianglePair::collide(Vector normal)
 
         ;  //kontakttid
 
-        //Fixa till rotationshastigheten nu då
+        //Fixa till rotationshastigheten nu dï¿½
 
 	obj.rot_vel += dt*ra1;
 */
@@ -600,7 +605,7 @@ int main(int argc, char **argv)
         return 0;
 }
 
-//a är punkt 1, b är punkt 2, edge är b-1, r är punkten vi vill ha
+//a ï¿½r punkt 1, b ï¿½r punkt 2, edge ï¿½r b-1, r ï¿½r punkten vi vill ha
 Vector closestPoint(Vector a, Vector b, Vector edge, Vector r)
 {
 	double t = DotProduct3((r - a),edge) / DotProduct3(edge,edge);
@@ -618,7 +623,7 @@ bool collides(const Object& obj, const PhysTriangle& tri)
 {
 	bool collides = false;
 	//Formel: dist = (R-P) dot norm
-	//R är punkt i planet, norm är normal, P är punkten att testa
+	//R ï¿½r punkt i planet, norm ï¿½r normal, P ï¿½r punkten att testa
 
 	double dist = DotProduct3( tri.normal, obj.pos - tri.p1);
 
@@ -705,7 +710,7 @@ void update_world(double frame_start,double tot_time){
 			pair->calc_wake_up();
 			//		cout << "After -- Pair: " << pair->id << " Wake_up: " << pair->wake_up << ".\n";
 			
-			pairs.push(pair);// bara om de inte har dött
+			pairs.push(pair);// bara om de inte har dï¿½tt
 		}
 		else{
 			objtri = tri_pairs.top();
@@ -743,7 +748,7 @@ void update_world(double frame_start,double tot_time){
 			}
 			objtri->calc_wake_up();
 			
-			tri_pairs.push(objtri);// bara om de inte har dött
+			tri_pairs.push(objtri);// bara om de inte har dï¿½tt
 		}
 	}                
 	

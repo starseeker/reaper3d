@@ -3,7 +3,7 @@
 #include <queue>
 //#include <locale>
 #include <GL/glut.h>
-#include <time.h>
+#include <chrono>  // Modern C++11 time handling
 #include <iostream.h>
 
 using namespace reaper;
@@ -11,7 +11,13 @@ using namespace reaper;
 
 void update_world(double frame_start,double dt);
 
-inline float timer() {return (float)clock()/(float)CLOCKS_PER_SEC;}
+// Modernized: Using std::chrono instead of legacy clock()
+inline float timer() {
+	static auto start_time = std::chrono::steady_clock::now();
+	auto now = std::chrono::steady_clock::now();
+	auto duration = std::chrono::duration_cast<std::chrono::microseconds>(now - start_time);
+	return duration.count() / 1000000.0f;
+}
 
 
 
@@ -131,24 +137,24 @@ double ObjectPair::sim_time()
 
 void ObjectPair::collide(const Collision& col)
 {
-        double e = 0.4;  //stötcoefficient
+        double e = 0.4;  //stï¿½tcoefficient
 
-        //Vid sned central stöt kommer följande att ske. 
+        //Vid sned central stï¿½t kommer fï¿½ljande att ske. 
         //De individuella objekten kommer att ha samma hastighet i tangentplanet 
-        //före som efter stöt. Enbart hastigheten i normalriktingen kommer att ändras.
+        //fï¿½re som efter stï¿½t. Enbart hastigheten i normalriktingen kommer att ï¿½ndras.
 
-        //tag först reda på hastigheterna i normalriktningen. Räkna därefer ut de nya 
-        //hastigheterna. Addera en hastighetsvektor i normalriktningen som gör att 
-        //objekten får de korrekta hastigheterna
+        //tag fï¿½rst reda pï¿½ hastigheterna i normalriktningen. Rï¿½kna dï¿½refer ut de nya 
+        //hastigheterna. Addera en hastighetsvektor i normalriktningen som gï¿½r att 
+        //objekten fï¿½r de korrekta hastigheterna
 
-        //I detta enkla fall är normalriktningen samma som vektorn från centrum till
-        //punkten där kollisionen har skett.
+        //I detta enkla fall ï¿½r normalriktningen samma som vektorn frï¿½n centrum till
+        //punkten dï¿½r kollisionen har skett.
         
         Vector r_pos1 = col.pos - col.obj1.pos;
         Vector r_pos2 = col.pos - col.obj2.pos;
 
         Vector n1 = normalize_3(r_pos1);
-        //vi behöver bara en normalvektor
+        //vi behï¿½ver bara en normalvektor
 
         //Hastigheterna i normalriktninen
         
@@ -158,8 +164,8 @@ void ObjectPair::collide(const Collision& col)
         double m1 = col.obj1.mass;
         double m2 = col.obj2.mass;
 
-        //v4 är nya normalhastigheten för obj2;
-        //v3 är nya normalhastigheten för obj1;
+        //v4 ï¿½r nya normalhastigheten fï¿½r obj2;
+        //v3 ï¿½r nya normalhastigheten fï¿½r obj1;
         double v4 = -(-m1*v1 -e*m1*v1 + e*m1*v2 -m2*v2)/(m1+m2);
         double v3 = -(-m1*v1 -m2*v2 + m2*v4)/m1;
 
@@ -167,11 +173,11 @@ void ObjectPair::collide(const Collision& col)
         obj2.vel += (v4-v2)*n1;
 
 
-        //Nu adderar vi lite rotationer också, för skojs skull
-        //Detta görs genom en fulformel. 
-        //Antag en kontakttid på 1 hundradels sekund
+        //Nu adderar vi lite rotationer ocksï¿½, fï¿½r skojs skull
+        //Detta gï¿½rs genom en fulformel. 
+        //Antag en kontakttid pï¿½ 1 hundradels sekund
 
-        //Kontaktpunkten kommer att påverkas av en kraft som ligger
+        //Kontaktpunkten kommer att pï¿½verkas av en kraft som ligger
         //i tangentplanet och med samma rikning som medelhastigheten 
         //av objekten
 
@@ -206,7 +212,7 @@ void ObjectPair::collide(const Collision& col)
 
         ;  //kontakttid
 
-        //Fixa till rotationshastigheten nu då
+        //Fixa till rotationshastigheten nu dï¿½
 
 	obj1.rot_vel += dt*ra1;
 	obj2.rot_vel += dt*ra2;
@@ -448,7 +454,7 @@ void update_world(double frame_start,double tot_time){
 		pair->calc_wake_up();
 		//		cout << "After -- Pair: " << pair->id << " Wake_up: " << pair->wake_up << ".\n";
 
-                pairs.push(pair);// bara om de inte har dött
+                pairs.push(pair);// bara om de inte har dï¿½tt
                 }                
         }
         
