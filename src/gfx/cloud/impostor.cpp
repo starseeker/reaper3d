@@ -8,6 +8,7 @@
 #include "gfx/cloud/impostor.h"
 #include "gfx/cloud/misc.h"
 #include "gfx/misc.h"
+#include "gfx/matrix_utils.h"
 
 #include "misc/sequence.h"
 #include "misc/free.h"
@@ -131,14 +132,14 @@ void Impostor::before_render(const Camera& cam, const Matrix& ply)
 
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	gluPerspective(cam.vert_fov, 1, 1, 1000);
+	matrix_utils::perspective(cam.vert_fov, 1, 1, 1000);
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 	Vector cld = norm(cld_pos - cam.pos);
 	float d = radius / tan(37.5 * 3.14/180);
 	Point eye = cld_pos - cld*d;
 
-	gluLookAt(eye.x, eye.y, eye.z, 
+	matrix_utils::look_at(eye.x, eye.y, eye.z, 
 		  cld_pos.x, cld_pos.y, cld_pos.z,
 		  e_u.x, e_u.y, e_u.z);
 

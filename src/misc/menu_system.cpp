@@ -93,6 +93,7 @@
 #include "hw/snd.h"
 #include "hw/gfx.h"
 #include "gfx/texture.h"
+#include "gfx/matrix_utils.h"
 #include "misc/font.h"
 #include "misc/free.h"
 #include "misc/menu_system.h"
@@ -206,7 +207,7 @@ MenuSystem::Impl::Impl()
 			 gx.current_mode().height);
 
 	glMatrixMode(GL_PROJECTION);
-	gluOrtho2D(0, 1, 0, 1);
+	gfx::matrix_utils::ortho_2d(0, 1, 0, 1);
 
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();

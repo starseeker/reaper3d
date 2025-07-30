@@ -2,6 +2,7 @@
 #include "hw/compat.h"
 #include "game/scenario_mgr.h"
 #include "hw/gl.h"
+#include "gfx/matrix_utils.h"
 #include "misc/font.h"
 #include "misc/free.h"
 #include "misc/parse.h"
@@ -117,7 +118,7 @@ namespace scenario {
 			glMatrixMode(GL_PROJECTION);
 			glPushMatrix();
 			glLoadIdentity();
-			gluOrtho2D(0,1,0,80);
+			gfx::matrix_utils::ortho_2d(0,1,0,80);
 			glMatrixMode(GL_MODELVIEW);
 			
 			float y=66;
