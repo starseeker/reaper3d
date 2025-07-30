@@ -28,6 +28,7 @@
 #include "hw/gl.h"
 #include "hw/gl_helper.h"
 #include "hw/debug.h"
+#include "gfx/matrix_utils.h"
 
 namespace reaper {
 namespace gfx {
@@ -63,7 +64,7 @@ public:
 		glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
-		gluPerspective(90, 1.33, 1, 10000);
+		matrix_utils::perspective(90, 1.33, 1, 10000);
 		glMatrixMode(GL_MODELVIEW);
 		glLoadIdentity();
 		Vector a = norm(p - at);
@@ -74,7 +75,7 @@ public:
 			left = cross(up, a);
 		}
 		up = cross(a, left);
-		gluLookAt(p.x, p.y, p.z,
+		matrix_utils::look_at(p.x, p.y, p.z,
 			  at.x, at.y, at.z, 
 			  up.x, up.y, up.z);
 	}			

@@ -22,7 +22,6 @@
 #endif
 
 #include <GL/gl.h>
-#include <GL/glu.h>
 #include "ext/glh/glh_extensions.h"
 #include "hw/gl_state.h"
 

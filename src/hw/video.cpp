@@ -9,7 +9,7 @@
  * mackefix
  *
  * Revision 1.8  2002/01/10 23:09:11  macke
- * massa bök
+ * massa bï¿½k
  *
  * Revision 1.7  2001/10/10 00:46:25  peter
  * works but audio not synced, will rewrite to use a generic videodecoder framework...
@@ -42,6 +42,7 @@
 #include "hw/video.h"
 #include "hw/video_helper.h"
 #include "hw/gl.h"
+#include "gfx/matrix_utils.h"
 
 namespace reaper {
 namespace hw {
@@ -66,10 +67,10 @@ void Player::initgfx()
 {
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	gluPerspective(90,1,1,20);
+	gfx::matrix_utils::perspective(90,1,1,20);
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
-	gluLookAt(0,0,-3, 0,0,0, 0,1,0);
+	gfx::matrix_utils::look_at(0,0,-3, 0,0,0, 0,1,0);
 
 	glClearColor(0,0,0,0);
 

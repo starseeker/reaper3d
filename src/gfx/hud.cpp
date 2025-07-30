@@ -10,6 +10,7 @@
 #include "gfx/settings.h"
 #include "gfx/exceptions.h"
 #include "gfx/displaylist.h"
+#include "gfx/matrix_utils.h"
 
 #include "gfx/interfaces.h"
 #include "gfx/managers.h"
@@ -260,7 +261,7 @@ void HUDImpl::render(const HudData& h)
 	glMatrixMode(GL_PROJECTION);
 	glPushMatrix();
         glLoadIdentity();
-        gluOrtho2D(0,1,0,1);
+        matrix_utils::ortho_2d(0,1,0,1);
 	glMatrixMode(GL_MODELVIEW);
 	glPushMatrix();
 	glLoadIdentity();

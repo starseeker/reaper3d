@@ -44,20 +44,72 @@
 #include "world/query_obj.h"
 #include "main/types_ops.h"
 
+#include <vector>
+#include <cmath>
+
 namespace reaper {
 namespace gfx {
 namespace misc {
 namespace {
 reaper::debug::DebugOutput dout("gfx::misc",0);
 
-GLUquadricObj* init_sphere()
+// Simple sphere rendering without GLU quadrics
+void render_sphere_immediate(double radius, int slices, int stacks)
 {
-	GLUquadricObj* q = gluNewQuadric();
-	gluQuadricNormals(q, GLU_SMOOTH);
-	return q;
+	const double PI = 3.14159265358979323846;
+	
+	glBegin(GL_TRIANGLES);
+	
+	for (int i = 0; i < stacks; ++i) {
+		double lat0 = PI * (-0.5 + (double)i / stacks);
+		double z0 = sin(lat0);
+		double zr0 = cos(lat0);
+		
+		double lat1 = PI * (-0.5 + (double)(i + 1) / stacks);
+		double z1 = sin(lat1);
+		double zr1 = cos(lat1);
+		
+		for (int j = 0; j < slices; ++j) {
+			double lng = 2 * PI * (double)j / slices;
+			double x = cos(lng);
+			double y = sin(lng);
+			
+			// First triangle
+			glNormal3d(x * zr0, y * zr0, z0);
+			glVertex3d(radius * x * zr0, radius * y * zr0, radius * z0);
+			
+			glNormal3d(x * zr1, y * zr1, z1);
+			glVertex3d(radius * x * zr1, radius * y * zr1, radius * z1);
+			
+			lng = 2 * PI * (double)(j + 1) / slices;
+			x = cos(lng);
+			y = sin(lng);
+			
+			glNormal3d(x * zr1, y * zr1, z1);
+			glVertex3d(radius * x * zr1, radius * y * zr1, radius * z1);
+			
+			// Second triangle
+			lng = 2 * PI * (double)j / slices;
+			x = cos(lng);
+			y = sin(lng);
+			
+			glNormal3d(x * zr0, y * zr0, z0);
+			glVertex3d(radius * x * zr0, radius * y * zr0, radius * z0);
+			
+			lng = 2 * PI * (double)(j + 1) / slices;
+			x = cos(lng);
+			y = sin(lng);
+			
+			glNormal3d(x * zr1, y * zr1, z1);
+			glVertex3d(radius * x * zr1, radius * y * zr1, radius * z1);
+			
+			glNormal3d(x * zr0, y * zr0, z0);
+			glVertex3d(radius * x * zr0, radius * y * zr0, radius * z0);
+		}
+	}
+	
+	glEnd();
 }
-
-GLUquadricObj* sphere_q = init_sphere();
 
 }
 
@@ -75,7 +127,7 @@ void meter(float x, float y, float length, float width, float maxval, float valu
 
 void sphere(double radius, int slices, int stacks)
 {
-	gluSphere(sphere_q,radius,slices,stacks);
+	render_sphere_immediate(radius, slices, stacks);
 }
 
 void sphere(const world::Sphere &s, int slices, int stacks)

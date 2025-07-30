@@ -27,6 +27,7 @@ add_library(gfx STATIC
     io.cpp
     light.cpp
     light_mgr.cpp
+    matrix_utils.cpp
     mesh.cpp
     mesh_file.cpp
     mesh_file_read.cpp

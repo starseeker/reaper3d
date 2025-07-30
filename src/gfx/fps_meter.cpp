@@ -39,6 +39,7 @@
 #include "gfx/exceptions.h"
 #include "gfx/fps_meter.h"
 #include "gfx/misc.h"
+#include "gfx/matrix_utils.h"
 #include "misc/font.h"
 #include "hw/gl.h"
 #include <stdio.h>
@@ -108,7 +109,7 @@ void FPSMeter::render(bool blend, bool vertical)
         glPushMatrix();
 
         glLoadIdentity();
-        gluOrtho2D(0,1,0,1);
+        matrix_utils::ortho_2d(0,1,0,1);
 
 	glMatrixMode(GL_MODELVIEW);
 	glPushMatrix();
