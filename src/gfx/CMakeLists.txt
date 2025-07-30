@@ -32,6 +32,7 @@ add_library(gfx STATIC
     mesh_file_read.cpp
     mesh_mgr.cpp
     misc.cpp
+    modern_shaders.cpp
     particles.cpp
     png.cpp
     settings.cpp
