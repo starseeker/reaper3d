@@ -4,6 +4,7 @@
 #include "gfx/camera.h"
 #include "gfx/settings.h"
 #include "gfx/misc.h"
+#include "gfx/matrix_utils.h"
 #include "hw/gl.h"
 
 namespace reaper {
@@ -31,13 +32,13 @@ const world::Frustum& Camera::setup_view() const
 	// Set projection matrix
     glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	gluPerspective(vert_fov, horiz_fov/vert_fov, 1, view_dist);
+	matrix_utils::perspective(vert_fov, horiz_fov/vert_fov, 1, view_dist);
 
 	// Set viewing matrix
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 	Point lookat = pos + front;
-	gluLookAt(pos.x, pos.y, pos.z,
+	matrix_utils::look_at(pos.x, pos.y, pos.z,
 		  lookat.x, lookat.y, lookat.z,
 		  up.x, up.y, up.z);		
 

@@ -7,6 +7,7 @@
 #include "game/helpers.h"
 
 #include "gfx/texture.h"
+#include "gfx/matrix_utils.h"
 #include "hw/gl.h"
 #include "gfx/camera.h"
 #include "gfx/misc.h"
@@ -54,7 +55,7 @@ void setup_ortho() {
 	glMatrixMode(GL_PROJECTION);
 	glPushMatrix();
         glLoadIdentity();
-	gluOrtho2D(0, 1, 0, 1);
+	gfx::matrix_utils::ortho_2d(0, 1, 0, 1);
 
 	glMatrixMode(GL_MODELVIEW);
 	glPushMatrix();
@@ -241,7 +242,7 @@ ProgressBar::ProgressBar(hw::gfx::Gfx& g, const std::string& lbl, int max_ticks)
 
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	gluOrtho2D(0, 1, 0, 1);
+	gfx::matrix_utils::ortho_2d(0, 1, 0, 1);
 
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
@@ -352,7 +353,7 @@ void Game::render_stats()
 	glMatrixMode(GL_PROJECTION);
 	glPushMatrix();
 	glLoadIdentity();
-	gluOrtho2D(0,1,0,90);
+	gfx::matrix_utils::ortho_2d(0,1,0,90);
 
 	glMatrixMode(GL_MODELVIEW);
 

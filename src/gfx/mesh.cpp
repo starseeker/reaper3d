@@ -11,10 +11,133 @@
 #include "main/types_ops.h"
 #include "main/types_io.h"
 
-
 #include <list>
+#include <cmath>
 #include <stdexcept>
 #include <iterator>
+
+// Helper functions to replace GLU quadric functions
+namespace {
+
+// Simple sphere rendering for mesh generation
+void render_sphere(double radius, int slices, int stacks, bool with_texture = false)
+{
+	const double PI = 3.14159265358979323846;
+	
+	glBegin(GL_TRIANGLES);
+	
+	for (int i = 0; i < stacks; ++i) {
+		double lat0 = PI * (-0.5 + (double)i / stacks);
+		double z0 = sin(lat0);
+		double zr0 = cos(lat0);
+		
+		double lat1 = PI * (-0.5 + (double)(i + 1) / stacks);
+		double z1 = sin(lat1);
+		double zr1 = cos(lat1);
+		
+		for (int j = 0; j < slices; ++j) {
+			double lng = 2 * PI * (double)j / slices;
+			double x = cos(lng);
+			double y = sin(lng);
+			
+			// Texture coordinates for current vertex
+			double s = (double)j / slices;
+			double t = (double)i / stacks;
+			double s1 = (double)(j + 1) / slices;
+			double t1 = (double)(i + 1) / stacks;
+			
+			// First triangle
+			if (with_texture) glTexCoord2d(s, t);
+			glNormal3d(x * zr0, y * zr0, z0);
+			glVertex3d(radius * x * zr0, radius * y * zr0, radius * z0);
+			
+			if (with_texture) glTexCoord2d(s, t1);
+			glNormal3d(x * zr1, y * zr1, z1);
+			glVertex3d(radius * x * zr1, radius * y * zr1, radius * z1);
+			
+			lng = 2 * PI * (double)(j + 1) / slices;
+			x = cos(lng);
+			y = sin(lng);
+			
+			if (with_texture) glTexCoord2d(s1, t1);
+			glNormal3d(x * zr1, y * zr1, z1);
+			glVertex3d(radius * x * zr1, radius * y * zr1, radius * z1);
+			
+			// Second triangle
+			lng = 2 * PI * (double)j / slices;
+			x = cos(lng);
+			y = sin(lng);
+			
+			if (with_texture) glTexCoord2d(s, t);
+			glNormal3d(x * zr0, y * zr0, z0);
+			glVertex3d(radius * x * zr0, radius * y * zr0, radius * z0);
+			
+			lng = 2 * PI * (double)(j + 1) / slices;
+			x = cos(lng);
+			y = sin(lng);
+			
+			if (with_texture) glTexCoord2d(s1, t1);
+			glNormal3d(x * zr1, y * zr1, z1);
+			glVertex3d(radius * x * zr1, radius * y * zr1, radius * z1);
+			
+			if (with_texture) glTexCoord2d(s1, t);
+			glNormal3d(x * zr0, y * zr0, z0);
+			glVertex3d(radius * x * zr0, radius * y * zr0, radius * z0);
+		}
+	}
+	
+	glEnd();
+}
+
+// Simple cylinder rendering for mesh generation
+void render_cylinder(double base, double top, double height, int slices, int stacks)
+{
+	const double PI = 3.14159265358979323846;
+	
+	glBegin(GL_TRIANGLES);
+	
+	for (int i = 0; i < stacks; ++i) {
+		double z0 = height * (double)i / stacks;
+		double z1 = height * (double)(i + 1) / stacks;
+		double r0 = base + (top - base) * (double)i / stacks;
+		double r1 = base + (top - base) * (double)(i + 1) / stacks;
+		
+		for (int j = 0; j < slices; ++j) {
+			double lng0 = 2 * PI * (double)j / slices;
+			double lng1 = 2 * PI * (double)(j + 1) / slices;
+			
+			double x0 = cos(lng0);
+			double y0 = sin(lng0);
+			double x1 = cos(lng1);
+			double y1 = sin(lng1);
+			
+			// Side surface triangles
+			// First triangle
+			glNormal3d(x0, y0, 0);
+			glVertex3d(r0 * x0, r0 * y0, z0);
+			
+			glNormal3d(x0, y0, 0);
+			glVertex3d(r1 * x0, r1 * y0, z1);
+			
+			glNormal3d(x1, y1, 0);
+			glVertex3d(r1 * x1, r1 * y1, z1);
+			
+			// Second triangle
+			glNormal3d(x0, y0, 0);
+			glVertex3d(r0 * x0, r0 * y0, z0);
+			
+			glNormal3d(x1, y1, 0);
+			glVertex3d(r1 * x1, r1 * y1, z1);
+			
+			glNormal3d(x1, y1, 0);
+			glVertex3d(r0 * x1, r0 * y1, z0);
+		}
+	}
+	
+	glEnd();
+}
+
+} // anonymous namespace
 
 namespace reaper {
 namespace {
@@ -36,34 +159,27 @@ Sheep::Sheep()
 	material.specular_color = Color(.6,.6,.6);
 	material.shininess = 80;
 
-	GLUquadricObj *qobj = gluNewQuadric();
-
-	gluQuadricTexture(qobj,GL_TRUE);
-
 	list.begin();
 		material.use();								
 		glRotatef(90,1,0,0); // rotate so z axis points downwards
-		gluSphere(qobj,1,20,20);
+		render_sphere(1, 20, 20, true); // Main body with texture
+		
 		material.diffuse_color = Color(0,0,0);
 		material.use();
 
-		gluQuadricTexture(qobj,GL_FALSE);
-
 		glTranslatef(0,-.9,.2);
-		gluSphere(qobj,.2,10,10);
+		render_sphere(.2, 10, 10, false); // Head without texture
 		glTranslatef(0,.9,-.2);
 
 		glTranslatef(.5,.5,0);			
-		gluCylinder(qobj,.1,.1,1,8,1);
+		render_cylinder(.1,.1,1,8,1); // Legs
 		glTranslatef(-1,0,0);
-		gluCylinder(qobj,.1,.1,1,8,1);
+		render_cylinder(.1,.1,1,8,1);
 		glTranslatef(0,-1,0);
-		gluCylinder(qobj,.1,.1,1,8,1);
+		render_cylinder(.1,.1,1,8,1);
 		glTranslatef(1,0,0);
-		gluCylinder(qobj,.1,.1,1,8,1);
-	list.end();
-
-	gluDeleteQuadric(qobj);		
+		render_cylinder(.1,.1,1,8,1);
+	list.end();		
 
 	throw_on_gl_error("Sheep::Sheep()");
 }
@@ -98,10 +214,10 @@ void Sheep::render(int lod) const
  * gcc-2 is happier this way..
  *
  * Revision 1.16  2002/01/16 00:25:27  picon
- * terrängbelysning
+ * terrï¿½ngbelysning
  *
  * Revision 1.15  2001/07/30 23:43:17  macke
- * Häpp, då var det kört.
+ * Hï¿½pp, dï¿½ var det kï¿½rt.
  *
  * Revision 1.14  2001/07/23 23:48:10  macke
  * Slimmad grafikhantering samt lite namnbyten
@@ -113,13 +229,13 @@ void Sheep::render(int lod) const
  * Reaper v0.9
  *
  * Revision 1.37  2001/05/15 01:42:26  peter
- * minskade ner på debugutskrifterna
+ * minskade ner pï¿½ debugutskrifterna
  *
  * Revision 1.36  2001/05/15 00:06:24  peter
- * bitrötaburk, jag flyttar!
+ * bitrï¿½taburk, jag flyttar!
  *
  * Revision 1.35  2001/05/10 11:40:14  macke
- * häpp
+ * hï¿½pp
  *
  */
 

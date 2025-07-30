@@ -14,6 +14,29 @@ namespace reaper
 namespace 
 {
 debug::DebugOutput dout("gfx::settings");
+
+// Simple replacement for gluErrorString
+const char* gl_error_string(GLenum error)
+{
+	switch(error) {
+	case GL_NO_ERROR:
+		return "GL_NO_ERROR";
+	case GL_INVALID_ENUM:
+		return "GL_INVALID_ENUM";
+	case GL_INVALID_VALUE:
+		return "GL_INVALID_VALUE";
+	case GL_INVALID_OPERATION:
+		return "GL_INVALID_OPERATION";
+	case GL_STACK_OVERFLOW:
+		return "GL_STACK_OVERFLOW";
+	case GL_STACK_UNDERFLOW:
+		return "GL_STACK_UNDERFLOW";
+	case GL_OUT_OF_MEMORY:
+		return "GL_OUT_OF_MEMORY";
+	default:
+		return "Unknown OpenGL error";
+	}
+}
 }
 
 namespace gfx
@@ -196,7 +219,7 @@ void init_gl_settings(Settings& s)
 	s = Settings::read(true);
 	
 	if(int err = glGetError() != GL_NO_ERROR) {
-		throw reaper_error(std::string("enable_extensions begin:") + (char*)gluErrorString(err));
+		throw reaper_error(std::string("enable_extensions begin:") + (char*)gl_error_string(err));
 	}
         
         s.alpha_bits = glGetInteger(GL_ALPHA_BITS);
@@ -246,7 +269,7 @@ void init_gl_settings(Settings& s)
 	}
 	
 	if(int err = glGetError() != GL_NO_ERROR) {
-		throw reaper_error(std::string("enable_extensions end:") + (char*)gluErrorString(err));
+		throw reaper_error(std::string("enable_extensions end:") + (char*)gl_error_string(err));
 	}
 }
 
@@ -304,13 +327,13 @@ void init_gl_settings(Settings& s)
  * STLPort 4.5.1 Win32-fix + shadow & render reorg
  *
  * Revision 1.18  2002/01/16 00:25:28  picon
- * terrängbelysning
+ * terrï¿½ngbelysning
  *
  * Revision 1.17  2002/01/08 19:40:21  macke
- * Texturdetaljnivå, samt lite småfix..
+ * Texturdetaljnivï¿½, samt lite smï¿½fix..
  *
  * Revision 1.16  2001/12/17 16:28:32  macke
- * div bök
+ * div bï¿½k
  *
  * Revision 1.15  2001/12/04 23:01:23  picon
  * menu system now working ... barely. :)
@@ -319,13 +342,13 @@ void init_gl_settings(Settings& s)
  * mhm!
  *
  * Revision 1.13  2001/09/24 13:15:08  macke
- * Inställningar för grafikmotorn läses från fil
+ * Instï¿½llningar fï¿½r grafikmotorn lï¿½ses frï¿½n fil
  *
  * Revision 1.12  2001/09/24 02:33:25  macke
  * Meckat lite med fulbuggen i grafikmotorn.. verkar funka att deallokera nu.. ?
  *
  * Revision 1.11  2001/07/31 21:57:56  macke
- * Nytt försök med vertexarrays..
+ * Nytt fï¿½rsï¿½k med vertexarrays..
  *
  * Revision 1.10  2001/06/09 01:58:52  macke
  * Grafikmotor reorg
@@ -334,9 +357,9 @@ void init_gl_settings(Settings& s)
  * Reaper v0.9
  *
  * Revision 1.8  2001/05/14 20:00:53  macke
- * bugfix och rök på missiler..
+ * bugfix och rï¿½k pï¿½ missiler..
  *
  * Revision 1.7  2001/05/10 11:40:16  macke
- * häpp
+ * hï¿½pp
  *
  */
