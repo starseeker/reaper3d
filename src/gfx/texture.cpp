@@ -16,12 +16,67 @@
 #include "res/res.h"
 #include "misc/utility.h"
 
+// Include stb_image_resize for replacing gluScaleImage
+#define STB_IMAGE_RESIZE_IMPLEMENTATION
+#include "ext/stb/stb_image_resize2.h"
+
 namespace reaper {
 namespace gfx {
 namespace texture {
 namespace {
 
 reaper::debug::DebugOutput dout("gfx::texture");
+
+// Helper function to convert OpenGL format to stb_image_resize pixel layout
+stbir_pixel_layout gl_format_to_pixel_layout(GLenum format)
+{
+	switch(format) {
+	case GL_ALPHA:
+	case GL_LUMINANCE:
+	case GL_INTENSITY:
+		return STBIR_1CHANNEL;
+	case GL_LUMINANCE_ALPHA:
+		return STBIR_2CHANNEL;
+	case GL_RGB:
+		return STBIR_RGB;
+	case GL_RGBA:
+		return STBIR_RGBA;
+	default:
+		throw reaper::gfx::gfx_fatal_error("gl_format_to_pixel_layout() - unsupported format");
+	}
+}
+
+// Replacement for gluScaleImage using stb_image_resize
+template<typename T>
+bool scale_image_stb(GLenum format, int src_w, int src_h, GLenum type, 
+                     const T* src_data, int dst_w, int dst_h, T* dst_data)
+{
+	stbir_pixel_layout pixel_layout = gl_format_to_pixel_layout(format);
+	
+	// Convert OpenGL types to stb types
+	stbir_datatype stb_type;
+	switch(type) {
+	case GL_UNSIGNED_BYTE:
+		stb_type = STBIR_TYPE_UINT8;
+		break;
+	case GL_FLOAT:
+		stb_type = STBIR_TYPE_FLOAT;
+		break;
+	default:
+		// Fallback for other types - treat as uint8
+		stb_type = STBIR_TYPE_UINT8;
+		break;
+	}
+	
+	// Use stb_image_resize2 for the actual scaling
+	void* result = stbir_resize(
+		src_data, src_w, src_h, 0,  // source image and stride (0 = packed)
+		dst_data, dst_w, dst_h, 0,  // destination image and stride
+		pixel_layout, stb_type, STBIR_EDGE_CLAMP, STBIR_FILTER_DEFAULT
+	);
+	
+	return result != NULL;
+}
 
 GLenum to_compressed(GLenum format)
 {
@@ -130,7 +185,10 @@ void scale_texture(int c, int &w, int &h, GLenum format, GLenum type, T *& data)
 		// data is malloc:ed by pnglib, so we use the same for new_data
 		T *new_data = static_cast<T*>(malloc(new_height * new_width * c * sizeof(T))); 
 
-		gluScaleImage(format, w, h, type, data, new_height, new_width, type, new_data);
+		if (!scale_image_stb(format, w, h, type, data, new_width, new_height, new_data)) {
+			free(new_data);
+			throw reaper::gfx::gfx_fatal_error("texture::scale_texture() - image scaling failed");
+		}
 
 		free(data);
 		data = new_data;			
@@ -156,6 +214,7 @@ int init(int c, int &w, int &h, GLenum mag_filter, GLenum min_filter,
 			glTexParameter2D(GL_GENERATE_MIPMAP_SGIS, GL_TRUE);
 			glTexImage2D(GL_TEXTURE_2D, 0, internal_format, w, h, 0, format, type, data);
 		} else {
+			// For now, keep using gluBuild2DMipmaps until we can implement proper mipmap generation
 			gluBuild2DMipmaps(GL_TEXTURE_2D, internal_format, w, h, format, type, data);			
 		}
 	}
@@ -257,8 +316,10 @@ int generate_save_s3tc(const std::string &file)
 
 		glTexImage2D(GL_TEXTURE_2D, lod, internal_format, w, h, 0, format, GL_UNSIGNED_BYTE, data);
 
-		gluScaleImage(format, w, h, GL_UNSIGNED_BYTE, data,
-			      new_w, new_h, GL_UNSIGNED_BYTE, tmp);
+		if (!scale_image_stb(format, w, h, GL_UNSIGNED_BYTE, (const unsigned char*)data,
+		                     new_w, new_h, (unsigned char*)tmp)) {
+			throw reaper::gfx::gfx_fatal_error("texture::generate_save_s3tc() - image scaling failed");
+		}
 
 		int compressed = glGetTexLevelParameter2D(lod, GL_TEXTURE_COMPRESSED_ARB);
 		if(!compressed) {
