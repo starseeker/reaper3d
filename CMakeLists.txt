@@ -57,6 +57,7 @@ add_subdirectory(src/public)
 add_subdirectory(src/res)
 add_subdirectory(src/snd)
 add_subdirectory(src/world)
+add_subdirectory(src/tools)
 
 # Main executable
 add_executable(reaper3d

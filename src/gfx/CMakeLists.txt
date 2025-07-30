@@ -42,6 +42,7 @@ add_library(gfx STATIC
     terrain.cpp
     texture.cpp
     texture_mgr.cpp
+    vbo_utils.cpp
     vertex_mgr.cpp
     water.cpp
 )
