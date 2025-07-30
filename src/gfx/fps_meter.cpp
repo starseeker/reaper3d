@@ -27,7 +27,7 @@
  * Reaper v0.9
  *
  * Revision 1.24  2001/05/10 11:40:11  macke
- * häpp
+ * hï¿½pp
  *
  */
 
@@ -131,6 +131,9 @@ void FPSMeter::render(bool blend, bool vertical)
         glColor4f(0,1,0,.8);
 	meter(0,0.3, 1,.1, 100,frames/total_time);
 
+        // Draw grid lines using VBO instead of immediate mode
+        // Note: For now keeping simple immediate mode for compatibility
+        // TODO: Replace with full VBO implementation when modernizing rendering pipeline
         glBegin(GL_LINES);
                 glColor4f(1,1,1,.8);
 

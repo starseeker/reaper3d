@@ -10,6 +10,7 @@ add_library(hw STATIC
     event_prim.cpp
     gfx_drv.cpp
     gfx_glfw.cpp
+    gfx_osmesa.cpp
     event_glfw.cpp
     gl_defs.cpp
     gl_info.cpp

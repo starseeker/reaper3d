@@ -32,6 +32,7 @@ add_library(gfx STATIC
     mesh_file_read.cpp
     mesh_mgr.cpp
     misc.cpp
+    modern_shaders.cpp
     particles.cpp
     png.cpp
     settings.cpp
@@ -42,6 +43,7 @@ add_library(gfx STATIC
     terrain.cpp
     texture.cpp
     texture_mgr.cpp
+    vbo_utils.cpp
     vertex_mgr.cpp
     water.cpp
 )

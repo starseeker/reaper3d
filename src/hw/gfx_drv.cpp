@@ -27,6 +27,11 @@
 // Direct function declaration for GLFW driver
 extern "C" reaper::hw::lowlevel::Gfx_driver* create_gfx_glfw(reaper::hw::ifs::Gfx* m);
 
+#ifdef HAVE_OSMESA
+// Direct function declaration for OSMesa driver  
+extern "C" reaper::hw::lowlevel::Gfx_driver* create_gfx_osmesa(reaper::hw::ifs::Gfx* m);
+#endif
+
 namespace reaper
 {
 namespace hw
@@ -107,11 +112,35 @@ void Gfx::init()
 {
 	data->main = new Main(data->modes);
 
-	// Always use GLFW driver - plugin architecture removed
+	// Check for headless mode preference
+	res::ConfigEnv cnf("hw_gfx");
+	std::string driver_type = cnf["driver"];
+	bool headless = cnf["headless"];
+	
+	// Also check environment variable for headless mode
+	const char* env_headless = getenv("REAPER_HEADLESS");
+	if (env_headless && (strcmp(env_headless, "1") == 0 || strcmp(env_headless, "true") == 0)) {
+		headless = true;
+	}
+	
+#ifdef HAVE_OSMESA
+	if (headless || driver_type == "osmesa") {
+		derr << "Using OSMesa headless graphics driver\n";
+		driver = create_gfx_osmesa(data->main);
+	} else {
+		derr << "Using GLFW windowed graphics driver\n";
+		driver = create_gfx_glfw(data->main);
+	}
+#else
+	if (headless) {
+		derr << "Headless mode requested but OSMesa not available, using GLFW\n";
+	}
+	// Always use GLFW driver if OSMesa not available
 	driver = create_gfx_glfw(data->main);
+#endif
 
 	if (driver == 0)
-		throw hw_error(string("Failed to create GLFW graphics subsystem."));
+		throw hw_error(string("Failed to create graphics subsystem."));
 
 }
 

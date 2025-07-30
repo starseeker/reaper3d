@@ -30,6 +30,18 @@ if(PKG_CONFIG_FOUND)
     pkg_check_modules(OPENAL openal)
 endif()
 
+# Try to find OSMesa for headless rendering
+find_path(OSMESA_INCLUDE_DIR GL/osmesa.h)
+find_library(OSMESA_LIBRARY OSMesa)
+if(OSMESA_INCLUDE_DIR AND OSMESA_LIBRARY)
+    set(OSMESA_FOUND TRUE)
+    add_compile_definitions(HAVE_OSMESA)
+    message(STATUS "Found OSMesa: ${OSMESA_LIBRARY}")
+else()
+    set(OSMESA_FOUND FALSE)
+    message(STATUS "OSMesa not found - headless rendering disabled")
+endif()
+
 # Add main source directories
 add_subdirectory(src/ai)
 add_subdirectory(src/ext)
@@ -45,6 +57,7 @@ add_subdirectory(src/public)
 add_subdirectory(src/res)
 add_subdirectory(src/snd)
 add_subdirectory(src/world)
+add_subdirectory(src/tools)
 
 # Main executable
 add_executable(reaper3d
@@ -71,7 +84,24 @@ if(OPENAL_FOUND)
     target_include_directories(reaper3d PRIVATE ${OPENAL_INCLUDE_DIRS})
 endif()
 
+# Add OSMesa if found
+if(OSMESA_FOUND)
+    target_link_libraries(reaper3d ${OSMESA_LIBRARY})
+    target_include_directories(reaper3d PRIVATE ${OSMESA_INCLUDE_DIR})
+endif()
+
 # Set output directories
 set_target_properties(reaper3d PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
 )
+
+# Copy data directory to build folder so assets can be found at runtime
+add_custom_target(copy_data_dir ALL
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${CMAKE_SOURCE_DIR}/data
+        ${CMAKE_BINARY_DIR}/data
+    COMMENT "Copying data directory to build folder"
+)
+
+# Ensure data is copied before building the main executable
+add_dependencies(reaper3d copy_data_dir)
