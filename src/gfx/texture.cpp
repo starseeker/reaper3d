@@ -78,6 +78,66 @@ bool scale_image_stb(GLenum format, int src_w, int src_h, GLenum type,
 	return result != NULL;
 }
 
+// Manual mipmap generation using stb_image_resize as replacement for gluBuild2DMipmaps
+template<typename T>
+void build_mipmaps_stb(GLenum target, GLenum internal_format, int width, int height, 
+                       GLenum format, GLenum type, const T* data)
+{
+	// Upload the base level (level 0)
+	glTexImage2D(target, 0, internal_format, width, height, 0, format, type, data);
+	
+	// Calculate number of mipmap levels
+	int max_levels = 1 + static_cast<int>(floor(log2(std::max(width, height))));
+	
+	// Copy the original data for processing
+	size_t pixel_size = sizeof(T);
+	stbir_pixel_layout pixel_layout = gl_format_to_pixel_layout(format);
+	
+	// Determine number of channels for memory allocation
+	int channels;
+	switch(pixel_layout) {
+	case STBIR_1CHANNEL: channels = 1; break;
+	case STBIR_2CHANNEL: channels = 2; break;
+	case STBIR_RGB: channels = 3; break;
+	case STBIR_RGBA: channels = 4; break;
+	default: channels = 4; break;
+	}
+	
+	// Allocate buffers for current level and next level
+	T* current_data = static_cast<T*>(malloc(width * height * channels * pixel_size));
+	memcpy(current_data, data, width * height * channels * pixel_size);
+	
+	int current_width = width;
+	int current_height = height;
+	
+	// Generate mipmap levels
+	for (int level = 1; level < max_levels && (current_width > 1 || current_height > 1); ++level) {
+		int next_width = std::max(1, current_width / 2);
+		int next_height = std::max(1, current_height / 2);
+		
+		T* next_data = static_cast<T*>(malloc(next_width * next_height * channels * pixel_size));
+		
+		// Scale down using stb_image_resize
+		if (!scale_image_stb(format, current_width, current_height, type, 
+		                     current_data, next_width, next_height, next_data)) {
+			free(current_data);
+			free(next_data);
+			throw reaper::gfx::gfx_fatal_error("build_mipmaps_stb() - mipmap scaling failed");
+		}
+		
+		// Upload the mipmap level
+		glTexImage2D(target, level, internal_format, next_width, next_height, 0, format, type, next_data);
+		
+		// Prepare for next iteration
+		free(current_data);
+		current_data = next_data;
+		current_width = next_width;
+		current_height = next_height;
+	}
+	
+	free(current_data);
+}
+
 GLenum to_compressed(GLenum format)
 {
 	if(!Settings::current.use_arb_texture_compression) {
@@ -214,8 +274,8 @@ int init(int c, int &w, int &h, GLenum mag_filter, GLenum min_filter,
 			glTexParameter2D(GL_GENERATE_MIPMAP_SGIS, GL_TRUE);
 			glTexImage2D(GL_TEXTURE_2D, 0, internal_format, w, h, 0, format, type, data);
 		} else {
-			// For now, keep using gluBuild2DMipmaps until we can implement proper mipmap generation
-			gluBuild2DMipmaps(GL_TEXTURE_2D, internal_format, w, h, format, type, data);			
+			// Use our custom mipmap generation instead of gluBuild2DMipmaps
+			build_mipmaps_stb(GL_TEXTURE_2D, internal_format, w, h, format, type, data);
 		}
 	}
 
