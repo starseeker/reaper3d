@@ -16,6 +16,10 @@
 
 #include <set>
 
+#ifdef HAVE_OSMESA
+#include <GL/osmesa.h>
+#endif
+
 namespace reaper {
 namespace hw {
 namespace gfx {
@@ -57,7 +61,8 @@ string win_extstr()
 #ifdef HAVE_OSMESA
 	// In OSMesa mode, there's no display/window system, so no window-specific extensions
 	const char* osmesa_ctx = getenv("REAPER_HEADLESS");
-	if (osmesa_ctx && (strcmp(osmesa_ctx, "1") == 0 || strcmp(osmesa_ctx, "true") == 0)) {
+	if (OSMesaGetCurrentContext() != nullptr ||
+	    (osmesa_ctx && (strcmp(osmesa_ctx, "1") == 0 || strcmp(osmesa_ctx, "true") == 0))) {
 		return "";
 	}
 #endif
@@ -174,4 +179,3 @@ const OpenGLinfo& opengl_info()
 }
 }
 }
-

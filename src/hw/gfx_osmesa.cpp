@@ -78,6 +78,9 @@ Gfx_osmesa::Gfx_osmesa(ifs::Gfx* m)
     data.desktop.height = 600;
     data.desktop.depth = 32;
     data.desktop.fullscreen = false;
+    data.alpha = true;
+    data.stencil = true;
+    data.is_accelerated = false;
     
     // Add common video modes for headless rendering
     main->add_mode(gfx::VideoMode(800, 600, 32, false));
@@ -175,6 +178,12 @@ bool Gfx_osmesa::setup_mode(const gfx::VideoMode& mode)
     data.desktop.height = mode.height;
     data.desktop.depth = mode.depth;
     data.desktop.fullscreen = mode.fullscreen;
+    data.current = mode;
+    if (data.current.depth == 0) {
+        data.current.depth = 32;
+    }
+    data.window_active = true;
+    glViewport(0, 0, width, height);
     
     derr << "OSMesa mode set to: " << mode.width << "x" << mode.height 
          << " (" << mode.depth << " bits)\n";

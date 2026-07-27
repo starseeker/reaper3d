@@ -24,51 +24,63 @@ namespace { debug::DebugOutput derr("hw::event::glfw"); }
 
 using lowlevel::Gfx_driver_data;
 
-class KeyboardGLFW : public InputDevice {
-    const Gfx_driver_data* gx;
-    ifs::Event* main;
+namespace {
 
+std::queue<Event> keyboard_events;
+std::queue<Event> mouse_events;
+bool window_should_close = false;
+
+void clear_events(std::queue<Event>& events)
+{
+    std::queue<Event> empty;
+    events.swap(empty);
+}
+
+id::EventID translate_key(int key)
+{
+    switch (key) {
+    case GLFW_KEY_ENTER:      return id::Enter;
+    case GLFW_KEY_DOWN:       return id::Down;
+    case GLFW_KEY_UP:         return id::Up;
+    case GLFW_KEY_LEFT:       return id::Left;
+    case GLFW_KEY_RIGHT:      return id::Right;
+    case GLFW_KEY_ESCAPE:     return id::Escape;
+    case GLFW_KEY_PAGE_UP:    return id::PageUp;
+    case GLFW_KEY_PAGE_DOWN:  return id::PageDown;
+    case GLFW_KEY_HOME:       return id::Home;
+    case GLFW_KEY_END:        return id::End;
+    case GLFW_KEY_INSERT:     return id::Insert;
+    case GLFW_KEY_DELETE:     return id::Delete;
+    case GLFW_KEY_BACKSPACE:  return id::Backspace;
+    case GLFW_KEY_F1:         return id::F1;
+    case GLFW_KEY_F2:         return id::F2;
+    case GLFW_KEY_F3:         return id::F3;
+    case GLFW_KEY_F4:         return id::F4;
+    case GLFW_KEY_F5:         return id::F5;
+    case GLFW_KEY_F6:         return id::F6;
+    case GLFW_KEY_F7:         return id::F7;
+    case GLFW_KEY_F8:         return id::F8;
+    case GLFW_KEY_F9:         return id::F9;
+    case GLFW_KEY_F10:        return id::F10;
+    case GLFW_KEY_F11:        return id::F11;
+    case GLFW_KEY_F12:        return id::F12;
+    default:
+        // GLFW uses ASCII values for printable keys.
+        if (key >= 32 && key <= 126) {
+            return static_cast<id::EventID>(key);
+        }
+        return id::Unknown;
+    }
+}
+
+} // anonymous namespace
+
+class KeyboardGLFW : public InputDevice {
 protected:
     bool poll_device();
-    
-    id::EventID translate_key(int key) {
-        switch (key) {
-        case GLFW_KEY_ENTER:      return id::Enter;
-        case GLFW_KEY_DOWN:       return id::Down;
-        case GLFW_KEY_UP:         return id::Up;
-        case GLFW_KEY_LEFT:       return id::Left;
-        case GLFW_KEY_RIGHT:      return id::Right;
-        case GLFW_KEY_ESCAPE:     return id::Escape;
-        case GLFW_KEY_PAGE_UP:    return id::PageUp;
-        case GLFW_KEY_PAGE_DOWN:  return id::PageDown;
-        case GLFW_KEY_HOME:       return id::Home;
-        case GLFW_KEY_END:        return id::End;
-        case GLFW_KEY_INSERT:     return id::Insert;
-        case GLFW_KEY_DELETE:     return id::Delete;
-        case GLFW_KEY_BACKSPACE:  return id::Backspace;
-        case GLFW_KEY_F1:         return id::F1;
-        case GLFW_KEY_F2:         return id::F2;
-        case GLFW_KEY_F3:         return id::F3;
-        case GLFW_KEY_F4:         return id::F4;
-        case GLFW_KEY_F5:         return id::F5;
-        case GLFW_KEY_F6:         return id::F6;
-        case GLFW_KEY_F7:         return id::F7;
-        case GLFW_KEY_F8:         return id::F8;
-        case GLFW_KEY_F9:         return id::F9;
-        case GLFW_KEY_F10:        return id::F10;
-        case GLFW_KEY_F11:        return id::F11;
-        case GLFW_KEY_F12:        return id::F12;
-        default:
-            // For alphanumeric keys, GLFW uses ASCII values
-            if (key >= 32 && key <= 126) {
-                return static_cast<id::EventID>(key);
-            }
-            return id::Unknown;
-        }
-    }
 
 public:
-    KeyboardGLFW(const Gfx_driver_data* g, ifs::Event* m) : gx(g), main(m) {
+    KeyboardGLFW(const Gfx_driver_data*, ifs::Event*) {
         derr << "GLFW keyboard initialized\n";
     }
 
@@ -79,20 +91,20 @@ public:
 
 bool KeyboardGLFW::poll_device()
 {
-    // For now, just return false as events are handled via callbacks
-    // This would be expanded later to integrate with the existing event system
-    return false;
+    if (keyboard_events.empty()) {
+        return false;
+    }
+    pending.push(keyboard_events.front());
+    keyboard_events.pop();
+    return true;
 }
 
 class MouseGLFW : public InputDevice {
-    const Gfx_driver_data* gx;
-    ifs::Event* main;
-
 protected:
     bool poll_device();
 
 public:
-    MouseGLFW(const Gfx_driver_data* g, ifs::Event* m) : gx(g), main(m) {
+    MouseGLFW(const Gfx_driver_data*, ifs::Event*) {
         derr << "GLFW mouse initialized\n";
     }
 
@@ -103,42 +115,54 @@ public:
 
 bool MouseGLFW::poll_device()
 {
-    // For now, just return false as events are handled via callbacks
-    // This would be expanded later to integrate with the existing event system
-    return false;
+    if (mouse_events.empty()) {
+        return false;
+    }
+    pending.push(mouse_events.front());
+    mouse_events.pop();
+    return true;
 }
 
-// Global event queue for GLFW callbacks (for future use)
-static std::queue<Event> glfw_event_queue;
-static bool window_should_close = false;
-
-// Basic GLFW callback functions for initial testing
-void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
+void key_callback(GLFWwindow*, int key, int, int action, int)
 {
-    if (action == GLFW_PRESS) {
-        derr << "Key pressed: " << key << "\n";
-        if (key == GLFW_KEY_ESCAPE) {
-            glfwSetWindowShouldClose(window, GLFW_TRUE);
-        }
+    if (action == GLFW_REPEAT) {
+        return;
+    }
+
+    id::EventID translated = translate_key(key);
+    if (translated != id::Unknown) {
+        keyboard_events.push(Event(translated, action == GLFW_PRESS));
     }
 }
 
-void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
+void mouse_button_callback(GLFWwindow*, int button, int action, int)
 {
-    if (action == GLFW_PRESS) {
-        derr << "Mouse button pressed: " << button << "\n";
+    if (action != GLFW_REPEAT) {
+        mouse_events.push(Event(button, action == GLFW_PRESS));
     }
 }
 
 void cursor_position_callback(GLFWwindow* window, double xpos, double ypos)
 {
-    // Mouse movement tracking (not logged to avoid spam)
+    int width = 0;
+    int height = 0;
+    glfwGetWindowSize(window, &width, &height);
+    if (width <= 0 || height <= 0) {
+        return;
+    }
+
+    const float x = static_cast<float>((2.0 * xpos) / width - 1.0);
+    const float y = static_cast<float>((2.0 * ypos) / height - 1.0);
+    mouse_events.push(Event(0, x));
+    mouse_events.push(Event(1, y));
 }
 
-void window_close_callback(GLFWwindow* window)
+void window_close_callback(GLFWwindow*)
 {
     derr << "Window close requested\n";
     window_should_close = true;
+    keyboard_events.push(Event(id::Escape, true));
+    keyboard_events.push(Event(id::Escape, false));
 }
 
 // Input device module for GLFW (similar to X11 implementation)
@@ -160,7 +184,11 @@ public:
 void setup_glfw_callbacks(GLFWwindow* window)
 {
     if (!window) return;
-    
+
+    window_should_close = false;
+    clear_events(keyboard_events);
+    clear_events(mouse_events);
+
     glfwSetKeyCallback(window, key_callback);
     glfwSetMouseButtonCallback(window, mouse_button_callback);
     glfwSetCursorPosCallback(window, cursor_position_callback);
@@ -186,7 +214,7 @@ void process_glfw_events()
 } // namespace reaper
 
 extern "C" {
-void* create_event_glfw(reaper::hw::ifs::Event* m)
+reaper::hw::event::InputDeviceModule* create_event_glfw(reaper::hw::ifs::Event* m)
 {
     return new reaper::hw::event::IDM_GLFW(m);
 }

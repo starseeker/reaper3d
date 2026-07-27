@@ -13,6 +13,7 @@ struct GLFWwindow;
 namespace reaper {
 namespace hw {
 namespace ifs { class Gfx; class Event; }
+namespace event { class InputDeviceModule; }
 namespace lowlevel { class Gfx_driver; }
 
 namespace glfw {
@@ -40,7 +41,7 @@ bool should_close_window();
 // Factory functions for GLFW drivers (defined in implementation files)
 extern "C" {
 reaper::hw::lowlevel::Gfx_driver* create_gfx_glfw(reaper::hw::ifs::Gfx* m);
-void* create_event_glfw(reaper::hw::ifs::Event* m);
+reaper::hw::event::InputDeviceModule* create_event_glfw(reaper::hw::ifs::Event* m);
 }
 
 #endif // REAPER_HW_GLFW_H

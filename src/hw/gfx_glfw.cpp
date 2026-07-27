@@ -7,6 +7,7 @@
 
 #include <string>
 #include <iostream>
+#include <cstring>
 
 #include "hw/gfx.h"
 #include "hw/gfx_driver.h"
@@ -42,8 +43,6 @@ class Gfx_glfw : public Gfx_driver
     GLFWwindow* window;
     Gfx_driver_data data;
     ifs::Gfx* main;
-    bool fullscreen;
-    int window_width, window_height;
     
 public:
     Gfx_glfw(ifs::Gfx* m);
@@ -57,12 +56,15 @@ public:
 private:
     bool initialize_glfw();
     void shutdown_glfw();
+    void destroy_window();
     GLFWwindow* create_window(const gfx::VideoMode& mode);
     void setup_opengl_context();
+    static void framebuffer_size_callback(GLFWwindow* window, int width, int height);
+    static void window_focus_callback(GLFWwindow* window, int focused);
 };
 
 Gfx_glfw::Gfx_glfw(ifs::Gfx* m)
-    : window(nullptr), main(m), fullscreen(false), window_width(800), window_height(600)
+    : window(nullptr), data(), main(m)
 {
     derr << "Initializing GLFW graphics driver\n";
     
@@ -70,6 +72,8 @@ Gfx_glfw::Gfx_glfw(ifs::Gfx* m)
         throw hw_fatal_error("Failed to initialize GLFW");
     }
     
+    data.desktop = gfx::VideoMode(800, 600, 24, false);
+
     // Get desktop resolution
     GLFWmonitor* primary = glfwGetPrimaryMonitor();
     if (primary) {
@@ -82,15 +86,15 @@ Gfx_glfw::Gfx_glfw(ifs::Gfx* m)
             
             derr << "Desktop resolution: " << data.desktop.width << "x" << data.desktop.height 
                  << " (" << data.desktop.depth << " bits)\n";
-                 
-            // Add some common video modes
-            main->add_mode(gfx::VideoMode(800, 600, data.desktop.depth, false));
-            main->add_mode(gfx::VideoMode(1024, 768, data.desktop.depth, false));
-            main->add_mode(gfx::VideoMode(1280, 720, data.desktop.depth, false));
-            main->add_mode(gfx::VideoMode(1920, 1080, data.desktop.depth, false));
-            main->add_mode(gfx::VideoMode(data.desktop.width, data.desktop.height, data.desktop.depth, true));
         }
     }
+
+    // Add common modes even if monitor enumeration was unavailable.
+    main->add_mode(gfx::VideoMode(800, 600, data.desktop.depth, false));
+    main->add_mode(gfx::VideoMode(1024, 768, data.desktop.depth, false));
+    main->add_mode(gfx::VideoMode(1280, 720, data.desktop.depth, false));
+    main->add_mode(gfx::VideoMode(1920, 1080, data.desktop.depth, false));
+    main->add_mode(gfx::VideoMode(data.desktop.width, data.desktop.height, data.desktop.depth, true));
     
     derr << "GLFW graphics driver initialized\n";
 }
@@ -115,6 +119,7 @@ bool Gfx_glfw::initialize_glfw()
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
     glfwWindowHint(GLFW_DOUBLEBUFFER, GLFW_TRUE);
+    glfwWindowHint(GLFW_DEPTH_BITS, 24);
     glfwWindowHint(GLFW_ALPHA_BITS, 8);
     glfwWindowHint(GLFW_STENCIL_BITS, 8);
     
@@ -123,11 +128,21 @@ bool Gfx_glfw::initialize_glfw()
 
 void Gfx_glfw::shutdown_glfw()
 {
-    if (window) {
-        glfwDestroyWindow(window);
-        window = nullptr;
-    }
+    destroy_window();
     glfwTerminate();
+}
+
+void Gfx_glfw::destroy_window()
+{
+    if (!window) {
+        return;
+    }
+
+    glfw::set_current_window(nullptr);
+    glfwMakeContextCurrent(nullptr);
+    glfwDestroyWindow(window);
+    window = nullptr;
+    data.window_active = false;
 }
 
 GLFWwindow* Gfx_glfw::create_window(const gfx::VideoMode& mode)
@@ -158,12 +173,10 @@ void Gfx_glfw::setup_opengl_context()
     if (!window) return;
     
     glfwMakeContextCurrent(window);
-    
-    // Set up basic OpenGL state
-    glEnable(GL_DEPTH_TEST);
-    glEnable(GL_ALPHA_TEST);
-    glAlphaFunc(GL_GREATER, 0.1f);
-    
+
+    // OpenGL state belongs to the renderer.  In particular, enabling depth
+    // testing here makes the menu background occlude all later UI at z=0.
+
     // Check for alpha and stencil buffer support
     GLint alpha_bits = 0, stencil_bits = 0;
     glGetIntegerv(GL_ALPHA_BITS, &alpha_bits);
@@ -171,19 +184,32 @@ void Gfx_glfw::setup_opengl_context()
     
     data.alpha = (alpha_bits > 0);
     data.stencil = (stencil_bits > 0);
-    
-    derr << "OpenGL context: alpha=" << data.alpha << ", stencil=" << data.stencil << "\n";
+
+    const char* renderer = reinterpret_cast<const char*>(glGetString(GL_RENDERER));
+    data.is_accelerated =
+        renderer != nullptr &&
+        std::strstr(renderer, "llvmpipe") == nullptr &&
+        std::strstr(renderer, "softpipe") == nullptr &&
+        std::strstr(renderer, "Software Rasterizer") == nullptr;
+
+    int framebuffer_width = 0;
+    int framebuffer_height = 0;
+    glfwGetFramebufferSize(window, &framebuffer_width, &framebuffer_height);
+    data.current.width = framebuffer_width;
+    data.current.height = framebuffer_height;
+    glViewport(0, 0, framebuffer_width, framebuffer_height);
+
+    derr << "OpenGL context: renderer=" << (renderer ? renderer : "unknown")
+         << ", accelerated=" << data.is_accelerated
+         << ", alpha=" << data.alpha << ", stencil=" << data.stencil
+         << ", framebuffer=" << framebuffer_width << "x" << framebuffer_height << "\n";
 }
 
 bool Gfx_glfw::setup_mode(const gfx::VideoMode& mode)
 {
     derr << "Setting up video mode: " << mode.width << "x" << mode.height << "\n";
     
-    // If we already have a window, destroy it first
-    if (window) {
-        glfwDestroyWindow(window);
-        window = nullptr;
-    }
+    destroy_window();
     
     // Create new window with requested mode
     window = create_window(mode);
@@ -196,11 +222,17 @@ bool Gfx_glfw::setup_mode(const gfx::VideoMode& mode)
     
     // Setup GLFW event callbacks for input handling
     glfw::setup_glfw_callbacks(window);
-    
+
     // Store current mode
-    window_width = mode.width;
-    window_height = mode.height;
-    fullscreen = mode.fullscreen;
+    data.current = mode;
+    if (data.current.depth == 0) {
+        data.current.depth = data.desktop.depth;
+    }
+    data.window_active = true;
+
+    glfwSetWindowUserPointer(window, this);
+    glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+    glfwSetWindowFocusCallback(window, window_focus_callback);
     
     // Set up OpenGL context
     setup_opengl_context();
@@ -211,8 +243,10 @@ bool Gfx_glfw::setup_mode(const gfx::VideoMode& mode)
 
 void Gfx_glfw::restore_mode()
 {
-    derr << "Restoring video mode\n";
-    // GLFW handles mode restoration automatically when window is destroyed
+    if (window) {
+        derr << "Restoring video mode\n";
+        destroy_window();
+    }
 }
 
 void Gfx_glfw::update_screen()
@@ -220,6 +254,26 @@ void Gfx_glfw::update_screen()
     if (window) {
         glfwSwapBuffers(window);
         glfwPollEvents();
+    }
+}
+
+void Gfx_glfw::framebuffer_size_callback(GLFWwindow* window, int width, int height)
+{
+    Gfx_glfw* self = static_cast<Gfx_glfw*>(glfwGetWindowUserPointer(window));
+    if (!self || width <= 0 || height <= 0) {
+        return;
+    }
+
+    self->data.current.width = width;
+    self->data.current.height = height;
+    glViewport(0, 0, width, height);
+}
+
+void Gfx_glfw::window_focus_callback(GLFWwindow* window, int focused)
+{
+    Gfx_glfw* self = static_cast<Gfx_glfw*>(glfwGetWindowUserPointer(window));
+    if (self) {
+        self->data.window_active = focused == GLFW_TRUE;
     }
 }
 
@@ -241,6 +295,7 @@ bool initialize_glfw()
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
     glfwWindowHint(GLFW_DOUBLEBUFFER, GLFW_TRUE);
+    glfwWindowHint(GLFW_DEPTH_BITS, 24);
     glfwWindowHint(GLFW_ALPHA_BITS, 8);
     glfwWindowHint(GLFW_STENCIL_BITS, 8);
     

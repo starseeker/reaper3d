@@ -28,11 +28,9 @@
 #include "hw/gfx_types.h"
 #include "hw/gfx_driver.h"
 #include "hw/gfx.h"
+#include "hw/glfw.h"
 
 #include "misc/sequence.h"
-
-// Direct function declaration for GLFW event driver
-extern "C" reaper::hw::event::InputDeviceModule* create_event_glfw(void*);
 
 
 namespace reaper
@@ -261,4 +259,3 @@ void EventDispatcher::add_filter(EventFilter* f)
 }
 }
 }
-

@@ -29,6 +29,16 @@ struct Gfx_driver_data {
 	bool is_accelerated;
 	bool alpha;
 	bool stencil;
+
+	Gfx_driver_data()
+	 : display(0),
+	   desktop(),
+	   current(),
+	   window_active(false),
+	   is_accelerated(false),
+	   alpha(false),
+	   stencil(false)
+	{ }
 };
 
 
@@ -38,5 +48,4 @@ struct Gfx_driver_data {
 
 
 #endif
-
 
