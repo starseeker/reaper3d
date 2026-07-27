@@ -136,6 +136,19 @@ ctest --test-dir build --output-on-failure
 
 The tests write comparison images into `build/` and do not launch a window.
 
+The former GLUT/GLUI editor entry points are now GLFW-based Dear ImGui tools:
+
+```bash
+./build/bin/level_editor
+./build/bin/navigraph_editor
+```
+
+They provide the modern window, input, document controls, navigable grid
+viewport, and level metadata loading/saving through the existing resource
+system. The navigation editor also opens AI graph resources, while object
+placement and graph-node editing remain under migration;
+the old GLUI frontends are no longer part of the build.
+
 ## Project structure
 
 The source is organized into static-library components:
@@ -163,7 +176,8 @@ The supported Linux game build is C++17-clean and uses modern ownership and STL 
 - **Finish the Linux audio path.** OpenAL Soft provides effects and buffered WAV/MP3 playback; true streaming music and Windows audio support remain.
 - **Improve portability and dependency boundaries.** GLFW and OpenAL Soft are the Linux runtime backends; Windows audio and other platform builds remain future work.
 - **Add broader automated regression coverage.** CTest now covers headless rendering, VBO conversion, and shader fallback; startup, input, resource loading, and audio assertions remain.
-- **Retire or isolate dormant legacy code.** The unused level editors, old physics/Voronoi helpers, and bundled GLH/GLUI code remain outside the supported game build.
+- **Finish editor interaction.** The GLFW/ImGui editors have camera/grid controls, editable level metadata, and navigation-resource loading; object placement, renderer integration, and graph-node editing remain.
+- **Retire remaining dormant legacy code.** Old physics/Voronoi helpers and bundled GLH/GLUI sources remain in the tree only where they are still referenced or useful for migration.
 
 ## License
 
