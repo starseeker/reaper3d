@@ -15,22 +15,22 @@ namespace reaper {
 namespace gfx {
 namespace lowlevel {
 namespace {
-char *profilertext[] = {
+const char *profilertext[] = {
 	"sky      ",
 	"terrain  ",
 	"water    ",
 	"object fi",
-	"object rd", 
-	"effect rd", 
-	"lights   ", 
-	"shadows  ", 
-	"hud      ", 
+	"object rd",
+	"effect rd",
+	"lights   ",
+	"shadows  ",
+	"hud      ",
 	"clear    ",
 	"simulate ",
 	"cubemap  "
 };
 
-char *countertext[] = {
+const char *countertext[] = {
 	"silly   ",
 	"static  ",
 	"dynamic ",
@@ -40,7 +40,7 @@ char *countertext[] = {
 };
 
 template<class T>
-void put_stat(const char *str, T val, float x, float y) 
+void put_stat(const char *str, T val, float x, float y)
 {
 	std::ostringstream ss;
 	ss << str << val;
@@ -53,7 +53,7 @@ Statistics::Statistics(Renderer *r_) :
 	r(r_),
 	cnt("stat_counters"), prf("stat_profilers")
 {
-	char **pt = profilertext;
+	const char **pt = profilertext;
 	float y = .23;
 	for(int i = Profiles_Begin; i != Profiles_End; i++) {
 		prf.insert(new hw::time::Profiler2(*pt++, 0, y, .3, .025, 300),
@@ -84,10 +84,10 @@ Statistics::Statistics(Renderer *r_) :
 
 void Statistics::reset()
 {
-	char **ct = countertext;
+	const char **ct = countertext;
 	cnt.purge();
 	for(int i = Counters_Begin; i != Counters_End; i++) {
-		cnt.insert(new std::pair<int, std::string>(0, std::string(*ct++)), 
+		cnt.insert(new std::pair<int, std::string>(0, std::string(*ct++)),
 		           static_cast<Counters>(i));
 	}
 }

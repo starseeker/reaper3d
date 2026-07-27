@@ -19,8 +19,7 @@ namespace misc
 
 template<class F1, class F2>
 class compose_t
- : public std::unary_function<typename F1::argument_type,
- 			      typename F2::result_type>
+
 {
 	F1 func1;
 	F2 func2;
@@ -38,7 +37,7 @@ compose_t<F1, F2> compose(F1 f1, F2 f2) {
 
 
 template <class T, class A>
-class apply_val0 : public std::unary_function<A, void> {
+class apply_val0 {
 	const A& val;
 public:
 	apply_val0(const A& v) : val(v) { }
@@ -49,7 +48,7 @@ public:
 
 
 template <class T, class A, class R>
-class apply_val_t : public std::unary_function<A, R> {
+class apply_val_t {
 	typedef R (T::*memptr)(A a);
 	memptr mem;
 	A val;
@@ -67,7 +66,7 @@ apply_val_t<T, A, R> apply_val(R (T::*m)(A), A a) {
 
 
 template <class T, class A1, class A2, class R>
-class apply_val2_t : public std::binary_function<A1, A2, R> {
+class apply_val2_t {
 	typedef R (T::*memptr)(A1, A2);
 	memptr mem;
 	const A1& val1;
@@ -92,7 +91,7 @@ apply_val2_t<T, A1, A2, R> apply_val(R (T::*m)(A1, A2), const A1& a1, const A2& 
 
 
 template <class T, class A, class R>
-class apply_to_t : public std::unary_function<A, R> {
+class apply_to_t {
 	typedef R (T::*memptr)(A a);
 	T* ptr;
 	memptr mem;
@@ -127,7 +126,7 @@ bind_t<A,R> bind(R (*f)(A a), A a) {
 
 // Visual STL binder2nd lacks copy constructor
 template<class F>
-class binder2nd : public std::unary_function<typename F::first_argument_type, typename F::result_type> 
+class binder2nd
 {
 	typedef typename F::first_argument_type arg;
 	typedef typename F::result_type res;
@@ -140,15 +139,15 @@ protected:
 	typename F::second_argument_type value;
 };
 
-template<class F, class T> 
+template<class F, class T>
 binder2nd<F> bind2nd(const F& f, const T& a) {
 	typedef typename F::second_argument_type arg_t;
-	return binder2nd<F>(f, arg_t(a)); 
+	return binder2nd<F>(f, arg_t(a));
 }
 
 template<class A, class R>
 class unary_object
- : public std::unary_function<A, R>
+
 {
 public:
 	virtual R operator()(A) = 0;
@@ -156,7 +155,7 @@ public:
 
 template<class A, class B, class R>
 class binary_object
- : public std::binary_function<A, B, R>
+
 {
 public:
 	virtual R operator()(A, B) = 0;

@@ -12,7 +12,7 @@ namespace ai {
 class PlayerControl
 {
 	controls::Ship &ctrl;
-	std::auto_ptr<hw::event::EventProxy> ep;
+	std::unique_ptr<hw::event::EventProxy> ep;
 public:
 	PlayerControl(controls::Ship &c, int id);
 	void think();

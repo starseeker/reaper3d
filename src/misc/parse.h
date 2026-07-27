@@ -2,6 +2,7 @@
 #define REAPER_MISC_PARSE_H
 
 #include <iosfwd>
+#include <istream>
 
 #include <vector>
 #include <list>
@@ -98,7 +99,7 @@ std::istream& anyof(std::istream& is, const std::string& s);
 
 /// Read until one of the given characters.
 std::istream& until(std::istream& is, std::string& s, const std::string& stop);
-std::istream& until(std::istream& is, char stop); 
+std::istream& until(std::istream& is, char stop);
 
 /// remove whitespace from the beginning and end of a string
 std::string& trim(std::string& s);
@@ -296,4 +297,3 @@ bool strequal(const std::string& s1, const std::string& s2);
  * la till tv� funktioner, str2company och str2point
  *
  */
-

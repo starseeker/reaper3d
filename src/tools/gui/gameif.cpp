@@ -46,7 +46,7 @@ class Reaper : public GameIF, public Renderer
 	string cur_object, cur_level;
 
 	ObjGroupID cur_group;
-	
+
 	map<ObjectID, MkInfo> obj_info;
 
 	map<string,ObjectGroup> obj_groups;
@@ -71,12 +71,12 @@ public:
 
 	// GameIF
 
-	auto_ptr<Env> get_cfg_file(string m, string n)
+	unique_ptr<Env> get_cfg_file(string m, string n)
 	{
 		res::res_stream is(res::File, m + "/" + n);
 		Env* r = new Env();
 		misc::config_lines(is, *r);
-		return auto_ptr<Env>(r);
+		return unique_ptr<Env>(r);
 	}
 
 	ObjectID mk_object(string name) {
@@ -149,7 +149,7 @@ public:
 				obj_info[id] = rlst.objs[i];
 			}
 			obj_groups[s] = lst;
-			
+
 		} catch (error_base& e) {
 			printf("Err (load_objectgroup): %s\n", e.what());
 		}

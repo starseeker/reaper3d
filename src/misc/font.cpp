@@ -156,10 +156,10 @@ FontData prep_tex(unsigned char* tex_data, GLenum format,
 	return FontData(base,id);
 }
 
-FontData prep_xpm(char* alpha[])
+FontData prep_xpm(const char* alpha[])
 {
 	unsigned char tex_data[16][1024][2];
-	
+
 	memset(tex_data, 0, 2 * 16 * 1024);
 	for (int i = 0; i < 16; i++) {
 		for (int j = 0; j < 47 * 14; j++) {
@@ -316,7 +316,7 @@ void glPutStr(float x, float y, const std::string& s, Font font, float scale_x, 
 	case Large:  fonts.large_data.use();  break;
 	}
 
-	glPushMatrix();	
+	glPushMatrix();
 	glTranslatef(x, y, 0);
 	glScalef(scale_x, scale_y, 1.0);
 	glCallLists(s.size(), GL_UNSIGNED_BYTE, s.c_str());

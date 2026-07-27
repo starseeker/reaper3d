@@ -28,9 +28,9 @@
 #include <iterator>
 
 namespace reaper {
-namespace misc { 
-	template <> 
-	UniquePtr<gfx::LightMgr>::I UniquePtr<gfx::LightMgr>::inst = {}; 
+namespace misc {
+	template <>
+	UniquePtr<gfx::LightMgr>::I UniquePtr<gfx::LightMgr>::inst = {};
 }
 namespace gfx {
 namespace lowlevel {
@@ -58,7 +58,7 @@ class LightMgrImpl
 
 	GlobalCont globals;
 	DynamicCont dynamics;
-	std::auto_ptr<StaticCont> statics;
+	std::unique_ptr<StaticCont> statics;
 
 	int active_statics;
 	int active_globals;
@@ -70,13 +70,13 @@ class LightMgrImpl
 
 	world::WorldRef wr;
 	TextureRef tr;
-public:	
+public:
 	LightMgrImpl(const std::string &file);
 	LightMgrImpl();
-	~LightMgrImpl(); 
-	
-	void setup_global();                               ///< Call each frame	
-	void setup_locals(const Point& pos, float radius); ///< Call for each object	
+	~LightMgrImpl();
+
+	void setup_global();                               ///< Call each frame
+	void setup_locals(const Point& pos, float radius); ///< Call for each object
 	void render(const world::Frustum &f);              ///< Render lightmaps on terrain
 
 	void add_global(Light *l);
@@ -100,7 +100,7 @@ LightMgrImpl::LightMgrImpl() :
 	tr(gfx::TextureMgr::get_ref())
 {
 	const world::LevelInfo &li = wr->get_level_info();
-	statics = std::auto_ptr<StaticCont>(new StaticCont(li.terrain_min_x, li.terrain_min_z, li.terrain_max_x - li.terrain_min_x));
+	statics = std::unique_ptr<StaticCont>(new StaticCont(li.terrain_min_x, li.terrain_min_z, li.terrain_max_x - li.terrain_min_x));
 }
 
 LightMgrImpl::LightMgrImpl(const std::string& file) :
@@ -112,7 +112,7 @@ LightMgrImpl::LightMgrImpl(const std::string& file) :
 	using namespace std;
 
 	const world::LevelInfo &li = wr->get_level_info();
-	statics = std::auto_ptr<StaticCont>(new StaticCont(li.terrain_min_x, li.terrain_min_z, li.terrain_max_x - li.terrain_min_x));
+	statics = std::unique_ptr<StaticCont>(new StaticCont(li.terrain_min_x, li.terrain_min_z, li.terrain_max_x - li.terrain_min_x));
 
 	res::res_stream rs(res::Terrain,file);
 
@@ -130,7 +130,7 @@ LightMgrImpl::LightMgrImpl(const std::string& file) :
 			ss << s << "\n";
 			getline(rs,s);
 		} while(s.find("Name") != 0 && rs.good());
-		
+
 		res::ConfigEnv light_data(ss);
 		string name = light_data["Name"];
 
@@ -153,7 +153,7 @@ LightMgrImpl::LightMgrImpl(const std::string& file) :
 
 		Light *li = new Light(pos,dir,exp,ang,diff,spec,amb,ca,la,qa);
 		read_lights.push_back(li);
-		
+
 		if(pos.w == 0 || amb != Color(0,0,0,1) || (la==0 && qa==0)) {
 			globals.push_back(li);
 			++g;
@@ -161,7 +161,7 @@ LightMgrImpl::LightMgrImpl(const std::string& file) :
 			statics->insert(li);
 			++l;
 		}
-	}		
+	}
 
 	//dout << "LightMgrImpl(): Read " << g << " global and " << l << " static lights\n";
 }
@@ -180,35 +180,35 @@ void LightMgrImpl::setup_global()
 
 	active_globals = 0;
 
-	for(global_iterator i = globals.begin(); i != globals.end(); ++i) {		
+	for(global_iterator i = globals.begin(); i != globals.end(); ++i) {
 		glEnable(GL_LIGHT0 + active_globals);
 		(*i)->activate(active_globals);
 		++active_globals;
 		if(active_globals >= max_lights)
 			break;
-	}		
+	}
 
 	throw_on_gl_error("light::LightMgrImpl::setup_global()");
 }
 
 void LightMgrImpl::setup_locals(const Point& pos, float radius)
 {
-	const int lights = active_statics + active_globals;		
+	const int lights = active_statics + active_globals;
 	int c = active_globals;
 	active_statics = 0;
 	active_dynamics = 0;
 
 	for(static_iterator i = statics->find(world::Sphere(pos,radius)); i != statics->end() && c < max_lights; ++i) {
 		glEnable(GL_LIGHT0 + c);
-		(*i)->activate(c);			
+		(*i)->activate(c);
 		++c;
 		++active_statics;
-	}				
+	}
 
 	for(dynamic_iterator i = dynamics.begin(); i != dynamics.end() && c < max_lights; ++i) {
 		if(world::intersect(pos,radius, (*i)->get_pos(), (*i)->get_radius())) {
 			glEnable(GL_LIGHT0 + c);
-			(*i)->activate(c);			
+			(*i)->activate(c);
 			++c;
 			++active_dynamics;
 		}
@@ -223,24 +223,24 @@ void LightMgrImpl::setup_locals(const Point& pos, float radius)
 
 
 void LightMgrImpl::add_global(Light *l)
-{ 
-	globals.push_back(l); 
+{
+	globals.push_back(l);
 }
 void LightMgrImpl::add_static(Light *l)
-{ 
+{
 	n_statics++;
-	l->build_triangles(wr); 
-	statics->insert(l); 
+	l->build_triangles(wr);
+	statics->insert(l);
 }
 
 void LightMgrImpl::add_dynamic(Light *l)
-{ 
-	dynamics.push_back(l); 
+{
+	dynamics.push_back(l);
 }
 
-void LightMgrImpl::remove_global(Light *l) 
+void LightMgrImpl::remove_global(Light *l)
 {
-	globals.remove(l); 
+	globals.remove(l);
 }
 
 void LightMgrImpl::remove_static(Light *l)
@@ -251,7 +251,7 @@ void LightMgrImpl::remove_static(Light *l)
 			statics->erase(i);
 			return;
 		}
-	}	
+	}
 	derr << "FATAL: remove_static(): Light does not exist!";
 }
 
@@ -264,13 +264,13 @@ void LightMgrImpl::remove_dynamic(Light *l)
 		}
 	}
 	derr << "FATAL: remove_dynamic(): Light does not exist!";
-}	
+}
 
 void LightMgrImpl::render(const world::Frustum &frustum)
 {
 	using namespace std;
 
-	if(!Settings::current.draw_lights) { 
+	if(!Settings::current.draw_lights) {
 		return;
 	}
 
@@ -286,7 +286,7 @@ void LightMgrImpl::render(const world::Frustum &frustum)
 		}
 	}
 	*/
-	
+
 	//for_each(statics->find(frustum), statics->end(), mem_fun_ref(&Light::render));
 	const static_iterator end(statics->end());
 	for(static_iterator i = statics->find(frustum); i != end; ++i) {
@@ -329,7 +329,7 @@ LightRef LightMgr::get_ref() { return LightRef(); }
 
 void LightMgr::setup_global()                        { i->setup_global(); }
 void LightMgr::setup_locals(const Point& p, float r) { i->setup_locals(p,r); }
-void LightMgr::render(const world::Frustum &f)       { i->render(f); }              
+void LightMgr::render(const world::Frustum &f)       { i->render(f); }
 
 void LightMgr::add_global(lowlevel::Light *l)  { i->add_global(l); }
 void LightMgr::add_static(lowlevel::Light *l)  { i->add_static(l); }
@@ -342,7 +342,7 @@ void LightMgr::remove_dynamic(lowlevel::Light *l) { i->remove_dynamic(l); }
 int LightMgr::num_static_lights() { return i->num_static_lights(); }
 
 Color LightMgr::calc_diffuse_light(const Point &p, const Vector &n, const Material &m) {
-	return i->calc_diffuse_light(p, n, m); 
+	return i->calc_diffuse_light(p, n, m);
 }
 
 }

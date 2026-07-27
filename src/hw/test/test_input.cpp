@@ -62,7 +62,7 @@ int foo()
 
 	hw::gfx::Gfx gx;
 
-	std::auto_ptr<game::Game> go(new game::Game(gx));
+	std::unique_ptr<game::Game> go(new game::Game(gx));
 
 	if (args.size() > 0 && args[0] == "obs")
 		go->conf.observer = true;
@@ -93,4 +93,4 @@ int test_main()
 	foo();
 	return 0;
 }
- 
+

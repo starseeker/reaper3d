@@ -52,7 +52,7 @@ std::ostream& operator<<(std::ostream& os , const VideoMode& m)
 }
 
 
-class myless : public std::unary_function<const VideoMode&, bool> {
+class myless {
 	const VideoMode& mode;
 public:
 	myless(const VideoMode& vm) : mode(vm) { }

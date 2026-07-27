@@ -15,7 +15,7 @@ namespace gui {
 
 using std::string;
 using std::map;
-using std::auto_ptr;
+using std::unique_ptr;
 
 typedef map<string,string> Env;
 
@@ -73,7 +73,7 @@ public:
 class GameIF {
 public:
 
-	virtual auto_ptr<Env> get_cfg_file(string, string) = 0;
+	virtual unique_ptr<Env> get_cfg_file(string, string) = 0;
 
 	virtual Renderer* renderer() = 0;
 

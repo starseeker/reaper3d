@@ -5,8 +5,7 @@ project(reaper3d)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# Add permissive compiler flags to handle legacy C++ code
-add_compile_options(-fpermissive -Wno-deprecated -Wno-deprecated-declarations)
+# Build with standard C++17 diagnostics
 
 # Enable monolithic build - plugin architecture removed, using GLFW directly
 add_compile_definitions(MONOLITHIC)

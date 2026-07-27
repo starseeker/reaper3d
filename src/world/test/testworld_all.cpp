@@ -167,7 +167,6 @@ struct move_ship {
 
 using misc::for_each;
 using misc::seq;
-using std::mem_fun;
 
 class Stupid : public object::ObjImpl<object::DynamicBase>
 {
@@ -250,16 +249,16 @@ int test_main()
 	for (int i = 0; i < 20; i++) {
 		all.start();
 		wr->update();
-		for_each(seq(tests), mem_fun(&test_if::run));
+		for_each(seq(tests), std::mem_fn(&test_if::run));
 		all.stop();
-		for_each(seq(tests), mem_fun(&test_if::next));
+		for_each(seq(tests), std::mem_fn(&test_if::next));
 		insert<object::StaticPtr>(wr, 50);
 		insert<object::DynamicPtr>(wr, 50);
 		remove(wr, 50);
 		move_ship mv;
 		std::for_each(wr->begin_dyn(), wr->end_dyn(), mv);
 	}
-	for_each(seq(tests), mem_fun(&test_if::report));
+	for_each(seq(tests), std::mem_fn(&test_if::report));
 	all.int_report("all");
 	return 0;
 }

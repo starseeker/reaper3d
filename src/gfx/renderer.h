@@ -30,7 +30,7 @@ namespace lowlevel {
 /// Internal renderer data
 class Renderer
 {
-public: 
+public:
         Renderer(const world::LevelInfo &li);
 	~Renderer();
 	void start();
@@ -40,7 +40,7 @@ public:
 
 	inline void draw(Effect *e);
 	inline void insert(SimEffect *e);
-	inline void insert_orphan(SimEffect *e); 
+	inline void insert_orphan(SimEffect *e);
 	inline void transfer(SimEffect *e);
 	inline void remove(SimEffect *e);
 
@@ -55,7 +55,7 @@ public:
 	typedef std::deque<const RenderInfo*> MeshCont;
 
 	//-----------------------------------------------------------------
-private:	
+private:
 	world::WorldRef wr;
 	TextureRef      tr;
 	MeshRef         mr;
@@ -65,8 +65,8 @@ private:
         Sky      sky;
 	LakeCont lakes;
 
-	std::auto_ptr<ShadowRenderer> shadow;
-	std::auto_ptr<EnvMapper> envmapper;
+	std::unique_ptr<ShadowRenderer> shadow;
+	std::unique_ptr<EnvMapper> envmapper;
 
 	MeshCont      meshes;
 	MeshCont      blend_meshes;
@@ -75,7 +75,7 @@ private:
 	SimEffectCont orphan_effects; ///< orphaned efects, renders/simulates until 'death'
 
 	world::Frustum frustum;       ///< current camera frustum
-	Statistics     stats;	
+	Statistics     stats;
 
 	int simul_effects_size;
 	int orphan_effects_size;
@@ -94,51 +94,51 @@ private:
 	void simulate_effects(float dt);
 };
 
-inline void Renderer::draw(Effect *e) 
+inline void Renderer::draw(Effect *e)
 {
-	temp_effects.push_back(e); 
+	temp_effects.push_back(e);
 }
 
-inline void Renderer::insert(SimEffect *e) 
+inline void Renderer::insert(SimEffect *e)
 {
-	simul_effects.insert(e); 
+	simul_effects.insert(e);
 	++simul_effects_size;
 }
 
-inline void Renderer::insert_orphan(SimEffect *e) 
+inline void Renderer::insert_orphan(SimEffect *e)
 {
 	if (e) {
-		orphan_effects.insert(e); 
+		orphan_effects.insert(e);
 		++orphan_effects_size;
 	}
 }
 
-inline void Renderer::transfer(SimEffect *e) 
+inline void Renderer::transfer(SimEffect *e)
 {
 	using namespace reaper::misc;
 	if (e) {
-		simul_effects.erase(find(seq(simul_effects), e)); 
-		orphan_effects.insert(e); 
+		simul_effects.erase(find(seq(simul_effects), e));
+		orphan_effects.insert(e);
 		--simul_effects_size;
 		++orphan_effects_size;
 	}
 }
 
-inline void Renderer::remove(SimEffect *e) 
+inline void Renderer::remove(SimEffect *e)
 {
 	using namespace reaper::misc;
-	simul_effects.erase(find(seq(simul_effects), e)); 
+	simul_effects.erase(find(seq(simul_effects), e));
 	--simul_effects_size;
 }
 
-inline int Renderer::simeff_size() 
-{ 
-	return simul_effects_size; 
+inline int Renderer::simeff_size()
+{
+	return simul_effects_size;
 }
 
-inline int Renderer::orpeff_size() 
-{ 
-	return orphan_effects_size; 
+inline int Renderer::orpeff_size()
+{
+	return orphan_effects_size;
 }
 
 }

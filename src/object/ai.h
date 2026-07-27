@@ -25,7 +25,7 @@ template<class Base, class AI>
 class MixinAI : public Base
 {
 protected:
-	std::auto_ptr<AI> ai;
+	std::unique_ptr<AI> ai;
 public:
 	MixinAI(const MkInfo& mk, AI* ai)
 	 : Base(mk), ai(ai)
@@ -47,8 +47,8 @@ class Turret
 
 	enum TurretEvent{EVENT_OBJECT_DETECTED, EVENT_TARGET_LOST};
 	enum TurretState{IDLE=1, ATTACKING};
-	
-	FSM* fsm;	
+
+	FSM* fsm;
 	State* state[2];
 
 	const object::SillyData &data;
@@ -66,13 +66,13 @@ class Turret
 	void attack(void);
 
 public:
-	Turret(const object::SillyData &d, controls::Turret &tctrl, 
+	Turret(const object::SillyData &d, controls::Turret &tctrl,
 		const current_data::Turret &cctrl, const Vector& barrel_vec);
 	~Turret(void);
 
 	// Executes the ai-algorithms
 	void think(void);
-	
+
 	// Sends a message to this turret
 	void receive(Message m);
 };
@@ -86,7 +86,7 @@ protected:
 	enum ShipEvent{EVENT_ENEMY_DETECTED, EVENT_ENEMY_KILLED, EVENT_TARGET_LOST,
 		       EVENT_NEW_ATTACK, EVENT_IN_POSITION, EVENT_RETURN};
 	enum ShipState{PATROLING=1, ATTACKING, EVADING};
-	
+
 	FSM* fsm;
 	State* state[3];
 
@@ -94,23 +94,23 @@ protected:
 	Point pos;
 	const Vector &vel;
 	controls::Ship &sc;
-			
+
 	std::list<Point> waypoints;        // list of waypoints if ship is patroling
 	std::list<Point>::iterator wp_it;  // iterator pointing to current way point
 	Point ep;			   // evade point
 
 	object::SillyWPtr target_ptr; // pointer to data of current target
 	bool new_attack;
-	
+
 	// Sets the yaw an pitch calculated from current velocity and desired direction
-	// returns a messure of the differens between vel and dir (needed for aiming) 
+	// returns a messure of the differens between vel and dir (needed for aiming)
 	virtual float navigate(const Vector vel, const Vector dir, controls::Ship& sc) = 0;
-	
+
 	// Perform actions
 	virtual void patrol(void) = 0;
 	virtual void attack(void) = 0;
 	virtual void evade(void) = 0;
-	
+
 public:
 	ShipBase(const SillyData &d, const Vector &v, controls::Ship &sctrl);
 	virtual ~ShipBase(void);
@@ -135,7 +135,7 @@ class ShipBomber : public ShipBase
 	void patrol(void);
 	void attack(void);
 	void evade(void);
-	
+
 public:
 	ShipBomber(const SillyData &d, const Vector &v, controls::Ship &sctrl);
 	~ShipBomber(void);
@@ -149,7 +149,7 @@ class ShipFighter : public ShipBase
 	void patrol(void);
 	void attack(void);
 	void evade(void);
-	
+
 public:
 	ShipFighter(const SillyData &d, const Vector &v, controls::Ship &sctrl);
 	~ShipFighter(void);
@@ -165,12 +165,12 @@ protected:
 	Point pos;
 	const Vector &vel;
 	controls::GroundShip &sc;
-					
-	std::list<Point> waypoints;        
+
+	std::list<Point> waypoints;
 	std::list<Point>::iterator wp_it;
 
 	void navigate(const Vector vel, const Vector dir, controls::GroundShip &sc);
-	
+
 public:
 	GVBase(const SillyData &d, const Vector &v, controls::GroundShip &sctrl);
 	void receive(Message m);
@@ -186,7 +186,7 @@ class GVOrdinary : public GVBase
 public:
 	GVOrdinary(const SillyData &d, const Vector &v, controls::GroundShip &sctrl);
 	~GVOrdinary(void);
-	void think(void);		
+	void think(void);
 };
 
 class GVContainer : public GVBase
@@ -195,11 +195,11 @@ class GVContainer : public GVBase
 public:
 	GVContainer(const SillyData &d, const Vector &v, controls::GroundShip &sctrl);
 	~GVContainer(void);
-	void think(void);		
+	void think(void);
 };
 
 class GVTurret : public GVBase
-{	
+{
 	enum GVTurretEvent{EVENT_OBJECT_DETECTED, EVENT_TARGET_LOST};
 	enum GVTurretState{PATROLING=1, ATTACKING};
 	FSM* fsm;
@@ -210,12 +210,12 @@ class GVTurret : public GVBase
 
 	void patrol(void);
 	void attack(void);
-	
+
 public:
-	GVTurret(const SillyData &d, const Vector &v, controls::GroundShip &sctrl, 
+	GVTurret(const SillyData &d, const Vector &v, controls::GroundShip &sctrl,
 		controls::Turret &tctrl, const current_data::Turret &cctrl);
 	~GVTurret(void);
-	void think(void);		
+	void think(void);
 };
 
 

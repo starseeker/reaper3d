@@ -33,7 +33,7 @@ struct Hash<std::string>
 {
 	size_t operator()(const std::string& s) const {
 		size_t n = 0;
-		for (size_t i = 0; i < s.size(); ++i) 
+		for (size_t i = 0; i < s.size(); ++i)
 			n = (n<<1) ^ s[i];
 		return n;
 	}
@@ -86,12 +86,16 @@ private:
 	size_t count;
 
 public:
-	class iterator : public std::iterator<std::forward_iterator_tag,
-					      std::pair<K,T> > {
+	class iterator  {
+		typedef std::forward_iterator_tag iterator_category;
+		typedef std::pair<K,T> value_type;
+		typedef std::ptrdiff_t difference_type;
+		typedef value_type* pointer;
+		typedef value_type& reference;
 		Tbl* tbl;
 		size_t idx;
 		Iter iter;
-		
+
 		void find_next() {
 			do {
 				iter = iter->next;
@@ -108,7 +112,6 @@ public:
 			} while (!iter->used);
 		}
 	public:
-		typedef std::pair<K,T> value_type;
 
 		iterator(Tbl* t) : tbl(t), idx(0), iter(&(*tbl)[0]) {
 			if (!iter->used)
@@ -137,12 +140,12 @@ public:
 			++(*this);
 			return i;
 		}
-		
+
 		value_type& operator*() { return iter->data; }
 		const value_type& operator*() const { return iter->data; }
 
 		value_type* operator->() { return &iter->data; }
-		
+
 		bool operator==(const iterator& i) const {
 			return tbl == i.tbl && idx == i.idx && iter == i.iter;
 		}
@@ -253,7 +256,7 @@ public:
 		Tbl empty;
 		tbl.swap(empty);
 		tbl.resize(init_size);
-		
+
 		for (size_t i = 0; i < empty.size(); ++i) {
 			Iter n = empty[i].next;
 			while (n) {
@@ -264,7 +267,7 @@ public:
 		}
 
 	}
-	
+
 	iterator begin() {
 		return iterator(&tbl);
 	}

@@ -21,13 +21,13 @@
 
 
 namespace reaper {
-namespace { 
-    reaper::debug::DebugOutput dlog("world", 5); 
+namespace {
+    reaper::debug::DebugOutput dlog("world", 5);
 }
-namespace object { 
-    int get_obj_count(); 
+namespace object {
+    int get_obj_count();
 }
-namespace world {       
+namespace world {
 
 
 using misc::lower_bound;
@@ -36,7 +36,6 @@ using misc::seq;
 using misc::for_each;
 using misc::copy;
 using misc::sort;
-using std::mem_fun_ref;
 using misc::Seq;
 
 using object::SillyPtr;
@@ -64,7 +63,7 @@ object::ID alloc_id()
 
 
 World_impl::World_impl(const std::string& level)
- : tri_tree(0), si_tree(0), st_tree(0), dyn_tree(0), 
+ : tri_tree(0), si_tree(0), st_tree(0), dyn_tree(0),
    // sthold("world", this),
    level_name(level), in_shutdown(false)
 {
@@ -120,8 +119,8 @@ void World_impl::dump(game::state::Env& env) const
 	env["local_player"] = local_player->get_id();
 
 
-	std::auto_ptr<res::res_out_stream> os = game::state::statemgr().obj_store_stream();
-	
+	std::unique_ptr<res::res_out_stream> os = game::state::statemgr().obj_store_stream();
+
 	*os << "[silly]\n";
 	misc::for_each(misc::seq(*si_tree), ostream_out(*os));
 	*os << "[static]\n";

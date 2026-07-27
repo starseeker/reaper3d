@@ -15,18 +15,18 @@ class Camera;
 class Lake
 {
 	class Impl;
-	std::auto_ptr<Impl> i;
+	std::unique_ptr<Impl> i;
 public:
 	Lake(const std::string &file, const std::string &texture, const Vector &wave_dir, float amplitude);
 	~Lake();
-	void render(const world::Frustum &); 
+	void render(const world::Frustum &);
 	void simulate(float dt);
 };
 
 class River
 {
 	class Impl;
-	std::auto_ptr<Impl> i;
+	std::unique_ptr<Impl> i;
 public:
 	River(const std::string &file, const std::string &texture, float speed);
 	~River();
@@ -37,7 +37,7 @@ public:
 class Sky
 {
 	class Impl;
-	std::auto_ptr<Impl> i;
+	std::unique_ptr<Impl> i;
 public:
         Sky(const std::string &tex_file, const Color &col, float alt, float reps);
         ~Sky();
@@ -49,7 +49,7 @@ public:
 class Terrain
 {
 	class Impl;
-	std::auto_ptr<Impl> i;
+	std::unique_ptr<Impl> i;
 public:
 	static int num_vertices;
 	static int num_triangles;
@@ -74,7 +74,7 @@ public:
 class EnvMapper
 {
 	class Impl;
-	std::auto_ptr<Impl> i;
+	std::unique_ptr<Impl> i;
 public:
 	EnvMapper();
 	~EnvMapper();

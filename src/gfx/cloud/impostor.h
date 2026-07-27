@@ -59,18 +59,18 @@ class ImpostorWrap : public T
 {
 	Impostor imp;
 public:
-	ImpostorWrap() : imp(get_radius()) { }
+	ImpostorWrap() : imp(this->get_radius()) { }
 	template<class A>
-	ImpostorWrap(A a) : T(a), imp(get_radius()) { }
+	ImpostorWrap(A a) : T(a), imp(this->get_radius()) { }
 	template<class A, class B>
-	ImpostorWrap(A a, B b) : T(a,b), imp(get_radius()) { }
+	ImpostorWrap(A a, B b) : T(a,b), imp(this->get_radius()) { }
 
 	virtual void setup() const {
 		T::setup();
 	}
 	virtual void render() {
 		if (imp.use_impostor())
-			imp.render(get_pos(), get_radius());
+			imp.render(this->get_pos(), this->get_radius());
 		else
 			T::render(imp.z_range(0));
 	}
@@ -79,7 +79,7 @@ public:
 	}
 	virtual void update(const Camera& cam, const Matrix& ply) {
 		T::update(cam, ply);
-		if (imp.regen(cam, get_pos(), get_radius())) {
+		if (imp.regen(cam, this->get_pos(), this->get_radius())) {
 			imp.before_render(cam, ply);
 			for (int i = 0; i < imp.num_layers(); ++i) {
 //				derr << "render to imposter " << imp.z_range(i).first << "  " << imp.z_range(i).second << '\n';
@@ -98,4 +98,3 @@ public:
 
 
 #endif
-

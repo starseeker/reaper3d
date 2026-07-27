@@ -45,7 +45,7 @@ Renderer::Renderer(const world::LevelInfo &li) :
 	terrain(li.terrain_mesh, li.terrain_main_texture,
                 li.terrain_detail_texture, li.terrain_detail_size),
 	sky(li.sky_texture, li.sky_color, li.sky_altitude, li.sky_width),
-	shadow(0),
+	shadow(nullptr),
 	simul_effects(li.terrain_min_x, li.terrain_min_z, li.terrain_max_x - li.terrain_min_x),
 	orphan_effects(li.terrain_min_x, li.terrain_min_z, li.terrain_max_x - li.terrain_min_x),
 	stats(this), simul_effects_size(0), orphan_effects_size(0)
@@ -61,7 +61,7 @@ void Renderer::start()
 	AssertGL agl("IntRndr::start()");
 
 	const world::LevelInfo &li = wr->get_level_info();
-	
+
 	if(Settings::current.use_fog) {
 		glFogi(GL_FOG_MODE,    fog_type(li.fog_type));
 		glFogf(GL_FOG_DENSITY, li.fog_density);
@@ -80,11 +80,11 @@ void Renderer::start()
 	glPolygonOffset(-1, -20); //FIXME: these values are ad_hoc
 	glEnable(GL_NORMALIZE);
 	glLightModeli(GL_LIGHT_MODEL_LOCAL_VIEWER, GL_TRUE);
-        
-	Settings::current.environment_mapping = 
+
+	Settings::current.environment_mapping =
 		Settings::current.texture_level == 2 &&
 		Settings::current.use_arb_texture_cube_map &&
-		Settings::current.use_arb_texture_env_combine ? 
+		Settings::current.use_arb_texture_env_combine ?
 			Settings::current.environment_mapping : 0;
 }
 
@@ -102,7 +102,7 @@ Renderer::~Renderer()
 //--------------------------------------------------------------------
 pm::Pmd* Renderer::get_pmd()
 {
-	return terrain.get_pmd(); 
+	return terrain.get_pmd();
 }
 
 }

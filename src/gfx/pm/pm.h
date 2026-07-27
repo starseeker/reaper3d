@@ -466,7 +466,7 @@ private:
 
 	float angle(int vo, int v1, int v2); // Angle between vo-v1 and vo-v2
 
-	void sofex(char * text);	// Soft-Exception: Output Errormessage and wait for carrige-return
+	void sofex(const char* text);	// Soft-Exception: Output Errormessage and wait for carrige-return
 
 	void view_neighbours(int vi);   // print the neighbours of a vertex
 	void view_faces(int vi);	// print the faces of a vertex

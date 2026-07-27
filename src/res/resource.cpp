@@ -14,7 +14,7 @@ using namespace misc;
 
 void Mgr::flush()
 {
-	map_snd(seq(nodes), std::mem_fun(&Managed::flush));
+	map_snd(seq(nodes), std::mem_fn(&Managed::flush));
 }
 
 void Mgr::add(IdentRef id, Managed* n)

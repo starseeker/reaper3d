@@ -30,7 +30,7 @@ typedef std::list<buckPtr> buckList;
 #pragma once
 #endif // _MSC_VER > 1000
 
-class buck_eq: public std::unary_function<buckPtr,bool> 
+class buck_eq
 {
         bucket_key k;
 public:
@@ -40,16 +40,16 @@ public:
 
 
 
-class coll_hash  
+class coll_hash
 {
 public:
         coll_hash();
 	~coll_hash();
-        
+
         void remove(const objId id,const bucket_key&);
         void insert(const objId id,const bucket_key&);
         const set<objId>& get_ids(const bucket_key&) const;
-	void print();  //temporary 
+	void print();  //temporary
         vector<bucket_key> get_keys();
 private:
 

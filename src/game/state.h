@@ -43,7 +43,7 @@ public:
 	virtual void remove(const std::string& id) = 0;
 
 	// only call this within Dump::dump
-	virtual std::auto_ptr<res::res_out_stream> obj_store_stream() = 0;
+	virtual std::unique_ptr<res::res_out_stream> obj_store_stream() = 0;
 
 	virtual ~StateMgr();
 };

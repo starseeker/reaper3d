@@ -150,12 +150,12 @@ class Terrain::Impl
 
 	std::vector<int>       index_array;
 	lowlevel::VertexArray<CVAvertex> vertex_array;
-	
+
 	int array_size;
 	int n_vertices;
-        
-	std::auto_ptr<pm::Pmd> pmd;
-        float detail_repeats;      
+
+	std::unique_ptr<pm::Pmd> pmd;
+        float detail_repeats;
 	std::string main_tex, detail_tex;
 	TextureRef tr;
 
@@ -168,20 +168,20 @@ public:
 	pm::Pmd * get_pmd() { return pmd.get(); }
 };
 
-Terrain::Impl::Impl(const string &mesh_id, const string &main_id, const string &detail_id, float dr) : 
+Terrain::Impl::Impl(const string &mesh_id, const string &main_id, const string &detail_id, float dr) :
 	array_size(0), n_vertices(0), pmd(new pm::Pmd),
         detail_repeats(dr),
 	main_tex(main_id), detail_tex(detail_id),
 	tr(TextureMgr::get_ref())
 {
 	using std::vector;
-	
+
 	// initial loader arrays
-	vector<Point>    points;   	
-        vector<TexCoord> texcoords; 
-        vector<Vector>   normals;    
-	vector<Color>    colors; 
-	vector<IdxTriangle> triangles; 
+	vector<Point>    points;
+        vector<TexCoord> texcoords;
+        vector<Vector>   normals;
+	vector<Color>    colors;
+	vector<IdxTriangle> triangles;
 
 	lowlevel::read_terrain(mesh_id,points,texcoords,normals,colors,triangles);
 
@@ -204,7 +204,7 @@ Terrain::Impl::Impl(const string &mesh_id, const string &main_id, const string &
 		dout << "World not initialized. No triangles transferred.\n";
 	}
 
-	n_vertices = points.size(); 
+	n_vertices = points.size();
 	array_size = sizeof(CVAvertex)*n_vertices;
 	vertex_array.resize(n_vertices);
 
@@ -220,7 +220,7 @@ Terrain::Impl::Impl(const string &mesh_id, const string &main_id, const string &
 	LightRef lr = LightMgr::get_ref();
 	if(!lr.valid()) {
 		dout << "Light manager not initialized. Colors not calculated.\n";
-	} 
+	}
 
 	// reserve place in arrays to avoid realloc
 	pmd->vdl.reserve(points.size());
@@ -247,9 +247,9 @@ Terrain::Impl::Impl(const string &mesh_id, const string &main_id, const string &
 	pmd->fl.reserve(triangles.size());
 
 	vector<int>::iterator idx = index_array.begin();
-	
+
 	for(vector<IdxTriangle>::const_iterator i = triangles.begin();i != triangles.end();++i) {
-		pmd->addf(i->v1, i->v2, i->v3);	
+		pmd->addf(i->v1, i->v2, i->v3);
 
 		*idx++ = i->v1;
 		*idx++ = i->v2;
@@ -276,7 +276,7 @@ void Terrain::Impl::render(const Camera &c)
 	if(!Settings::current.draw_terrain)
 		return;
 
-	static bool mesh_made = false;	
+	static bool mesh_made = false;
 
 	if(Settings::current.terrain_detail < 1.0 && !mesh_made) {
 		mesh_made = true;
@@ -284,8 +284,8 @@ void Terrain::Impl::render(const Camera &c)
 		pmd->set_num_con_lim(25000.0);
 		pmd->set_alpha_threshold(1.6E-9);
 		pmd->set_update_steps(16);
-		pmd->makeprog(); 
-	} 
+		pmd->makeprog();
+	}
 
 	int n_active_vertices = 0;
 	if(mesh_made) {
@@ -295,15 +295,15 @@ void Terrain::Impl::render(const Camera &c)
 		pmd->update();
 		n_active_vertices = pmd->progmesh.size();
 	} else {
-		n_active_vertices = index_array.size();	
+		n_active_vertices = index_array.size();
 	}
-	
+
 	Terrain::num_vertices  = n_active_vertices;
 	Terrain::num_triangles = n_active_vertices/3;
 
 	// setup vertex arrays
 	ClientStateKeeper s1(GL_TEXTURE_COORD_ARRAY, true);
-	ClientStateKeeper s2(GL_COLOR_ARRAY, true);	
+	ClientStateKeeper s2(GL_COLOR_ARRAY, true);
 	glTexCoordPointer(2,GL_FLOAT,sizeof(CVAvertex),&vertex_array[0].t);
 
 	tr->use(main_tex);
@@ -326,9 +326,9 @@ void Terrain::Impl::render(const Camera &c)
 
 	}
 
-	glColorPointer(4,GL_UNSIGNED_BYTE,sizeof(CVAvertex),&vertex_array[0].c);			
-	glVertexPointer(3,GL_FLOAT,sizeof(CVAvertex),&vertex_array[0].p);		
-	
+	glColorPointer(4,GL_UNSIGNED_BYTE,sizeof(CVAvertex),&vertex_array[0].c);
+	glVertexPointer(3,GL_FLOAT,sizeof(CVAvertex),&vertex_array[0].p);
+
 	const int *index_ptr = mesh_made ? &(pmd->progmesh)[0] : &index_array[0];
 	vertex_array.glDrawElements_stripe(GL_TRIANGLES, n_active_vertices, index_ptr);
 
@@ -349,9 +349,9 @@ void Terrain::Impl::render(const Camera &c)
 }
 
 Terrain::Terrain(const string &mesh_id, const string &main_id, const string &detail_id, float dr) :
-	i(new Impl(mesh_id, main_id, detail_id, dr)) 
+	i(new Impl(mesh_id, main_id, detail_id, dr))
 {}
-Terrain::~Terrain() 
+Terrain::~Terrain()
 {}
 void Terrain::render(const Camera &c) { i->render(c); }
 pm::Pmd* Terrain::get_pmd() { return i->get_pmd();  }

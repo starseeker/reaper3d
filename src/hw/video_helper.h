@@ -70,9 +70,9 @@ public:
 	{
 		return true;
 	}
-	std::auto_ptr<snd::AudioSource> get()
+	std::unique_ptr<snd::AudioSource> get()
 	{
-		return std::auto_ptr<snd::AudioSource>(0);
+		return nullptr;
 	}
 	snd::SoundInfo info()
 	{
@@ -131,7 +131,7 @@ public:
 	int open(const char*) { return 0; }
 	int isOpen() { return is_open; }
 	int eof() { return input.eof(); }
-	
+
 	int read(char* ptr, int size) {
 //		printf("read req: %d -> %d\n", size, input.good());
 		input.read(ptr, size);
@@ -155,7 +155,7 @@ public:
 class MemOutputStream : public OutputStream {
 	AudioPlayer* player;
 	AVSyncer* avSyncer;
-	PictureArray* picArray; 
+	PictureArray* picArray;
 
 	int lBufferSet;
 	int lVideoInit;

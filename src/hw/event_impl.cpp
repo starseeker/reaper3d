@@ -1,6 +1,6 @@
 /*
  * Author: Peter Strand <d98peter@dtek.chalmers.se>
- * 
+ *
  * Lowlevel event handling:
  *  * Scanning and initializing input devices
  *  * Collecthing and dispatching events
@@ -72,7 +72,7 @@ public:
 			axis_confs[a].min    = conf[pfx+"min"];
 			axis_confs[a].max    = conf[pfx+"max"];
 			axis_confs[a].sensitivity = conf[pfx+"sensitivity"];
-			
+
 		}
 	}
 
@@ -94,7 +94,7 @@ class InputReader : public EventFilter {
 	lowlevel::Gfx_driver_data* gx;
 	InputDevices inputs;
 	InputDevices::iterator current;
-	std::auto_ptr<MainEvIF_impl> mev;
+	std::unique_ptr<MainEvIF_impl> mev;
 public:
 	InputReader(lowlevel::Gfx_driver_data* g)
 	 : gx(g), mev(new MainEvIF_impl())
@@ -104,14 +104,14 @@ public:
 		mev->read_axis_config(2, axis_conf);
 
 		// Always use GLFW input system - plugin architecture removed
-		std::auto_ptr<InputDeviceModule> inp(create_event_glfw(mev.get()));
+		std::unique_ptr<InputDeviceModule> inp(create_event_glfw(mev.get()));
 
 		inp->scan_inputdevices(gx, std::back_inserter(inputs));
 		current = inputs.begin();
 	}
 
 	bool poll(Event& ev) {
-		// FIXME, should round-robin or something.. 
+		// FIXME, should round-robin or something..
 		InputDevices::iterator i = inputs.begin();
 		for (;i != inputs.end(); ++i) {
 			if ((*i)->poll(ev)) {
@@ -155,7 +155,7 @@ EventDispatcher::~EventDispatcher()
 	misc::for_each(misc::seq(filters), misc::delete_it);
 	filters.clear();
 	misc::for_each(misc::seq(players), misc::delete_it);
-	players.clear(); 
+	players.clear();
 }
 
 EventTimeQueue::EventTimeQueue()
@@ -178,7 +178,7 @@ bool EventTimeQueue::poll(Event& ev) {
 			++missed;
 			Time diff = now - ev.time;
 			missed_avg = (missed_avg * (missed-1) + diff) / missed;
-			dlog << "Missed event, now:" << std::hex << now << " ev.time:" << ev.time 
+			dlog << "Missed event, now:" << std::hex << now << " ev.time:" << ev.time
 			     << " diff:" << std::dec << diff << " nm:"
 			     << missed << " avg:" << missed_avg << '\n';
 		}

@@ -1,8 +1,8 @@
 /*
- * 
+ *
  * Gameserver implementation.
  * Maintains one networked game, and except for startup,
- * only distributes events/objectdata. Most of the logic 
+ * only distributes events/objectdata. Most of the logic
  * is on the client-side.
  *
  */
@@ -13,13 +13,13 @@
 
  Protocol:
 
-  All communication is client driven, the 
+  All communication is client driven, the
   server just responds to requests.
 
    Requests are oneliners starting with single word (lowercase
    letters only), followed by optional arguments.
 
-   Responses may be empty or span one or several lines, 
+   Responses may be empty or span one or several lines,
    format depends on the request.
 
 
@@ -27,7 +27,7 @@
  --------------------------------------------------------------------------
  serverinfo    | <none>            | not implemented yet
  gameinfo      | <state>           | see net/net.h, GameState
-               | <id>              | <- may repeat 
+               | <id>              | <- may repeat
                | end               |
  time	       | <current-time>    |
  join          | <id> | no         | Only granted in <init> or <active>
@@ -79,8 +79,8 @@
 
 
 namespace reaper {
-namespace { 
-        debug::DebugOutput derr("server", 5); 
+namespace {
+        debug::DebugOutput derr("server", 5);
 }
 namespace net {
 
@@ -268,7 +268,7 @@ public:
 		commands["putobj"]	= new ServerCommand(this, &Server::putobj);
 		commands["getobjs"]	= new ServerCommand(this, &Server::getobjs);
 		commands["go"]          = new ServerCommand(this, &Server::go);
-		
+
 		start_time = hw::time::get_time();
 		event_count = 0;
 	}
@@ -317,8 +317,8 @@ public:
 		send(c->stream(), "end");
 		return true;
 	}
-	
-	struct WithPid : public std::unary_function<const Client*, bool> {
+
+	struct WithPid {
 		int pid;
 		WithPid(int p) : pid(p) { }
 		bool operator()(const Client* c) const {
@@ -469,7 +469,7 @@ public:
 	void print_stats()
 	{
 		char buf[200];
-		snprintf(buf, 200, "[server] cl: %d  ac: %d  ev: %d  tm: %f  rt: %ld  ob: %d\n", 
+		snprintf(buf, 200, "[server] cl: %zu  ac: %zu  ev: %d  tm: %f  rt: %ld  ob: %zu\n",
 		     clients.size(),
 		     active.size(),
 		     event_count,
@@ -485,8 +485,7 @@ public:
 
 		if (game.state == net::startup &&
 		    scheduled_starts.size() == (game.players.size() + game.observers.size())) {
-			for_each(seq(scheduled_starts), send_ack);	
-			scheduled_starts.empty();
+			for_each(seq(scheduled_starts), send_ack);
 			game.state = net::running;
 		}
 
@@ -505,7 +504,7 @@ public:
 			last_stats = now;
 		}
 	}
-	
+
 	void run()
 	{
 		main.listen(4247);

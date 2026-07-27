@@ -28,15 +28,15 @@ namespace lowlevel {
 
 using hw::time::Profile;
 
-namespace  {	
+namespace  {
 
 /// Rendering command compare
 class IDcomp {
 public:
 	inline bool operator()(const IDable *a, const IDable *b) const {
-		if(a->get_texture() < b->get_texture()) 
+		if(a->get_texture() < b->get_texture())
 			return true;
-		if(b->get_texture() < a->get_texture()) 
+		if(b->get_texture() < a->get_texture())
 			return false;
 
 		return a->get_id() < b->get_id();
@@ -46,9 +46,9 @@ public:
 class RenderInfoComp {
 public:
 	inline bool operator()(const RenderInfo *a, const RenderInfo *b) const {
-		if(a->texture < b->texture) 
+		if(a->texture < b->texture)
 			return true;
-		if(b->texture < a->texture) 
+		if(b->texture < a->texture)
 			return false;
 
 		return a->mesh < b->mesh;
@@ -59,19 +59,19 @@ using namespace reaper::misc;
 using namespace world;
 
 inline Seq<tri_iterator> wseq(const tri_iterator &i) {
-	return Seq<tri_iterator>(i, World::get_ref()->end_tri()); 
+	return Seq<tri_iterator>(i, World::get_ref()->end_tri());
 }
-inline Seq<si_iterator> wseq(const si_iterator &i) { 
-	return Seq<si_iterator>(i, World::get_ref()->end_si()); 
+inline Seq<si_iterator> wseq(const si_iterator &i) {
+	return Seq<si_iterator>(i, World::get_ref()->end_si());
 }
-inline Seq<st_iterator> wseq(const st_iterator &i) { 
-	return Seq<st_iterator>(i, World::get_ref()->end_st()); 
+inline Seq<st_iterator> wseq(const st_iterator &i) {
+	return Seq<st_iterator>(i, World::get_ref()->end_st());
 }
-inline Seq<dyn_iterator> wseq(const dyn_iterator &i) { 
-	return Seq<dyn_iterator>(i, World::get_ref()->end_dyn()); 
+inline Seq<dyn_iterator> wseq(const dyn_iterator &i) {
+	return Seq<dyn_iterator>(i, World::get_ref()->end_dyn());
 }
 inline Seq<shot_iterator> wseq(const shot_iterator &i) {
-	return Seq<shot_iterator>(i, World::get_ref()->end_shot()); 
+	return Seq<shot_iterator>(i, World::get_ref()->end_shot());
 }
 
 } // end anonymous namespace
@@ -83,12 +83,12 @@ void Renderer::render(const Camera &cam)
 	stats.reset();
 
 	if(!envmapper.get()) {
-		envmapper = std::auto_ptr<EnvMapper>(new EnvMapper);
+		envmapper = std::unique_ptr<EnvMapper>(new EnvMapper);
 	}
 
-	if(Settings::current.use_fog) {	glEnable(GL_FOG); }	
+	if(Settings::current.use_fog) {	glEnable(GL_FOG); }
 
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      
+
 	gen_envmap();
 	frustum = cam.setup_view();
 	{ Profile p(stats[Clear]); glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); }
@@ -97,22 +97,22 @@ void Renderer::render(const Camera &cam)
 	glEnable(GL_CULL_FACE);
 	glEnable(GL_DEPTH_TEST);
 	{ Profile p(stats[Terrain_prf]); terrain.render(cam); }
-	
+
 	render_objects();
 
 	glDepthMask(GL_FALSE);
 	glEnable(GL_POLYGON_OFFSET_FILL);
-	
+
 	// shadows/lights are drawn only for half of current frustm
-	world::Frustum short_frustum(frustum.pos(), frustum.dir() / 2, frustum.up(), 
-	                             frustum.fov_width(), frustum.fov_height());	
+	world::Frustum short_frustum(frustum.pos(), frustum.dir() / 2, frustum.up(),
+	                             frustum.fov_width(), frustum.fov_height());
 
 	{ Profile p(stats[Shadow]); render_shadows(short_frustum); }
 	{ Profile p(stats[Light]); lr->render(short_frustum); }
 
 	glDisable(GL_POLYGON_OFFSET_FILL);
 	glDisable(GL_CULL_FACE);
-	
+
 	{ Profile p(stats[Water]); render_water(); }
 	{ Profile p(stats[EffectRender]); render_effects(); }
 
@@ -120,15 +120,15 @@ void Renderer::render(const Camera &cam)
 	glDisable(GL_DEPTH_TEST);
 
 	if(Settings::current.use_fog) {	glDisable(GL_FOG); }
-	
+
 	{ Profile p(stats[HUDprf]);
 	  stats.render();
 	  render_hud();
 	}
 
-	glDisable(GL_ALPHA_TEST);	
+	glDisable(GL_ALPHA_TEST);
 	glDisable(GL_BLEND);
-}	
+}
 
 namespace {
 
@@ -137,7 +137,7 @@ struct Gather
 {
 	InIt mi, bmi;
 	int cnt;
-	
+
 	Gather(const InIt& m, const InIt& bm) : mi(m), bmi(bm), cnt(0) {}
 
 	template<typename T>
@@ -163,7 +163,7 @@ inline int gather_meshes(const InIt& mi, const InIt& bmi, const S& seq)
 struct Refs
 {
 	TextureRef tr;
-	MeshRef mr; 
+	MeshRef mr;
 
 	Refs() : tr(TextureMgr::get_ref()), mr(MeshMgr::get_ref()) {}
 };
@@ -172,11 +172,11 @@ struct Render : protected Refs
 {
 	void operator()(const RenderInfo *i) {
 		glPushMatrix();
-		glMultMatrix(*i->mtx);	
+		glMultMatrix(*i->mtx);
 		tr->use(i->texture);
 		mr->render(*i, 0);
 		glPopMatrix();
-	}		
+	}
 };
 
 class RenderLight : public Render
@@ -188,13 +188,15 @@ public:
 	void operator()(const RenderInfo *i) {
 		lr->setup_locals(i->mtx->pos(), i->radius);
 		Render::operator()(i);
-	}		
+	}
 };
 
 // std::equal_to<> takes only one type
 template <typename A, typename B>
-struct Compare : public std::binary_function<A, B, bool>
-{
+struct Compare {
+	typedef A first_argument_type;
+	typedef B second_argument_type;
+	typedef bool result_type;
 	bool operator()(const A &a, const B &b) const {
 		return a == b;
 	}
@@ -206,10 +208,10 @@ template<typename C, typename R>
 inline void render_meshes(C &meshes, C &blend_meshes, const R &rend)
 {
 	glDisable(GL_ALPHA_TEST);
-	glDisable(GL_BLEND);		
+	glDisable(GL_BLEND);
 	for_each(seq(meshes), rend);
 	glEnable(GL_ALPHA_TEST);
-	glEnable(GL_BLEND);		
+	glEnable(GL_BLEND);
 	for_each(seq(blend_meshes), rend);
 }
 
@@ -236,7 +238,7 @@ void Renderer::render_objects()
 	stats[Shots] = gather_meshes(mi, bmi, wseq(wr->find_shot(frustum)));
 	stats[Sillys] = gather_meshes(mi, bmi, wseq(wr->find_si(frustum)));
 	stats[Statics] = gather_meshes(mi, bmi, wseq(wr->find_st(frustum)));
-	
+
 	if(env_map) {
 		stats[Dynamics] = gather_meshes(mi, bmi, skip_seq(wseq(wr->find_dyn(frustum)),
 			reaper::misc::bind2nd(ComparePtr(), wr->get_local_player())));
@@ -262,7 +264,7 @@ void Renderer::render_objects()
 	}
 
 	meshes.clear();
-	blend_meshes.clear(); 
+	blend_meshes.clear();
 
 	if(env_map) {
 		AssertGL agl("IntRndr - envmap render");
@@ -280,7 +282,7 @@ void Renderer::render_objects()
 		m.pos() = Point(0,0,0);
 		glLoadMatrix(fake_inverse3(m));
 		glMatrixMode(GL_MODELVIEW);
-		glActiveTextureARB(GL_TEXTURE0_ARB);		
+		glActiveTextureARB(GL_TEXTURE0_ARB);
 
 		if(Settings::current.use_lighting) {
 			render_meshes(meshes, blend_meshes, RenderLight());
@@ -296,11 +298,11 @@ void Renderer::render_objects()
 		glActiveTextureARB(GL_TEXTURE0_ARB);
 
 		meshes.clear();
-		blend_meshes.clear(); 
+		blend_meshes.clear();
 	}
 
 	if(Settings::current.use_lighting) {
-		glDisable(GL_LIGHTING);	
+		glDisable(GL_LIGHTING);
 	}
 }
 
@@ -308,7 +310,7 @@ void Renderer::gen_envmap()
 {
 	if(Settings::current.environment_mapping != 0 &&
 	   Settings::current.hud_type != Internal_HUD) {
-		AssertGL agl("IntRndr - envmap generate");		
+		AssertGL agl("IntRndr - envmap generate");
 		Profile p(stats[Cubemap]);
 
 		envmapper->generate(wr->get_local_player()->get_pos(), frustum, sky, terrain);
@@ -319,7 +321,7 @@ void Renderer::render_effects()
 {
 	using namespace reaper::misc;
 
-	if(!Settings::current.draw_effects) {	
+	if(!Settings::current.draw_effects) {
 		temp_effects.clear();
 		return;
 	}
@@ -328,19 +330,19 @@ void Renderer::render_effects()
 
 	simul_effects.update();
 	orphan_effects.update();
-	
+
 	// gather all effects in one container
-	std::back_insert_iterator<EffectCont> ii(temp_effects);		
+	std::back_insert_iterator<EffectCont> ii(temp_effects);
 
 	std::copy(simul_effects.find(frustum),  simul_effects.end(),  ii);
 	std::copy(orphan_effects.find(frustum), orphan_effects.end(), ii);
 	sort(seq(temp_effects), IDcomp());
-	
+
 	typedef EffectCont::value_type     value_type;
 	typedef EffectCont::const_iterator iterator;
 
 	const iterator end = temp_effects.end();
-	iterator i = temp_effects.begin(); 
+	iterator i = temp_effects.begin();
 
 	while(i != end) {
 		bool has_rendered    = false;
@@ -370,7 +372,7 @@ void Renderer::render_water()
 {
 	AssertGL agl("IntRndr::render_water()");
 
-	if(!Settings::current.draw_water) 
+	if(!Settings::current.draw_water)
 		return;
 
 	for(LakeCont::const_iterator i = lakes.begin(); i != lakes.end(); ++i) {
@@ -383,31 +385,31 @@ void Renderer::render_hud()
 {
 	AssertGL agl("IntRndr::render_hud()");
 
-	if (*HUD::hud_type == None_HUD) 
+	if (*HUD::hud_type == None_HUD)
 		return;
 
 	object::PlayerPtr pb = wr->get_local_player();
 	if (pb != 0) {
-		pb->render_hud(*HUD::hud_type == External_HUD ? 
+		pb->render_hud(*HUD::hud_type == External_HUD ?
 			       object::PlayerBase::External :
 			       object::PlayerBase::Internal );
 	}
 }
 
 void Renderer::render_shadows(const world::Frustum &frustum)
-{		
+{
 	static int shadow_type = 0;
 
 	if(Settings::current.texture_level == 0 || !Settings::current.draw_shadows) {
-		return; 
+		return;
 	}
 
 	AssertGL agl("IntRnr::render_shadows");
-	
+
 	if((shadow.get() == 0 && shadow_type > 0) ||
 	    shadow_type != Settings::current.shadow_type ) {
 		shadow_type = Settings::current.shadow_type;
-		shadow = std::auto_ptr<ShadowRenderer>(ShadowRenderer::get(shadow_type));
+		shadow = std::unique_ptr<ShadowRenderer>(ShadowRenderer::get(shadow_type));
 		if(shadow.get() == 0) {
 			stats[Shadows] = 0;
 		}

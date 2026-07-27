@@ -16,7 +16,7 @@ Vector& Steering::seek(Point& target_pos)
 {
 	Vector desired_vel = norm(target_pos - pos) * max_speed;
 	sf = desired_vel - vel;
-	
+
 	return sf;
 }
 
@@ -24,7 +24,7 @@ Vector& Steering::flee(Point& target_pos)
 {
 	Vector desired_vel = norm(pos - target_pos) * max_speed;
 	sf = desired_vel - vel;
-	
+
 	return sf;
 }
 
@@ -32,10 +32,10 @@ Vector& Steering::pursuit(Point& target_pos, Vector& target_vel)
 {
 	// prediction of time until interception
 	float T = length(target_pos - pos) / max_speed;
-	
+
 	// prediction of interception point
 	Point interception = target_pos + (target_vel*T);
-	
+
 	// seek this point
 	seek(interception);
 
@@ -46,10 +46,10 @@ Vector& Steering::evade(Point& target_pos, Vector& target_vel)
 {
 	// prediction of time until interception
 	float T = length(target_pos - pos) / max_speed;
-	
+
 	// prediction of interception point
 	Point interception = target_pos + (target_vel*T);
-	
+
 	// flee this point
 	flee(interception);
 
@@ -66,19 +66,31 @@ Vector& Steering::arrive(Point& target_pos, float slowing_dist)
 
 	Vector desired_vel = (speed / dist) * target_dir; // TODO: fix if dist==0
 	sf = desired_vel - vel;
-	
+
 	return sf;
 }
 
 Vector& contain(Point& min, Point& max)
 {
-
-
+	static Vector no_force(0, 0, 0);
+	return no_force;
 }
 
-Vector& separate(float radius, world::WorldRef wr) {}
-Vector& cohere(float radius, world::WorldRef wr) {}
-Vector& align(float radius, world::WorldRef wr) {}
+Vector& separate(float radius, world::WorldRef wr)
+{
+	static Vector no_force(0, 0, 0);
+	return no_force;
+}
+Vector& cohere(float radius, world::WorldRef wr)
+{
+	static Vector no_force(0, 0, 0);
+	return no_force;
+}
+Vector& align(float radius, world::WorldRef wr)
+{
+	static Vector no_force(0, 0, 0);
+	return no_force;
+}
 
 Vector& Steering::get_steering()
 {

@@ -92,7 +92,7 @@ class Shot : public Effect
 			geom->render();
 		}
 	};
-	
+
 	mutable TextureRef tr;
 	world::Sphere sphere;
 	const Matrix &mtx;
@@ -166,7 +166,7 @@ class Sphere : public Effect
 			list.begin();
 			misc::sphere(1,20,20);
 			glPopMatrix();
-			list.end();	
+			list.end();
 		}
 
 		void exit() {
@@ -193,7 +193,7 @@ public:
 Sphere::SphereInitializer Sphere::initializer;
 }
 
-namespace initializers {	
+namespace initializers {
 Initializer *sphere = &lowlevel::Sphere::initializer;
 }
 
@@ -207,7 +207,7 @@ Sphere::Sphere(const Matrix &m, float r, const Color &c) :
 }
 
 void Sphere::render()
-{	
+{
 	glColor4(color);
 	glPushMatrix();
 	glTranslate(mtx.pos());
@@ -215,7 +215,7 @@ void Sphere::render()
 	initializer.list.call();
 	// glPopMatrix() in list :)
 }
- 
+
 void Sphere::setup() const
 {
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -243,7 +243,7 @@ public:
 	ShieldSphere(const Matrix &m, float r, const Color &c, const Vector &light);
 	const world::Sphere& get_sphere();
 	const Point& get_pos() const;
-	float get_radius() const; 
+	float get_radius() const;
 
 	void render();
 	void setup() const;
@@ -265,13 +265,13 @@ const world::Sphere& ShieldSphere::get_sphere()
 	return sphere;
 }
 
-const Point& ShieldSphere::get_pos() const 
-{ 
-	return mtx.pos(); 
+const Point& ShieldSphere::get_pos() const
+{
+	return mtx.pos();
 }
-float ShieldSphere::get_radius() const 
-{ 
-	return sphere.r; 
+float ShieldSphere::get_radius() const
+{
+	return sphere.r;
 }
 
 void ShieldSphere::setup() const {
@@ -329,7 +329,7 @@ public:
 			move_dist += len;
 			return false;
 		}
-	}		
+	}
 };
 
 class EngineTrail : public SimEffect
@@ -337,7 +337,7 @@ class EngineTrail : public SimEffect
 	class TrailPiece {
 	public:
 		Point p1;
-		Point p2;		
+		Point p2;
 		TrailPiece(const Point &P1, const Point &P2) : p1(P1), p2(P2) {}
 	};
 
@@ -370,7 +370,7 @@ public:
 
 const int EngineTrail::trail_length = 50;
 
-EngineTrail::EngineTrail(const Matrix &m, float s, const Point &o) : 
+EngineTrail::EngineTrail(const Matrix &m, float s, const Point &o) :
 	SimEffect("engine_trail","engine_wake"),
 	emitter(m.pos(), 1),
 	mtx(m), size(s), offset(o),
@@ -386,10 +386,10 @@ void EngineTrail::simulate(float dt)
 	const Vector w = mtx.col(0) * size;
 
 	Point new_p;
-	while(emitter.emit(p, new_p)) { 
+	while(emitter.emit(p, new_p)) {
 		trail.push_front(TrailPiece(new_p-w, new_p+w));
 	}
-	
+
 	if(!trail.empty()) {
 		trail.front().p1 = p - w;
 		trail.front().p2 = p + w;
@@ -471,9 +471,9 @@ class SmokeTrail : public SimEffect
 		float max_size;
 		Color c;
 		float life_time;
-		
-		TrailPiece(const Point &p, float s, const Vector &v) 
-		: pos(p), vel(v.x + frand2()*2, v.y + frand2()*2, v.z + frand2()*2), 
+
+		TrailPiece(const Point &p, float s, const Vector &v)
+		: pos(p), vel(v.x + frand2()*2, v.y + frand2()*2, v.z + frand2()*2),
 		  max_size(s), c(1,1,0), life_time(0)
 		{ }
 
@@ -486,10 +486,10 @@ class SmokeTrail : public SimEffect
 			if(life_time > .2 && life_time < .7) {
 				c = Color(1,1,(life_time*2)-.4);
 			}
-			
+
 			const float max_life = 1.5;
 			if(life_time < max_life) {
-				c.a = (max_life-life_time)/max_life;				
+				c.a = (max_life-life_time)/max_life;
 				return true;
 			} else {
 				return false;
@@ -528,7 +528,7 @@ public:
 	void restore() const;
 };
 
-SmokeTrail::SmokeTrail(const Matrix &m, float s, const Point &o) : 
+SmokeTrail::SmokeTrail(const Matrix &m, float s, const Point &o) :
 	SimEffect("smoke_trail","smoke"), emitter(m.pos(), s*4),
 	mtx(m), size(s), offset(o),
 	sphere(m.pos(), 1),
@@ -542,7 +542,7 @@ void SmokeTrail::simulate(float dt)
 	while(emitter.emit(mtx * offset, new_p)) {
 		trail.push_front(TrailPiece(new_p, size, mtx.col(2) * 60));
 	}
-	
+
 	simulate_death(dt);
 }
 
@@ -570,13 +570,13 @@ bool SmokeTrail::simulate_death(float dt)
 		sphere.r = length(trail.front().pos - trail.back().pos) / 2;
 		break;
 	}
-	
+
 	return true;
 }
 
 void SmokeTrail::render()
 {
-	std::for_each(trail.begin(), trail.end(), std::mem_fun_ref(&TrailPiece::render));
+	std::for_each(trail.begin(), trail.end(), std::mem_fn(&TrailPiece::render));
 }
 
 void SmokeTrail::setup() const
@@ -607,7 +607,7 @@ public:
 	bool simulate_death(float dt); // fades light until intensity = 0, then expires
 	void set_color(const Color &c);
 
-	const world::Sphere& get_sphere() { return sphere; }	
+	const world::Sphere& get_sphere() { return sphere; }
 	const Point& get_pos() const { return sphere.p; }
 	float get_radius() const { return sphere.r; }
 
@@ -643,7 +643,7 @@ public:
 	~StaticLight();
 };
 
-StaticLight::StaticLight(const Point &p, const Color &c, float r, float f) : 
+StaticLight::StaticLight(const Point &p, const Color &c, float r, float f) :
 	LightBase(new light::Light(p, c, r), f)
 {
 	sphere.p = p;
@@ -654,7 +654,7 @@ StaticLight::StaticLight(const Point &p, const Color &c, float r, float f) :
 StaticLight::~StaticLight()
 {
 	lr->remove_static(light);
-	delete light;   
+	delete light;
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -663,25 +663,25 @@ class DynamicLight : public LightBase
 {
 protected:
 	const Matrix &mtx;
-	Point  offset;    
+	Point  offset;
 	Vector vel;
 	bool   grav;
 public:
-	DynamicLight(const Matrix &m, const Point &o, const Color &color, 
+	DynamicLight(const Matrix &m, const Point &o, const Color &color,
 	             float radius, float fade_speed, bool gravitation = true);
 	~DynamicLight();
 
-	bool simulate_death(float dt); // fades and moves light 
+	bool simulate_death(float dt); // fades and moves light
 	void simulate(float dt);       // updates light position w/r to matrix and offset
 
 	void set_offset(const Point &p);
 	void set_velocity(const Vector &v) { vel = v; }
 };
 
-DynamicLight::DynamicLight(const Matrix &m, const Point &o, const Color &c, 
+DynamicLight::DynamicLight(const Matrix &m, const Point &o, const Color &c,
 	                   float r, float fs, bool g) :
-	LightBase(new light::Light(Point(m.pos() + o), c, r), fs), 
-	mtx(m), offset(o), vel(0,0,0), grav(g) 
+	LightBase(new light::Light(Point(m.pos() + o), c, r), fs),
+	mtx(m), offset(o), vel(0,0,0), grav(g)
 {
 	sphere.p = m.pos() + o;
 	sphere.r = r;
@@ -697,7 +697,7 @@ DynamicLight::~DynamicLight()
 
 void DynamicLight::set_offset(const Point &p)
 {
-	offset = p; 
+	offset = p;
 	Point light_pos = mtx.pos() + offset;
 	light->pos = Vector4(light_pos);
 	sphere.p = light_pos;
@@ -733,34 +733,34 @@ bool DynamicLight::simulate_death(float dt)
 
 using namespace lowlevel;
 
-EffectPtr shot(const Matrix &m, const Color &c) 
+EffectPtr shot(const Matrix &m, const Color &c)
 {
-	return EffectPtr(new Shot(m,c)); 
+	return EffectPtr(new Shot(m,c));
 }
-EffectPtr sphere(const Matrix &m, float r, const Color &c) 
+EffectPtr sphere(const Matrix &m, float r, const Color &c)
 {
-	return EffectPtr(new Sphere(m,r,c)); 
+	return EffectPtr(new Sphere(m,r,c));
 }
 
-SimEffectPtr shieldsphere(const Matrix &m, float r, const Color &c, const Vector &light) 
+SimEffectPtr shieldsphere(const Matrix &m, float r, const Color &c, const Vector &light)
 {
 	return SimEffectPtr(new ShieldSphere(m,r,c,light));
 }
 
-SimEffectPtr enginetrail(const Matrix &mtx, float size, const Point &offset) 
+SimEffectPtr enginetrail(const Matrix &mtx, float size, const Point &offset)
 {
 	return SimEffectPtr(new EngineTrail(mtx,size,offset));
 }
-SimEffectPtr smoketrail(const Matrix &mtx, float size, const Point &offset) 
+SimEffectPtr smoketrail(const Matrix &mtx, float size, const Point &offset)
 {
 	return SimEffectPtr(new SmokeTrail(mtx,size,offset));
 }
 
-SimEffectPtr static_light(const Point &pos, const Color &color, float radius,float fade_speed) 
+SimEffectPtr static_light(const Point &pos, const Color &color, float radius,float fade_speed)
 {
 	return SimEffectPtr(new StaticLight(pos,color,radius,fade_speed));
 }
-SimEffectPtr dynamic_light(const Matrix &m, const Point &o, const Color &color, 
+SimEffectPtr dynamic_light(const Matrix &m, const Point &o, const Color &color,
 			float radius, float fade_speed, bool gravitation)
 {
 	return SimEffectPtr(new DynamicLight(m,o,color,radius,fade_speed,gravitation));

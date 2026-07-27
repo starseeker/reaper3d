@@ -44,7 +44,7 @@ public:
 	virtual ~AudioSource() { }
 };
 
-//typedef std::auto_ptr<AudioSource> AudioSourcePtr;
+//typedef std::unique_ptr<AudioSource> AudioSourcePtr;
 typedef AudioSource* AudioSourcePtr;
 
 typedef Decoder<AudioSource> AudioDecoder;

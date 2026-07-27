@@ -87,8 +87,8 @@ public:
 		pmap.erase(id);
 	}
 
-	std::auto_ptr<res::res_out_stream> obj_store_stream() {
-		return std::auto_ptr<res::res_out_stream>(
+	std::unique_ptr<res::res_out_stream> obj_store_stream() {
+		return std::unique_ptr<res::res_out_stream>(
 			new res::res_out_stream(res::GameState, fn + "_objs"));
 	}
 };
@@ -125,7 +125,7 @@ public:
 				config_line(is, var, val);
 				g->cfg[sec][var] = val;
 			}
-			is >> crlf;			
+			is >> crlf;
 		}
 		res::res_stream isg(res::GameState, id + "_objs");
 		while (! isg.eof()) {

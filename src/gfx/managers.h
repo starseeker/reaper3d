@@ -43,13 +43,13 @@ typedef reaper::misc::UniquePtr<TextureMgr> TextureRef;
 
 class LightMgr
 {
-public:	
+public:
 //	static LightRef create();
 //	static LightRef create(const std::string &file);
 	static LightRef get_ref();
-	
-	void setup_global();                               ///< Call each frame	
-	void setup_locals(const Point& pos, float radius); ///< Call for each object	
+
+	void setup_global();                               ///< Call each frame
+	void setup_locals(const Point& pos, float radius); ///< Call for each object
 	void render(const world::Frustum &f);              ///< Render lightmaps on terrain
 
 	void add_global(light::Light *l);
@@ -64,11 +64,11 @@ public:
 
 	int num_static_lights();
 
-	~LightMgr(); 
+	~LightMgr();
 private:
 	LightMgr();
 	LightMgr(const std::string &file);
-	std::auto_ptr<lowlevel::LightMgrImpl> i;
+	std::unique_ptr<lowlevel::LightMgrImpl> i;
 
 	friend class reaper::misc::UniquePtr<LightMgr>;
 };
@@ -76,19 +76,19 @@ private:
 class TextureMgr
 {
 public:
-//	static TextureRef create();	
+//	static TextureRef create();
 	static TextureRef get_ref();
 
-	void use(Unique id, int level = 2);  /// Binds the texture to use for rendering	
+	void use(Unique id, int level = 2);  /// Binds the texture to use for rendering
 	void load(Unique id, int level = 2); /// Loads the texture from disk, does not bind
 
-	int count() const;         /// Returns the number of loaded objects	
+	int count() const;         /// Returns the number of loaded objects
 	void purge();              /// Frees all loaded objects
 
 	~TextureMgr();
 private:
 	TextureMgr();
-	std::auto_ptr<lowlevel::TextureMgrImpl> i;
+	std::unique_ptr<lowlevel::TextureMgrImpl> i;
 
 	friend class reaper::misc::UniquePtr<TextureMgr>;
 };
@@ -97,7 +97,7 @@ class MeshMgr
 {
 public:
 //	static MeshRef create();
-	static MeshRef get_ref();	
+	static MeshRef get_ref();
 
 	void   load(Unique id);
 	void   render(const RenderInfo &id, int lod);
@@ -105,11 +105,11 @@ public:
 	Unique get_texture(const RenderInfo &id);
 	float  get_radius(Unique id);
 	void   generate_shadow_volume(Unique id,
-	                    const Vector &light, 
-	                    const Matrix &mtx, 
+	                    const Vector &light,
+	                    const Matrix &mtx,
 			    mesh::ShadowVolume &sv);
 
-	int count() const; ///< Returns the number of loaded objects	
+	int count() const; ///< Returns the number of loaded objects
 	void purge();      ///< Frees all loaded objects
 
 	int get_num_vertices();  ///< returns vertices rendered since last reset
@@ -119,7 +119,7 @@ public:
 	~MeshMgr();
 private:
 	MeshMgr();
-	std::auto_ptr<lowlevel::MeshMgrImpl> i;
+	std::unique_ptr<lowlevel::MeshMgrImpl> i;
 
 	friend class reaper::misc::UniquePtr<MeshMgr>;
 };
@@ -139,7 +139,7 @@ public:
 	void wait(void*);
 	void clear();
 
-	size_t total_size(); 
+	size_t total_size();
 
 	void glDrawArrays(const void *ptr, int mode, int first, int count);
 	void glDrawElements(const void *ptr, int mode, int count, int type, const void *indices, int size);
@@ -148,7 +148,7 @@ public:
 	~VertexMgr();
 private:
 	VertexMgr();
-	std::auto_ptr<lowlevel::VertexMgrImpl> i;
+	std::unique_ptr<lowlevel::VertexMgrImpl> i;
 
 	friend class reaper::misc::UniquePtr<VertexMgr>;
 };

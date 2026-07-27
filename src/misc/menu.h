@@ -36,11 +36,11 @@ protected:
 
 	MenuItem(Box b, std::string t, bool p, bool e)
 	: box(b), passive(p), edit(e), text(t)
-	{}	
+	{}
 	MenuItem(Box b, std::string t, bool p, bool e, V v)
 	: box(b), passive(p), edit(e), r_val(v), text(t)
-	{}	
-public:	
+	{}
+public:
 	bool inside(float x, float y) const { return box.inside(x, y); }
 	bool is_edit() const                { return edit; }
 	bool is_passive() const             { return passive; }
@@ -82,7 +82,7 @@ public:
 	{ }
 
 	virtual int draw_inactive() {
-		draw_header(get_box(), this->text);
+		draw_header(this->get_box(), this->text);
 		return 1;
 	}
 };
@@ -168,18 +168,18 @@ class MenuItemMultiChoice : public MenuItem<V>
 		this->text = current->first;
 	}
 public:
-	
-	MenuItemMultiChoice(Box b, It vb, It ve, V2* v) 
+
+	MenuItemMultiChoice(Box b, It vb, It ve, V2* v)
 	 : MenuItem<V>(b, vb->first, false, true),
 	   begin(vb), current(vb), end(ve), val_p(v)
-	{ 
+	{
 		find();
 	}
 
 	virtual bool modify(hw::event::id::EventID id) {
 		if(id == ' ' ||
 		   id == hw::event::id::Right ||
-		   id == hw::event::id::Btn1) 
+		   id == hw::event::id::Btn1)
 		{
 			if(++current == end) {
 				current = begin;
@@ -197,7 +197,7 @@ public:
 			find();
 			return true;
 		}
-			
+
 		this->text   = current->first;
 		return false;
 	}
@@ -226,10 +226,10 @@ public:
 		    id == hw::event::id::Right) {
 			std::swap(this->text, text2);
 			*b_val = !(*b_val);
-		} else if (id == hw::event::id::Enter 
+		} else if (id == hw::event::id::Enter
 			   || id == hw::event::id::Btn0) {
 			return true;
-		} 
+		}
 		return false;
 	}
 };
@@ -256,7 +256,7 @@ class Menuexec
 	float x,y; // mouse position
 	reaper::debug::DebugOutput derr;
 	bool is_editing;
-	hw::event::Event e;	
+	hw::event::Event e;
 
 	void editing();
 	T    mouse_click();
@@ -362,7 +362,7 @@ T Menuexec<It, T>::process_event()
 		case Backspace:
 			ms.press_snd();
 			return esc;
-		default: 
+		default:
 			break;
 		}
 	}
@@ -380,7 +380,7 @@ void Menuexec<It, T>::editing()
 
 	if((get_time() - time).approx().to_ms() > wait_time) {
 		is_editing = !(*current)->modify(e.id);
-		if(!is_editing && e.id == hw::event::id::Btn0) {			
+		if(!is_editing && e.id == hw::event::id::Btn0) {
 			mouse_click();
 		}
 		time = get_time();
@@ -414,7 +414,7 @@ void Menuexec<It, T>::select_next()
 	static TimeSpan time = get_time() - TimeSpan::from_ms(wait_time*2);
 
 	if((get_time() - time).approx().to_ms() > wait_time) {
-		ms.sel_snd();						
+		ms.sel_snd();
 		do {
 			++current;
 			if(current == end) {
@@ -436,8 +436,8 @@ void Menuexec<It, T>::select_prev()
 		do {
 			if(current == begin) {
 				current = end;
-			} 
-			--current;		
+			}
+			--current;
 		} while ((*current)->is_passive());
 		time = get_time();
 	}
@@ -533,5 +533,4 @@ void Menuexec<It, T>::clear_events()
  *
  *
  */
-
 

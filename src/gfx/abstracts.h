@@ -35,7 +35,7 @@ public:
 	Effect(const RenderID &id, const RenderID &tex) : IDable(id,tex) {}
 	virtual const world::Sphere& get_sphere() = 0;
 
-	virtual void setup() const = 0;   // pre render 
+	virtual void setup() const = 0;   // pre render
 	virtual void render() = 0;        // rendering
 	virtual void restore() const = 0; // post render
 };
@@ -49,13 +49,13 @@ public:
 	virtual const Point& get_pos() const = 0;
 	virtual float get_radius() const = 0;
 
-	/// 'death' simulation (effect has been 'orphaned' and is expected to wither and die eventually.) 
+	/// 'death' simulation (effect has been 'orphaned' and is expected to wither and die eventually.)
 	/**
 	    This simulation is also used for object that never has a parent object, such as smoke stacks,
 	    explosions, etc. Returns true when alive, false when expired. */
 	virtual bool simulate_death(float dt) = 0;
 
-	/// 'normal' simulation (effect is still 'owned' by an object and receives new data from it.)  
+	/// 'normal' simulation (effect is still 'owned' by an object and receives new data from it.)
 	/**  This is not used by particle systems/light flashes etc that are 'instant' created, upon
 	     objects deaths, etc etc, so we define it to throw an exception to avoid putting bogus
 	     implementations in each derived class. */
@@ -66,7 +66,7 @@ typedef reaper::misc::Unique RenderID;
 
 // RenderInfo class used for describing meshes that are to be rendered
 class RenderInfo {
-	//FIXME: Linked list written by myself.. 
+	//FIXME: Linked list written by myself..
 	RenderInfo *next_ri;
 	RenderInfo* next() const { return next_ri; }
 
@@ -85,11 +85,15 @@ public:
 	RenderInfo& operator=(const RenderInfo &);
 
 	// just a link, no memory alloc/dealloc
-	void link(RenderInfo &ri);		
+	void link(RenderInfo &ri);
 
 	// const iterator
-	class iterator : public std::iterator<std::forward_iterator_tag, RenderInfo>
-	{
+	class iterator {
+		typedef std::forward_iterator_tag iterator_category;
+		typedef RenderInfo value_type;
+		typedef std::ptrdiff_t difference_type;
+		typedef const RenderInfo* pointer;
+		typedef const RenderInfo& reference;
 		const RenderInfo *ptr;
 	public:
 		explicit iterator(const RenderInfo *ri) : ptr(ri) {}
@@ -122,7 +126,7 @@ class Initializer
 {
 public:
 	virtual void init() = 0; // called upon construction of renderer
-	virtual void exit() = 0;  // - " -       destruction - " - 
+	virtual void exit() = 0;  // - " -       destruction - " -
 	virtual ~Initializer() { }
 };
 

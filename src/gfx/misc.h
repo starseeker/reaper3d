@@ -10,7 +10,7 @@ namespace gfx {
 class Color;
 namespace misc {
 
-/// Draws an analog meter at pt(x,y) with given length and width. 
+/// Draws an analog meter at pt(x,y) with given length and width.
 /// (maxval indicates the value where the meter is at length)
 void meter(float x, float y, float length, float width, float maxval, float value);
 
@@ -25,14 +25,14 @@ void sphere(const world::Sphere &, int slices, int stacks);
 /// Billboard drawing (textured quads that always face the camera)
 class BillBoard
 {
-public:	
+public:
 	// call these everytime the modelview matrix is changed
 	// (renderer calls set_vectors() once per frame)
-	
+
 	/// Retrieve billboard vectors from gl
-	static void set_vectors();              
-	/// Set vectors manually 
-	static void set_vectors(const Vector &right, const Vector &up);  
+	static void set_vectors();
+	/// Set vectors manually
+	static void set_vectors(const Vector &right, const Vector &up);
 
 	// whatever you do, don't mix the two add calls...
 
@@ -41,7 +41,7 @@ public:
 
 	// ... and call the correct render function!
 
-	static void render();       
+	static void render();
 	static void render_colors();
 };
 
@@ -68,7 +68,7 @@ public:
  * d'oh
  *
  * Revision 1.22  2002/01/11 13:00:08  peter
- * auto_ptr -> ptr
+ * unique_ptr -> ptr
  *
  * Revision 1.21  2002/01/10 23:09:08  macke
  * massa bök

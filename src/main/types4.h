@@ -7,7 +7,7 @@ namespace reaper {
 
 /// 4 element vector
 #if 0
-class Vector4 {                        
+class Vector4 {
 public:
 	typedef float value_type;
 
@@ -48,9 +48,9 @@ public:
 	Matrix4() {}
 
 	explicit Matrix4(bool id)                                     { if(id) load_identity(); }
-	explicit Matrix4(const float degrees, const Vector4 &axis)    { rotate(degrees, axis); } 
-	explicit Matrix4(const float degrees, const Vector &axis)     { rotate(degrees, Vector4(axis)); } 
-	explicit Matrix4(const Rotation &r)                           { rotate(r.angle, Vector4(r.axis)); } 
+	explicit Matrix4(const float degrees, const Vector4 &axis)    { rotate(degrees, axis); }
+	explicit Matrix4(const float degrees, const Vector &axis)     { rotate(degrees, Vector4(axis)); }
+	explicit Matrix4(const Rotation &r)                           { rotate(r.angle, Vector4(r.axis)); }
 	explicit Matrix4(const Vector4& translation)                  { translate(translation); }
 //	explicit Matrix4(const Vector3& translation)                  { translate(Vector4(translation, 0)); }
 	explicit Matrix4(const float x, const float y, const float z) { scale(x, y, z); }
@@ -73,7 +73,7 @@ public:
 	// Note that matrices are stored internally in OpenGL format.
 
 	/// Build the matrix from data stored in 'c_array' format (column increasing fastest)
-	void c_matrix (const float* initArray) { 
+	void c_matrix (const float* initArray) {
 		int i=0;
 		for(int y=0;y<4;++y) {
 			for(int x=0;x<4;++x) {
@@ -83,14 +83,14 @@ public:
 	}
 
 	/// Build the matrix from data stored in 'openGL' format (row increasing fastest)
-	void opengl_matrix (const float* initArray) { 
-		int i = 0; 
+	void opengl_matrix (const float* initArray) {
+		int i = 0;
 		for(int x=0;x<4;++x) {
 			for(int y=0;y<4;++y) {
 				(*this)[x][y] = initArray[i++];
 			}
 		}
-	}  
+	}
 
 	// m[x][y] is the correct form
 	/**@name element access operators */
@@ -106,24 +106,24 @@ public:
 	Vector4 get_pos() const { return get_col(3); }
 
 	/**@name Construct various matrices; REPLACES CURRENT CONTENTS OF THE MATRIX! */
-	///@{                      
-		Matrix4& load_identity() { 
+	///@{
+		Matrix4& load_identity() {
 			for (int i=0;i<16;++i) {
 				e[i] = 0;
 			}
 
-			e[0] = 1; 
-			e[5] = 1; 
+			e[0] = 1;
+			e[5] = 1;
 			e[10] = 1;
-			e[15] = 1; 
+			e[15] = 1;
 
 			return *this;
 		}
 
 		/// Angle in degrees, vector must be normalized
-		inline Matrix4& rotate (float angle, const Vector4 &axis);
-		inline Matrix4& translate(const Vector4& translation);
-		inline Matrix4& scale(float x, float y, float z);
+		Matrix4& rotate (float angle, const Vector4 &axis);
+		Matrix4& translate(const Vector4& translation);
+		Matrix4& scale(float x, float y, float z);
 		inline Matrix4& basis_change(const Vector4& v, const Vector4& n);
 		inline Matrix4& basis_change(const Vector4& u, const Vector4& v, const Vector4& n);
 		inline Matrix4& projection_matrix(bool perspective, float l, float r, float t, float b, float n, float f);

@@ -8,9 +8,9 @@
 namespace reaper {
 namespace world { class Frustum; }
 /// Graphics
-namespace gfx {	
+namespace gfx {
 namespace pm       { class Pmd; }
-namespace lowlevel { class Renderer; } 
+namespace lowlevel { class Renderer; }
 
 class Settings; // see settings.h
 class Camera;   // see camera.h
@@ -25,25 +25,25 @@ enum HUDType {
 	Internal_HUD
 };
 
-/// Renderer interface 
+/// Renderer interface
 class Renderer
 {
 public:
 	// Initialize, but no more.
 //	static RendererRef create(const Settings *s = 0);
-	static RendererRef get_ref();        
+	static RendererRef get_ref();
 	static Renderer& get_unsafe_ref();
-	
-	void load();// Load things, but no drawing..	
+
+	void load();// Load things, but no drawing..
 	void start();// Prepare for rendering.
 
 	void simulate(float dt);
         void render(const Camera &c);
 
 	/// saves the current framebuffer to a png-file in /data/screenshots with current date/time
-	void screenshot(); 
+	void screenshot();
 	/// return current settings struct (FIXME: allows changing of opengl-ext usage, may cause mayhem!)
-	Settings& settings();	
+	Settings& settings();
 
 	void purge_textures();
 	void purge_meshes();
@@ -54,7 +54,7 @@ public:
 	void shutdown();
 private:
         Renderer();
-	std::auto_ptr<lowlevel::Renderer> i;
+	std::unique_ptr<lowlevel::Renderer> i;
 	std::deque<Initializer*> inits;
 	friend class impl_accessor;
 	friend class reaper::misc::UniquePtr<Renderer>;

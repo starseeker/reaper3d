@@ -21,15 +21,15 @@ class skip_iterator : public std::iterator_traits<Iter>
 public:
 	typedef typename std::iterator_traits<Iter>::value_type value_type;
 
-	skip_iterator(const skip_iterator &si) 
+	skip_iterator(const skip_iterator &si)
 		: i(si.i), end(si.end), pr(si.pr) {}
-	skip_iterator(const Iter &i_, const Iter &end_, const Pr &p) 
+	skip_iterator(const Iter &i_, const Iter &end_, const Pr &p)
 		: i(i_), end(end_), pr(p) { skip(); }
 
 	value_type operator*() const { return *i; }
 	value_type* operator->() { return &*i; }
 
-	skip_iterator& operator++() { 
+	skip_iterator& operator++() {
 		if(i != end) {
 			++i;
 			skip();
@@ -59,10 +59,11 @@ inline skip_iterator<Iter, Pr> skip(Iter i, Iter end, Pr pr)
 }
 
 template <typename Iter>
-inline skip_iterator<Iter, std::binder1st<std::equal_to<typename Iter::value_type> > >
-	skip_eq(Iter i, Iter end, const typename Iter::value_type &t) 
-{	
-	return skip(i, end, std::bind1st(std::equal_to<typename Iter::value_type>(), t));
+inline auto skip_eq(Iter i, Iter end, const typename Iter::value_type &t)
+{
+	return skip(i, end, [t](const typename Iter::value_type& value) {
+		return value == t;
+	});
 }
 
 // skip-sequences
@@ -71,30 +72,28 @@ template <typename Iter, typename Pr>
 inline Seq<skip_iterator<Iter, Pr> > skip_seq(Iter i, Iter end, Pr pr)
 {
 	return Seq<skip_iterator<Iter, Pr> >(skip(i, end, pr),
-	                                     skip(end, end, pr));		
+	                                     skip(end, end, pr));
 }
 
 template <typename Iter, typename Pr>
 inline Seq<skip_iterator<Iter, Pr> > skip_seq(const Seq<Iter> &s, Pr pr)
 {
-	return Seq<skip_iterator<Iter, Pr> >(skip(s.first, s.second, pr), 
-	                                     skip(s.second, s.second, pr));		
+	return Seq<skip_iterator<Iter, Pr> >(skip(s.first, s.second, pr),
+	                                     skip(s.second, s.second, pr));
 }
 
 template <typename Iter>
-inline Seq<skip_iterator<Iter, std::binder1st<std::equal_to<typename Iter::value_type> > > >
-	skip_seq_eq(Iter i, Iter end, const typename Iter::value_type &t)
+inline auto skip_seq_eq(Iter i, Iter end, const typename Iter::value_type &t)
 {
-	return Seq<skip_iterator<Iter, std::binder1st<std::equal_to<typename Iter::value_type> > > >
-	        (skip_eq(i, end, t), skip_eq(end, end, t));		
+	return Seq<decltype(skip_eq(i, end, t))>
+	        (skip_eq(i, end, t), skip_eq(end, end, t));
 }
 
 template <typename Iter>
-inline Seq<skip_iterator<Iter, std::binder1st<std::equal_to<typename Iter::value_type> > > >
-	skip_seq_eq(const Seq<Iter> &s, const typename Iter::value_type &t)
+inline auto skip_seq_eq(const Seq<Iter> &s, const typename Iter::value_type &t)
 {
-	return Seq<skip_iterator<Iter, std::binder1st<std::equal_to<typename Iter::value_type> > > >
-		(skip_eq(s.first, s.second, t), skip_eq(s.second, s.second, t));		
+	return Seq<decltype(skip_eq(s.first, s.second, t))>
+		(skip_eq(s.first, s.second, t), skip_eq(s.second, s.second, t));
 }
 
 }

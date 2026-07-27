@@ -39,7 +39,6 @@ using misc::seq;
 using misc::for_each;
 using misc::copy;
 using misc::sort;
-using std::mem_fun_ref;
 using misc::Seq;
 
 using object::SillyPtr;

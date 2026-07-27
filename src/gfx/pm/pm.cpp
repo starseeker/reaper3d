@@ -312,7 +312,7 @@ bool Pmd::check_vertex(int vi)
 }
 
 
-void Pmd::sofex(char * text)
+void Pmd::sofex(const char* text)
 {
 	debug::DebugOutput dout("SOFTEXCEPTION");
 	dout << text << endl;

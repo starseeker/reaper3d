@@ -22,14 +22,14 @@ struct HudData
 
 class HUD
 {
-	std::auto_ptr<lowlevel::HUDImpl> i;
+	std::unique_ptr<lowlevel::HUDImpl> i;
 public:
 	static const float *radar_range;
 	static const int *hud_type;
 
 	HUD();
 	~HUD();
-//	void setup_projection(); ///< Pushes current matrices to stack and sets up orthographic projection	
+//	void setup_projection(); ///< Pushes current matrices to stack and sets up orthographic projection
 	void render(const HudData& hud);
 };
 

@@ -96,40 +96,40 @@ namespace reaper {
 namespace {
         debug::DebugOutput dout("gfx::vertex_array",2);
 }
-namespace misc { 
+namespace misc {
 	template <>
-        UniquePtr<gfx::VertexMgr>::I UniquePtr<gfx::VertexMgr>::inst = {}; 
+        UniquePtr<gfx::VertexMgr>::I UniquePtr<gfx::VertexMgr>::inst = {};
 }
 namespace gfx {
 namespace lowlevel {
 
 using misc::Fence;
 
-class VertexMgrImpl 
+class VertexMgrImpl
 {
 	class Alloc
 	{
 		bool var_mem; // is memory allocated by the Vertex Array Range extension?
-		std::auto_ptr<Fence> fence;
+		std::unique_ptr<Fence> fence;
 	public:
 		size_t size;
 		const void* ptr;
 		bool is_var_mem() const { return var_mem; }
 
-		void set()  const { if(fence.get()) fence->set(); } 
+		void set()  const { if(fence.get()) fence->set(); }
 		void wait() const { if(fence.get()) fence->wait(); }
 		bool test() const { return fence.get() ? fence->test() : true; }
 
-		Alloc(const void* p, size_t s, bool var) : var_mem(var), fence(0), size(s), ptr(p) {
+		Alloc(const void* p, size_t s, bool var) : var_mem(var), fence(nullptr), size(s), ptr(p) {
 			if(Settings::current.use_nv_fence) {
-				fence = std::auto_ptr<Fence>(new Fence);
+				fence = std::unique_ptr<Fence>(new Fence);
 			}
 		}
 
 		~Alloc() {
 			if(!var_mem) {
 				::free(const_cast<void*>(ptr));
-			} 
+			}
 		}
 	};
 
@@ -154,7 +154,7 @@ class VertexMgrImpl
 	bool var_enabled;
 	bool cva_locked;
 	const void *current;
-	
+
 	bool slow_write; // if true, writes are slow too (as well as reads)
 
 	void throw_if(const void *) const;
@@ -179,8 +179,8 @@ public:
 	void wait(const void*);
 	size_t size(const void*);
 
-	void clear(); 
-	int  total_size() const; 
+	void clear();
+	int  total_size() const;
 	bool slow_writes() { return slow_write; }
 
 	void glDrawArrays(const void *ptr, GLenum mode, GLuint first, GLsizei count);
@@ -200,17 +200,17 @@ public:
 // MANAGER
 ////////////////////////////////////////////////////////////////////////////////////
 
-VertexMgrImpl::VertexMgrImpl() : 
-	allocs("gfx::vertex_array"), 
+VertexMgrImpl::VertexMgrImpl() :
+	allocs("gfx::vertex_array"),
 	var_enum(Settings::current.use_nv_vertex_array_range2 ?
 	         GL_VERTEX_ARRAY_RANGE_WITHOUT_FLUSH_NV : GL_VERTEX_ARRAY_RANGE_NV),
 	var_mem(0),
-	var_enabled(false), 
-	cva_locked(false), 
+	var_enabled(false),
+	cva_locked(false),
 	current(0),
 	slow_write(false)
 {
-	if(Settings::current.use_nv_vertex_array_range) {				
+	if(Settings::current.use_nv_vertex_array_range) {
 		static const int mem_size = 2*1024*1024; // amount of agp memory
 
 		var_mem = glAllocateMemoryNV(mem_size,0,1,.5);         // allocate in agp mem
@@ -243,10 +243,10 @@ VertexMgrImpl::~VertexMgrImpl()
 	}
 
 	if(!allocs.empty()) {
-		// ref counters are messed up, because this is not supposed to happen if all 
+		// ref counters are messed up, because this is not supposed to happen if all
 		// VertexArrays have been destroyed. (Since we're destroying this, refcount must be zero.)
 		debug::DebugOutput dout("gfx::vertex_array",0);
-		dout << "WARNING! Not all memory has been freed before calling destructor!!\n";		
+		dout << "WARNING! Not all memory has been freed before calling destructor!!\n";
 	}
 
 	throw_on_gl_error("vertex_array::VertexMgrImpl::~VertexMgrImpl() exit");
@@ -263,7 +263,7 @@ inline void* VertexMgrImpl::malloc(size_t size)
 	}
 
 	Alloc* alloc = 0;
-	if(i == free_spaces.end()) { 
+	if(i == free_spaces.end()) {
 		// no space found, allocate normal memory instead
 		dout << "No free mem found, allocating from heap...\n";
 		alloc = new Alloc(::malloc(size), size, false);
@@ -292,7 +292,7 @@ inline void* VertexMgrImpl::realloc(const void *ptr, size_t size, bool keep_data
 	if(keep_data) {
 		temp = ::malloc(size);
 		memcpy(temp,ptr,size);
-	} 
+	}
 
 	void *new_ptr = malloc(size);
 
@@ -332,9 +332,9 @@ inline void VertexMgrImpl::free(const void *ptr)
 
 ////////////////////////////////////////////////////////////////////////////////////////
 
-inline int VertexMgrImpl::total_size() const 
+inline int VertexMgrImpl::total_size() const
 {
-	int mem = 0;	
+	int mem = 0;
 	for(AllocCont::const_iterator i = allocs.begin(); i != allocs.end(); ++i) {
 		mem += i->size;
 	}
@@ -526,7 +526,7 @@ void glDrawArrays(GLenum mode, GLint first, GLsizei count)
 {
 	if(gfx::VertexRef().valid() && !gfx::misc::DisplayList::compiling()) {
 		gfx::VertexMgr::get_ref()->clear();
-	} 
+	}
 	::glDrawArrays(mode, first, count);
 }
 void glDrawElements(GLenum mode, GLsizei count, GLenum type, const GLvoid *indices)

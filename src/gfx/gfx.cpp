@@ -27,7 +27,7 @@ namespace misc {
 	UniquePtr<gfx::Renderer>::I UniquePtr<gfx::Renderer>::inst = {};
 }
 
-namespace gfx {	
+namespace gfx {
 namespace {
 debug::DebugOutput dout("gfx::Renderer", 0);
 } // end anonymous namespace
@@ -50,29 +50,29 @@ Renderer& Renderer::get_unsafe_ref()
 }
 
 //-----------------------------------------------------------------
-Renderer::Renderer() : i(0) 
+Renderer::Renderer() : i(nullptr)
 {
 	using namespace reaper::misc;
 
 	init_gl_settings(Settings::current);
 
 	// Register and handle initializers
-	reaper::misc::push_back(inits) 
+	reaper::misc::push_back(inits)
 		<< reaper::gfx::initializers::shot
 		<< reaper::gfx::initializers::sphere
 		<< reaper::gfx::initializers::font_init;
-	
+
 
 	Seq<std::deque<Initializer*>::iterator> si(seq(inits));
 	while (si)
 		(*si++)->init();
 }
 //-----------------------------------------------------------------
-void Renderer::shutdown() 
+void Renderer::shutdown()
 {
 	delete i.release();
 
-	for(std::deque<Initializer*>::iterator i = inits.begin(); i != inits.end(); ++i) 
+	for(std::deque<Initializer*>::iterator i = inits.begin(); i != inits.end(); ++i)
 		(*i)->exit();
 
 
@@ -81,19 +81,19 @@ void Renderer::shutdown()
 	TextureRef::destroy();
 
 }
-Renderer::~Renderer() 
+Renderer::~Renderer()
 {
 }
 
 //-----------------------------------------------------------------
-void Renderer::load() 
-{ 
+void Renderer::load()
+{
 	const world::LevelInfo &li = world::World::get_ref()->get_level_info();
 
 	TextureRef::create();
 	MeshRef::create();
 	LightRef::create(li.terrain_mesh + "_lights");
-	i = std::auto_ptr<lowlevel::Renderer>(new lowlevel::Renderer(li));
+	i = std::unique_ptr<lowlevel::Renderer>(new lowlevel::Renderer(li));
 }
 void Renderer::start()                  { i->start();              }
 void Renderer::simulate(float dt)       { i->simulate(dt);         }

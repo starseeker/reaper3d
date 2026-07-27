@@ -208,7 +208,7 @@ ObjectWnd::ObjectWnd(Main* m, string obj)
 	vs->Add(new wxButton(this, ID_AddObj, "Add to level"), 0, bottom_align(), 5);
 
 	hs->Add(vs);
-	auto_ptr<Env> env(m->game()->get_cfg_file("objects", obj));
+	unique_ptr<Env> env(m->game()->get_cfg_file("objects", obj));
 	cfg->add_env(*env);
 	hs->Add(cfg, 1, wxEXPAND);
 

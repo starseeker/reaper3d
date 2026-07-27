@@ -509,7 +509,7 @@ int test_main()
 
 			hw::gfx::Gfx gx;
 
-			auto_ptr<game::Game> go(new game::Game(gx));
+			unique_ptr<game::Game> go(new game::Game(gx));
 
 			go->game_init();
 			go->game_start();

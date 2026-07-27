@@ -12,22 +12,26 @@
 namespace reaper
 {
 namespace misc
-{	
+{
 #define TEMPLATE_MISC_MAP template<class ID,class T>
 
 /// Manages resource collections, resource objects will be constructed with identifier as constructor argument
 TEMPLATE_MISC_MAP
 class Map
-{		
+{
 	typedef std::map<ID,T*> C;		///< container type
-	C resources;				///< container	
+	C resources;				///< container
 
 	std::string type;	///< typename of stored objects
 	debug::DebugOutput dout;
 
 	template<class It>
-	class iterator_base : public std::iterator<std::forward_iterator_tag,T>
-	{
+	class iterator_base {
+		typedef std::forward_iterator_tag iterator_category;
+		typedef T value_type;
+		typedef std::ptrdiff_t difference_type;
+		typedef T* pointer;
+		typedef T& reference;
 	protected:
 		It iter;
 	public:
@@ -54,7 +58,7 @@ public:
 	typedef iterator_base<typename C::const_iterator> iter_base;
 
 	class const_iterator : public iter_base
-	{		
+	{
 	public:
 		const_iterator() {}
 		const_iterator(const typename C::const_iterator &i) : iter_base(i) {}
@@ -115,7 +119,7 @@ public:
 
 	/// Returns reference, will probably die if not available!!!
 	T& operator[](const ID& id);
-	
+
 	/// Returns pointer to resource or NULL if not loaded
 	T* get_if(const ID &id);
 
@@ -163,7 +167,7 @@ Map<ID,T>::~Map()
 }
 
 TEMPLATE_MISC_MAP
-T& Map<ID,T>::get(const ID& id) 
+T& Map<ID,T>::get(const ID& id)
 {
 	typename C::iterator i = resources.find(id);
 

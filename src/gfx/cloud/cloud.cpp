@@ -76,9 +76,9 @@ public:
 		}
 		up = cross(a, left);
 		matrix_utils::look_at(p.x, p.y, p.z,
-			  at.x, at.y, at.z, 
+			  at.x, at.y, at.z,
 			  up.x, up.y, up.z);
-	}			
+	}
 };
 
 template<class C>
@@ -162,7 +162,7 @@ void simul1(C& sc, P& ps)
 			}
 		}
 	}
-	
+
 }
 
 Cloud::Cloud(const Point& p, float r)
@@ -188,7 +188,7 @@ void Cloud::init()
 	for_each(seq(particles), uncolor);
 }
 
-struct ZDistMin : public std::binary_function<const Particle&, const Particle&, bool>
+struct ZDistMin
 {
 	Vector dir;
 	ZDistMin(const Vector& d) : dir(d) { }
@@ -292,7 +292,7 @@ CloudMgr::CloudMgr(const Point& p)
 
 CloudMgr::~CloudMgr()
 {
-	
+
 }
 
 void CloudMgr::init_cloud()

@@ -2,6 +2,7 @@
 
 #include "misc/sequence.h"
 #include "gfx/shadow/main.h"
+#include <functional>
 #include "gfx/shadow/utility.h"
 
 namespace reaper {
@@ -42,7 +43,7 @@ int SilhouetteShadowAll::render(const Frustum &frustum)
 	ClientStateKeeper s2(GL_TEXTURE_COORD_ARRAY, true);
 
 	render_dyn_shadows(n_dyn_shadows);
-	for_each(seq(st_shadows), mem_fun(&SillyShadow::render));
+	for_each(seq(st_shadows), std::mem_fn(&SillyShadow::render));
 	return n_dyn_shadows + st_shadows.size();
 }
 
