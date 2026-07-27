@@ -8,7 +8,6 @@
  *  compiler:         MSVC GCC ICC
  *  variant:          MINGW32
  *  threading model:  PTHREADS WIN32THR
- *  windowing system: X11 WIN32WIN
  *  extensions:       XF86VM_EXT
  *  endianess:	      IS_LITTLE_ENDIAN IS_BIG_ENDIAN
  */
@@ -75,7 +74,6 @@
 # define LINUX
 # define GCC
 # define PTHREADS
-# define X11
 # define IS_LITTLE_ENDIAN
 
 #endif
@@ -84,7 +82,6 @@
 # define FREEBSD
 # define GCC
 # define PTHREADS
-# define X11
 # define IS_LITTLE_ENDIAN
 # ifdef poll
 #  undef poll
@@ -95,7 +92,6 @@
 # define SOLARIS
 # define GCC
 # define PTHREADS
-# define X11
 # define IS_BIG_ENDIAN
 #endif
 
@@ -103,7 +99,6 @@
 # define SOLARIS
 # define GCC
 # define PTHREADS
-# define X11
 # define IS_BIG_ENDIAN
 #endif
 

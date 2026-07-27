@@ -47,15 +47,6 @@ string win_extstr()
 	return "";
 }
 #else
-
-#ifdef NO_GLXGETCURRENTDISPLAY
-Display* glXGetCurrentDisplay() {
-	/* We don't give XOpenDisplay any arguments
-	 * in gfx_x11, so this should work */
-	return XOpenDisplay(0);
-}
-#endif
-
 string win_extstr()
 {
 #ifdef HAVE_OSMESA
@@ -67,10 +58,7 @@ string win_extstr()
 	}
 #endif
 	
-	const char* winsys_extensions =
-		glXQueryExtensionsString(glXGetCurrentDisplay(),
-					 DefaultScreen(glXGetCurrentDisplay()));
-	return (winsys_extensions) ? string(winsys_extensions) : "";
+	return "";
 }
 #endif
 

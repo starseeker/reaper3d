@@ -10,6 +10,7 @@
 #include <cstdio>
 #include <map>
 #include <sstream>
+#include <GLFW/glfw3.h>
 
 using namespace std;
 
@@ -32,15 +33,7 @@ typedef int (*funcptr)();
 
 funcptr get_proc_address(const char* p)
 {
-#ifdef WIN32
-	return wglGetProcAddress(p);
-#else
-#ifdef SOLARIS
-	return 0;
-#else
-	return (funcptr)glXGetProcAddressARB((const GLubyte*)p);
-#endif
-#endif
+	return reinterpret_cast<funcptr>(glfwGetProcAddress(p));
 }
 } // end namespace reaper
 
@@ -119,5 +112,4 @@ extern "C" {
         (void)texture;
     }
 }
-
 

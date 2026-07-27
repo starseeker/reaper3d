@@ -15,7 +15,6 @@ include_directories(${CMAKE_SOURCE_DIR}/src)
 
 # Find required system libraries
 find_package(OpenGL REQUIRED)
-find_package(X11 REQUIRED)
 find_package(ZLIB REQUIRED)
 find_package(PNG REQUIRED)
 find_package(Threads REQUIRED)
@@ -70,7 +69,6 @@ target_link_libraries(reaper3d
     -Wl,--start-group ai gfx misc snd world hw pm shadow cloud -Wl,--end-group
     # System libraries
     ${OPENGL_LIBRARIES}
-    ${X11_LIBRARIES}
     glfw
     ZLIB::ZLIB
     PNG::PNG

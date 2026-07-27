@@ -8,16 +8,7 @@
 #  include <GL/wglext.h>
 #  define GLH_EXT_GET_PROC_ADDRESS(p)   wglGetProcAddress(p) 
 #else
-#if GLX_VERSION_1_3
 #  include <string.h>
-#  include <GL/glx.h>
-#  include <GL/glxext.h>
-#  ifdef __sun__
-#   define GLH_EXT_GET_PROC_ADDRESS(p)  (0)
-#  else
-#   define GLH_EXT_GET_PROC_ADDRESS(p)   glXGetProcAddressARB( (const GLubyte *) p) 
-#  endif
-#endif
 #endif
 
 #ifdef GLH_EXT_SINGLE_FILE

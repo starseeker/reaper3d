@@ -165,7 +165,7 @@ void window_close_callback(GLFWwindow*)
     keyboard_events.push(Event(id::Escape, false));
 }
 
-// Input device module for GLFW (similar to X11 implementation)
+// Input device module for GLFW.
 class IDM_GLFW : public InputDeviceModule
 {
     ifs::Event* main;

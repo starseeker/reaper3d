@@ -11,12 +11,12 @@
 #endif
 
 #include <GL/gl.h>
+#include <GLFW/glfw3.h>
 
 #ifdef _WIN32
 # include <GL/wglext.h>
 #else
-# include <GL/glx.h>
-# include <GL/glxext.h>
+# define GLH_EXT_GET_PROC_ADDRESS(p) glfwGetProcAddress(p)
 #endif
 
 #include "glh_genext.h"

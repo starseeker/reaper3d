@@ -82,11 +82,8 @@ int glh_init_extensions(const char *origReqExts)
 			}
 		}
 #else
-		{
-
-		  winsys_extensions = glXQueryExtensionsString (glXGetCurrentDisplay(),DefaultScreen(glXGetCurrentDisplay())) ;
-		  winsysExtsLen = strlen (winsys_extensions);
-		}
+		// GLFW owns the native window-system connection. Core GL extension
+		// strings are sufficient for the feature checks used by the engine.
 #endif
 		// Add 2 bytes, one for padding space, one for terminating NULL
 		sysExts = (char*)malloc(sysExtsLen + winsysExtsLen + 3);

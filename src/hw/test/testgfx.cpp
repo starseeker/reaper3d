@@ -17,7 +17,6 @@ using reaper::hw::time::msleep;
 int test_main()
 {
 	Gfx gx;	// Get a handle to gfx-system
-	reaper::debug::debug_disable("gfx_x11");
 	// Do something...
 	glViewport(0, 0, gx.current_mode().width, 
 			 gx.current_mode().height);
@@ -40,4 +39,3 @@ int test_main()
 	}
 	return 0;
 }
-

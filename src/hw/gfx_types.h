@@ -11,16 +11,11 @@
 
 #include "hw/gfx.h"
 
-struct _XDisplay;
-typedef struct _XDisplay Display;
-
 namespace reaper {
 namespace hw {
 namespace lowlevel {
 
 struct Gfx_driver_data {
-	Display* display;
-	
 	std::queue<std::pair<int,bool> > key_queue;
 	gfx::VideoMode desktop;
 	gfx::VideoMode current;
@@ -31,8 +26,7 @@ struct Gfx_driver_data {
 	bool stencil;
 
 	Gfx_driver_data()
-	 : display(0),
-	   desktop(),
+	 : desktop(),
 	   current(),
 	   window_active(false),
 	   is_accelerated(false),
@@ -48,4 +42,3 @@ struct Gfx_driver_data {
 
 
 #endif
-

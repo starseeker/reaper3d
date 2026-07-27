@@ -213,21 +213,6 @@ void glDrawArrays(GLenum mode, GLint first, GLsizei count);
 void glDrawElements(GLenum mode, GLsizei count, GLenum type, const GLvoid *indices);
 void glDrawRangeElements(GLenum mode, GLuint start, GLuint end, GLsizei count, GLenum type, const GLvoid *indices);
 
-#ifdef X11
-// urk!
-inline void glEnableClientState(int v) {
-	::glEnableClientState(static_cast<GLenum>(v));
-}
-inline void glActiveTextureARB(int v) {
-	::glActiveTextureARB(static_cast<GLenum>(v));
-};
-inline int glGetInteger(int v) {
-	return glGetInteger(static_cast<GLenum>(v));
-}
-inline void glGetIntegerv(int v, GLint* p) {
-	::glGetIntegerv(static_cast<GLenum>(v), p);
-}
-#endif
 
 }
 
