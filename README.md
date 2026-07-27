@@ -6,9 +6,10 @@ Reaper3D is a 3D space combat game that has been modernized to build with CMake 
 
 The modernized build includes the original menu-driven interface and in-game 3D combat view:
 
+![Reaper3D in-game view](doc/reaper3d_02.png)
+
 ![Reaper3D main menu](doc/reaper3d_01.png)
 
-![Reaper3D in-game view](doc/reaper3d_02.png)
 
 ## Architecture
 

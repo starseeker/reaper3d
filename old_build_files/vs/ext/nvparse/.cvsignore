@@ -1,8 +1,0 @@
-Debug
-Release
-*.vcproj
-*.plg
-*.opt
-*.ncb
-_*.cpp
-_*.h
