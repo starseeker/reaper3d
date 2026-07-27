@@ -79,7 +79,7 @@ Player 2 uses the arrow keys to steer, `Page Up`/`Page Down` for thrust, `End` f
 - The original resource data, menu system, level loading, scenario system, physics, AI, HUD and gameplay loop are included.
 - Linux builds use OpenAL Soft for sound effects and audio decoding, with a silent fallback when no audio device is available.
 - Optional OSMesa smoke-test programs build when OSMesa development headers and libraries are available.
-- There is currently no registered CTest suite. Validation is done with the build and the graphics smoke-test programs.
+- When OSMesa is available, the three graphics smoke tests are registered with CTest.
 
 ## Building
 
@@ -131,12 +131,10 @@ The CMake build copies `data/` into `build/data/`, so no separate data package i
 When OSMesa is available, the build also produces small headless rendering tests:
 
 ```bash
-./bin/osmesa_test
-./bin/vbo_test
-./bin/shader_test
+ctest --test-dir build --output-on-failure
 ```
 
-They write comparison images into `build/bin/` and do not launch a window.
+The tests write comparison images into `build/` and do not launch a window.
 
 ## Project structure
 
@@ -158,15 +156,14 @@ The source is organized into static-library components:
 
 ## Remaining work
 
-The build modernization is usable, but the codebase is not fully modernized. The most concrete remaining work is:
+The supported Linux game build is C++17-clean and uses modern ownership and STL facilities. Remaining work is concentrated in rendering, tooling, coverage, and optional legacy code:
 
-- **Finish the C++ migration.** `std::auto_ptr` and other pre-C++11 constructs remain throughout the renderer, hardware layer, tools and legacy headers. Some old `register`/`bind1st` usage also remains in bundled or compatibility code.
 - **Complete the rendering modernization.** The game still relies primarily on OpenGL 1.x fixed-function/immediate-mode rendering. The VBO and GLSL code is currently framework/test infrastructure, not the main renderer.
-- **Make headless game execution reliable.** The standalone OSMesa tests work, but the full game path still needs investigation and does not currently provide a dependable headless run.
-- **Finish the Linux audio path.** OpenAL Soft is wired in for effects and buffered WAV/MP3 playback; true streaming music and Windows audio support remain.
+- **Expand headless coverage.** The full game starts with `REAPER_HEADLESS=1`; automated frame-loop and input assertions are still needed.
+- **Finish the Linux audio path.** OpenAL Soft provides effects and buffered WAV/MP3 playback; true streaming music and Windows audio support remain.
 - **Improve portability and dependency boundaries.** GLFW and OpenAL Soft are the Linux runtime backends; Windows audio and other platform builds remain future work.
-- **Add automated regression coverage.** There are many legacy test programs, but no CTest registration or repeatable test of startup, input, resource loading and rendered output.
-- **Document and finish dormant features.** Network/server modes, level-editor tooling, progressive-mesh code and several TODO/FIXME-marked subsystems need either completion or explicit deprecation.
+- **Add broader automated regression coverage.** CTest now covers headless rendering, VBO conversion, and shader fallback; startup, input, resource loading, and audio assertions remain.
+- **Retire or isolate dormant legacy code.** The unused level editors, old physics/Voronoi helpers, and bundled GLH/GLUI code remain outside the supported game build.
 
 ## License
 
