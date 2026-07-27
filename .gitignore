@@ -36,6 +36,7 @@ test_*.db-lock
 test_*.pdf
 test_error_handling/
 test_1x1.png
+debug.out
 
 # LMDB database files (created by application)
 *.db
