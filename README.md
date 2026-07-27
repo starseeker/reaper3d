@@ -1,174 +1,178 @@
-# Reaper3D - Modern CMake Build
+# Reaper3D
 
-Reaper3D is a 3D space combat game that has been modernized to build with CMake and C++17 on modern Linux systems.
+Reaper3D is a very old/early (late-1990s/early-2000s) 3D space-combat game
+originally hosted at [SourceForge](https://reaper3d.sourceforge.net/) My early
+college explorations of the open source landscape of the time included games,
+and this one was simple but entertaining.  Originally it started as third year
+project by a bunch of students at the Computer Science & Engineering section of
+Chalmers University of Technology in Gothenburg, Sweden and evidently got out
+of hand.
 
-## Screenshots
+It doesn't have much game play, but it does function at a basic level (or did
+back in the day, at any rate.)  The last update on Sourceforge is from 2002,
+and the C++ coding style of the original codebase is a (very) poor fit for
+modern compilers.  Modernizing it was of course *much* too heavy of a lift to
+justify just for a little nostalgia.
 
-The modernized build includes the original menu-driven interface and in-game 3D combat view:
+Then AI happened.
+
+It's still not *justified*, of course, but far more practical and, well, er...
+
+Behold! Reaper3D lives:
 
 ![Reaper3D in-game view](doc/reaper3d_02.png)
 
-![Reaper3D main menu](doc/reaper3d_01.png)
+The game is functional at a basic level: it opens a GLFW window, displays the
+menu, loads the supplied level and assets, and runs the 3D game loop. It
+remains an early open-source game rather than a finished commercial product.
+We kept the original game and data while updating the build and platform layer
+for current Linux systems - there's no intent to expand it beyond what it was.
 
+## Controls
 
-## Architecture
+The default game mapping is defined in [`data/config/hw_event_game_map.defaults`](data/config/hw_event_game_map.defaults). Controls are intentionally sensitive, especially mouse steering.
 
-**Graphics and Input:** The engine uses GLFW directly for all graphics and input handling. The previous plugin architecture for backend selection has been removed in favor of a simplified, GLFW-only approach that provides better cross-platform compatibility and maintainability.
+### Player 1
 
-**Sound:** The engine uses a dummy sound system by default. While the original plugin architecture for sound drivers has been simplified, the interface remains for potential future enhancements.
+| Action | Keyboard | Mouse / joystick |
+| --- | --- | --- |
+| Steer | Arrow keys | Mouse movement or joystick axes |
+| Set thrust | `A` / `Z`; `1`–`5` for preset levels | Joystick throttle axis |
+| Boost | `Q` or `End` | Right mouse button or joystick button 1 |
+| Fire laser | `Space` or `Delete` | Left mouse button or joystick button 0 |
+| Fire missile | `M` | Middle mouse button or joystick button 2 |
+| Select missile | `N` | — |
 
-## Build Requirements
+### Player 2 in split-screen mode
 
-### System Dependencies (Ubuntu/Debian)
+Player 2 uses the arrow keys to steer, `Page Up`/`Page Down` for thrust, `End` for boost, `Space`/`Delete` for the laser, and `M` for missiles. Joystick buttons 3 and 4 provide boost and missile controls respectively.
+
+### In-game and menu commands
+
+| Key | Action |
+| --- | --- |
+| `Escape` | Back out of a menu or leave the current game |
+| `F1`–`F8` | Select camera; `F3` selects the internal HUD view |
+| `F11` | Save a state snapshot as `latest` |
+| `F12` | Leave the game |
+| `R` | Cycle radar range |
+| `W` | Cycle timing and graphics statistics |
+| `F` | Toggle the FPS display |
+| `6` | Cycle texture detail |
+| `7` | Toggle lighting |
+| `8` | Toggle the sky |
+| `9` | Toggle terrain |
+| `0` | Toggle fog |
+| `Y` | Cycle shadow mode |
+| `U` | Toggle visual effects |
+| `I` | Take a screenshot in `data/screenshots` |
+| `P` | Pause or resume |
+| `T` / `G` | Increase or decrease simulation time scale |
+| `S` / `X` | Decrease or increase terrain detail |
+| `D` | Cycle texture scaling and purge cached textures |
+
+## Current status
+
+- The project builds with CMake and C++17 on Linux.
+- GLFW is the default windowing and input backend.
+- The legacy fixed-function OpenGL renderer runs in a GLFW window with configurable windowed/fullscreen modes.
+- The original resource data, menu system, level loading, scenario system, physics, AI, HUD and gameplay loop are included.
+- Sound is currently a dummy backend; audio files are present but are not played by the default build.
+- Optional OSMesa smoke-test programs build when OSMesa development headers and libraries are available.
+- There is currently no registered CTest suite. Validation is done with the build and the graphics smoke-test programs.
+
+## Building
+
+### Dependencies on Ubuntu/Debian
+
 ```bash
-sudo apt-get update && sudo apt-get install -y \
+sudo apt-get update
+sudo apt-get install -y \
     build-essential \
     cmake \
+    libglfw3-dev \
     libgl1-mesa-dev \
-    libglu1-mesa-dev \
     libx11-dev \
     libxext-dev \
     libxrandr-dev \
     libxinerama-dev \
     libxcursor-dev \
     libxi-dev \
-    libglfw3-dev \
     zlib1g-dev \
     libpng-dev \
-    libopenal-dev \
     pkg-config
 ```
 
-### Build Process
+For the optional headless graphics tests, also install `libosmesa6-dev`.
+
+### Build and run
+
 ```bash
-# Clone the repository
 git clone https://github.com/starseeker/reaper3d.git
 cd reaper3d
+cmake -S . -B build
+cmake --build build -j$(nproc)
 
-# Create build directory
-mkdir build
+# Run from the build directory so the copied data directory is found.
 cd build
-
-# Configure with CMake
-cmake ..
-
-# Build the project
-make -j$(nproc)
-
-# The executable will be created as bin/reaper3d
+./bin/reaper3d
 ```
 
-## Modernization Progress
+Useful command-line options include:
 
-### ✅ Completed Modernizations
+| Option | Purpose |
+| --- | --- |
+| `-f` | Skip the menu and start the game directly |
+| `-g` | Print all debug messages to standard error/output |
+| `-d <dir>` | Add a data directory |
+| `-r <dir>` | Use `<dir>/data` as an additional game root |
+| `-l` | Restore the last saved game state, when available |
+| `-h` | Print command-line help |
 
-- **CMake Build System**: Replaced legacy autotools with modern CMake
-- **C++17 Standard**: Updated from C++11 to C++17 
-- **System Libraries**: Uses find_package() for OpenGL, X11, zlib, libpng, OpenAL, pthreads
-- **Auto Pointer Updates**: Converted key auto_ptr uses to unique_ptr with make_unique
-- **Template Fixes**: Fixed template-dependent name lookup for C++17 compliance
-- **Deprecated Constructs**: Removed register keywords, bind1st/not1 functions, exception specifications
-- **Template Specialization**: Fixed explicit specialization syntax
-- **Build Infrastructure**: Added .gitignore, proper include directories
+The CMake build copies `data/` into `build/data/`, so no separate data package is needed for this checkout.
 
-### 🚧 Partially Completed
+### Graphics smoke tests
 
-- **Smart Pointer Migration**: Some auto_ptr instances remain in headers and complex template code
-- **String Conversions**: Most ConfVal to string assignments fixed, some remain
-- **Library Compilation**: Several libraries (ai, ext) build successfully
-- ✅ **GLFW Migration**: GLFW is now the default graphics and event backend (complete integration)
+When OSMesa is available, the build also produces small headless rendering tests:
 
-### ❌ Remaining Work
+```bash
+./bin/osmesa_test
+./bin/vbo_test
+./bin/shader_test
+```
 
-- **Template Metaprogramming**: Some complex template code needs further C++17 updates
-- **Smart Pointer Issues**: Hash table implementations need copy constructor fixes
-- **Missing Includes**: Some files need additional standard library includes
-- **Legacy Code Cleanup**: X11 and platform-specific driver code removal (not critical)
+They write comparison images into `build/bin/` and do not launch a window.
 
-## GLFW Migration
+## Project structure
 
-The project has migrated from X11-based windowing to GLFW for cross-platform compatibility.
+The source is organized into static-library components:
 
-### Current Status
-- ✅ **GLFW Dependency**: Added to CMake build system and linked properly
-- ✅ **Basic Window Creation**: GLFW window and OpenGL context setup implemented
-- ✅ **Event Handling Framework**: Basic GLFW event callbacks and input device classes
-- ✅ **Error Handling**: GLFW error callback and basic logging
-- ✅ **Default Backend**: GLFW is now the default graphics and event backend
-- ✅ **Main Loop Integration**: GLFW integrates cleanly with existing game loop
-- 🚧 **Legacy Code**: X11 code remains but is not used by default
-- ❌ **Legacy Code Removal**: X11 and platform-specific code cleanup pending
+| Directory | Responsibility |
+| --- | --- |
+| `src/ai` | AI and navigation |
+| `src/game` | Game state, missions, menus and scenarios |
+| `src/gfx` | OpenGL renderer, terrain, objects, HUD and effects |
+| `src/hw` | GLFW, OpenGL context, input, sound abstraction and timing |
+| `src/main` | Numeric and matrix types |
+| `src/net` | Networking support |
+| `src/object` | Game-object implementations and factories |
+| `src/phys` | Physics and collision handling |
+| `src/res` | Resource and configuration management |
+| `src/world` | World and level data |
+| `src/ext` | Bundled third-party and compatibility code |
 
-### Files Added/Modified
-- **New**: `src/hw/gfx_glfw.cpp` - GLFW-based graphics driver (now default)
-- **New**: `src/hw/event_glfw.cpp` - GLFW-based event handling (now default)
-- **Modified**: `CMakeLists.txt` - Added GLFW dependency and MONOLITHIC build mode
-- **Modified**: `src/hw/CMakeLists.txt` - Updated to build GLFW modules and sound drivers
-- **Modified**: `src/hw/gfx_drv.cpp` - Changed default driver from X11 to GLFW
-- **Modified**: `src/hw/event_impl.cpp` - Changed default event system from X11 to GLFW
-- **Legacy**: `src/hw/gfx_x11.cpp` and `src/hw/event_x11.cpp` - Available but not default
+## Remaining work
 
-### GLFW Features Implemented
-- Window creation with configurable resolution and fullscreen support
-- OpenGL context setup with double buffering, alpha, and stencil buffers
-- Basic event callbacks for keyboard, mouse, and window close events
-- Desktop resolution detection and common video mode registration
-- Proper GLFW initialization and cleanup
-- Full integration with existing game main loop and event processing
+The build modernization is usable, but the codebase is not fully modernized. The most concrete remaining work is:
 
-## Architecture
-
-The codebase is organized into modular libraries:
-
-- `ai/` - Artificial intelligence and pathfinding
-- `ext/` - External libraries (MP3 sound, OpenGL helpers)
-- `game/` - Game logic and state management
-- `gfx/` - Graphics rendering and management
-- `hw/` - Hardware abstraction (sound, input, graphics)
-- `main/` - Core math types and utilities
-- `misc/` - Miscellaneous utilities (menus, parsing)
-- `net/` - Network functionality
-- `object/` - Game object management
-- `phys/` - Physics simulation
-- `res/` - Resource management
-- `snd/` - Sound system
-- `world/` - World/level management
-
-## Original Game
-
-Reaper3D was a 3D space combat game developed in the early 2000s. The original README describes it as:
-
-> Enlisted as a mercenary pilot for a greedy corporation, you are to do whatever is deemed necessary in order to ensure profit...
-
-### Controls
-- Mouse/joystick/arrow keys for steering
-- A/Z, 1-5, or Page Up/Down for thrust
-- Q, End, or right mouse for boost
-- M, joystick button 2, or middle mouse for missiles
-- Space, Delete, or left mouse for laser
-
-## Development Notes
-
-This modernization effort brings a legacy early-2000s C++ codebase up to modern standards. The original code used pre-standard C++ constructs and extensive template metaprogramming that requires careful updating for C++17 compliance.
-
-Key challenges addressed:
-- Template-dependent name lookup strictness in C++17
-- Deprecated STL constructs (auto_ptr, bind1st, not1)
-- Exception specification syntax changes
-- Smart pointer semantics updates
-- Build system modernization
-
-## Contributing
-
-When contributing to the modernization effort:
-
-1. Maintain minimal changes - preserve original logic where possible
-2. Use modern C++17 idioms (auto, range-based for, smart pointers)
-3. Fix template-dependent lookups with `this->` prefix
-4. Replace deprecated STL constructs with modern equivalents
-5. Add proper includes for standard library functions
-6. Test incremental builds to avoid breaking existing functionality
+- **Finish the C++ migration.** `std::auto_ptr` and other pre-C++11 constructs remain throughout the renderer, hardware layer, tools and legacy headers. Some old `register`/`bind1st` usage also remains in bundled or compatibility code.
+- **Complete the rendering modernization.** The game still relies primarily on OpenGL 1.x fixed-function/immediate-mode rendering. The VBO and GLSL code is currently framework/test infrastructure, not the main renderer.
+- **Make headless game execution reliable.** The standalone OSMesa tests work, but the full game path still needs investigation and does not currently provide a dependable headless run.
+- **Replace the dummy sound backend.** Restore a maintained audio path and connect the existing sound resources to it.
+- **Improve portability and dependency boundaries.** GLFW is the runtime window backend, but the build still requires X11 development libraries and retains old OpenGL/GLX compatibility code.
+- **Add automated regression coverage.** There are many legacy test programs, but no CTest registration or repeatable test of startup, input, resource loading and rendered output.
+- **Document and finish dormant features.** Network/server modes, level-editor tooling, progressive-mesh code and several TODO/FIXME-marked subsystems need either completion or explicit deprecation.
 
 ## License
 
-See the LICENSE file for license information.
+Reaper3D is distributed under the GNU General Public License version 2. See [`LICENSE`](LICENSE).
