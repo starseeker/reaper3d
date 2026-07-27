@@ -22,6 +22,9 @@ add_library(hw STATIC
     profile.cpp
     snd_system.cpp
     snd_dummy.cpp
+    snd_openal.cpp
+    snd_wave.cpp
+    snd_mp3.cpp
     socket.cpp
     stacktrace.cpp
     time.cpp
@@ -34,7 +37,12 @@ add_library(hw STATIC
 target_include_directories(hw PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
 # Link GLFW for the windowing backend
-target_link_libraries(hw glfw)
+target_link_libraries(hw PUBLIC glfw ext)
+
+if(OPENAL_FOUND)
+    target_link_libraries(hw PUBLIC ${OPENAL_LIBRARIES})
+    target_include_directories(hw PRIVATE ${OPENAL_INCLUDE_DIRS})
+endif()
 
 # Note: Plugin architecture has been removed.
 # The system now uses GLFW directly for graphics and event handling.

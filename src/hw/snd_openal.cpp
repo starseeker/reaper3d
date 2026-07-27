@@ -17,13 +17,6 @@
 
 #include "AL/al.h"
 #include "AL/alc.h"
-#include "AL/altypes.h"
-#include "AL/alut.h"
-
-
-#ifndef WIN32
-typedef void ALCcontext;
-#endif
 
 
 void alSourcefv(int a, int b, const reaper::Vector& vec)
@@ -274,6 +267,33 @@ public:
 	}
 };
 
+class BufferedSound : public Sound
+{
+	ALuint source;
+	ALuint buffer;
+	float volume;
+public:
+	BufferedSound(const SoundInfo& info, const Samples& samples)
+	 : source(0), buffer(0), volume(1.0f)
+	{
+		alGenBuffers(1, &buffer);
+		alBufferData(buffer, info2format(info), samples.data(),
+		             static_cast<ALsizei>(samples.size()), info.samplerate);
+		alGenSources(1, &source);
+		alSourcei(source, AL_BUFFER, buffer);
+		alSourcef(source, AL_GAIN, volume);
+		al_chk_err("BufferedSound");
+	}
+	~BufferedSound()
+	{
+		if (source) alDeleteSources(1, &source);
+		if (buffer) alDeleteBuffers(1, &buffer);
+	}
+	void play() { alSourcePlay(source); }
+	void stop() { alSourceStop(source); }
+	void set_volume(float v) { volume = v; alSourcef(source, AL_GAIN, volume); }
+};
+
 /*
 class MusicSound : public Sound, private Sound_impl
 {
@@ -332,12 +352,13 @@ class Subsystem
 {
 	ifs::Snd* snd;
 	bool is_init;
+	ALCdevice* dev;
 	ALCcontext* cxt;
 	SrcMgr mgr;
 	float vol;
 public:
 	Subsystem(ifs::Snd* s)
-	 : snd(s), is_init(false), cxt(0), vol(1.0)
+	 : snd(s), is_init(false), dev(nullptr), cxt(nullptr), vol(1.0)
 	{
 	}
 
@@ -345,8 +366,11 @@ public:
 	{
 		snd->derr() << "openal shutdown..\n";
 		mgr.release_all();
-		alcMakeContextCurrent(0);
-		alcDestroyContext(cxt);
+		alcMakeContextCurrent(nullptr);
+		if (cxt)
+			alcDestroyContext(cxt);
+		if (dev)
+			alcCloseDevice(dev);
 		snd->derr() << "done\n";
 	}
 
@@ -362,25 +386,30 @@ bool Subsystem::init()
 {
 	if (is_init)
 		return true;
-	char *argv[] = {"dummy", 0};
-	int argc = 1;
 #ifdef WIN32
 	std::string cfg = snd->config("openal_context");
 	if (cfg.empty())
 		cfg = "DirectSound";
-	unsigned char* p = (unsigned char*)cfg.c_str();
+	const char* p = cfg.c_str();
 #else
-	unsigned char* p = 0;
+	const char* p = nullptr;
 #endif
-	ALCdevice* dev = alcOpenDevice(p);
+	dev = alcOpenDevice(p);
 	if (!dev)
 		return false;
 	cxt = alcCreateContext(dev, 0);
-	if (!cxt)
+	if (!cxt) {
+		alcCloseDevice(dev);
+		dev = nullptr;
 		return false;
+	}
 	alcMakeContextCurrent(cxt);
 
 	if (alcGetCurrentContext() == 0) {
+		alcDestroyContext(cxt);
+		cxt = nullptr;
+		alcCloseDevice(dev);
+		dev = nullptr;
 		return false;
 	}
 
@@ -417,6 +446,10 @@ bool Subsystem::init()
 
 EffectPtr Subsystem::prepare(AudioSourcePtr sd)
 {
+	if (!is_init) {
+		delete sd;
+		return nullptr;
+	}
 	al_chk_err("prep begin");
 
 	Buffer*  buf = new Buffer;
@@ -437,8 +470,21 @@ EffectPtr Subsystem::prepare(AudioSourcePtr sd)
 
 SoundPtr Subsystem::prepare_streaming(AudioSourcePtr dec)
 {
-	return SoundPtr(0);
-//	return SoundPtr(new MusicSound(mgr, dec));
+	if (!is_init || !dec) {
+		delete dec;
+		return nullptr;
+	}
+	const SoundInfo info = dec->info();
+	Samples samples;
+	Samples chunk;
+	bool more;
+	do {
+		chunk.clear();
+		more = dec->read(chunk);
+		samples.insert(samples.end(), chunk.begin(), chunk.end());
+	} while (more);
+	delete dec;
+	return SoundPtr(new BufferedSound(info, samples));
 }
 
 void Subsystem::set_listener(const Point& pos, const Vector& dir, const Vector& vel)
@@ -469,4 +515,3 @@ DLL_EXPORT void* create_snd_openal(reaper::hw::ifs::Snd* d)
 	return new reaper::hw::snd::openal::Subsystem(d);
 }
 }
-

@@ -194,8 +194,8 @@ MenuSystem::Impl::Impl()
 : gx(), es(gx), sm(), mp3(nullptr),
   ep(nullptr), mouse_ptr("arrow")
 {
-	mp3 = sm.prepare_music("reaper.small");
 	sm.init();
+	mp3 = sm.prepare_music("reaper.small");
 	select = sm.prepare_effect("menu_select");
 	press = sm.prepare_effect("menu_press");
 	using namespace hw::event;
@@ -350,4 +350,3 @@ void draw_header(Box b, const std::string &s)
 
 }
 }
-

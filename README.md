@@ -77,7 +77,7 @@ Player 2 uses the arrow keys to steer, `Page Up`/`Page Down` for thrust, `End` f
 - GLFW is the default windowing and input backend.
 - The legacy fixed-function OpenGL renderer runs in a GLFW window with configurable windowed/fullscreen modes.
 - The original resource data, menu system, level loading, scenario system, physics, AI, HUD and gameplay loop are included.
-- Sound is currently a dummy backend; audio files are present but are not played by the default build.
+- Linux builds use OpenAL Soft for sound effects and audio decoding, with a silent fallback when no audio device is available.
 - Optional OSMesa smoke-test programs build when OSMesa development headers and libraries are available.
 - There is currently no registered CTest suite. Validation is done with the build and the graphics smoke-test programs.
 
@@ -92,12 +92,7 @@ sudo apt-get install -y \
     cmake \
     libglfw3-dev \
     libgl1-mesa-dev \
-    libx11-dev \
-    libxext-dev \
-    libxrandr-dev \
-    libxinerama-dev \
-    libxcursor-dev \
-    libxi-dev \
+    libopenal-dev \
     zlib1g-dev \
     libpng-dev \
     pkg-config
@@ -168,8 +163,8 @@ The build modernization is usable, but the codebase is not fully modernized. The
 - **Finish the C++ migration.** `std::auto_ptr` and other pre-C++11 constructs remain throughout the renderer, hardware layer, tools and legacy headers. Some old `register`/`bind1st` usage also remains in bundled or compatibility code.
 - **Complete the rendering modernization.** The game still relies primarily on OpenGL 1.x fixed-function/immediate-mode rendering. The VBO and GLSL code is currently framework/test infrastructure, not the main renderer.
 - **Make headless game execution reliable.** The standalone OSMesa tests work, but the full game path still needs investigation and does not currently provide a dependable headless run.
-- **Replace the dummy sound backend.** Restore a maintained audio path and connect the existing sound resources to it.
-- **Improve portability and dependency boundaries.** GLFW is the runtime window backend, but the build still requires X11 development libraries and retains old OpenGL/GLX compatibility code.
+- **Finish the Linux audio path.** OpenAL Soft is wired in for effects and buffered WAV/MP3 playback; true streaming music and Windows audio support remain.
+- **Improve portability and dependency boundaries.** GLFW and OpenAL Soft are the Linux runtime backends; Windows audio and other platform builds remain future work.
 - **Add automated regression coverage.** There are many legacy test programs, but no CTest registration or repeatable test of startup, input, resource loading and rendered output.
 - **Document and finish dormant features.** Network/server modes, level-editor tooling, progressive-mesh code and several TODO/FIXME-marked subsystems need either completion or explicit deprecation.
 

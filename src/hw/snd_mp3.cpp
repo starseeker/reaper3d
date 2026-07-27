@@ -128,17 +128,19 @@ public:
 
 class Mp3Source : public AudioSource
 {
+	std::istream* owned_input;
 public:
 	StreamInput input;
 	MemOutput output;
 	mpegsound::Mpegtoraw mp3dec;
 
 	Mp3Source(std::istream* i)
-	 : input(i), mp3dec(&input, &output)
+	 : owned_input(i), input(i), mp3dec(&input, &output)
 	{
 		mp3dec.initialize();
 		mp3dec.run(-1);
 	}
+	~Mp3Source() { delete owned_input; }
 
 	SoundInfo info()
 	{
@@ -173,6 +175,7 @@ bool Mp3Decoder::init(res::res_stream* is)
 	delete rs;
 	rs = is;
 	src = new Mp3Source(rs);
+	rs = 0;
 	return true;
 }
 
@@ -200,4 +203,3 @@ DLL_EXPORT void* create_snd_mp3(void* m)
 }
 
 		
-

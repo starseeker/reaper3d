@@ -62,6 +62,7 @@
 
 #include <iostream>
 #include <string>
+#include <cstring>
 
 #include "hw/exceptions.h"
 #include "hw/bits.h"
@@ -250,7 +251,7 @@ std::istream& operator>>(std::istream& is, SoundData& sd)
 class WaveSource : public AudioSource
 {
 	SoundInfo wave_info;
-	Samples* smp;
+	Samples smp;
 	WaveSource(const WaveSource&);
 public:
 	WaveSource(const SoundInfo& wi, Samples* s);
@@ -260,7 +261,7 @@ public:
 
 
 WaveSource::WaveSource(const SoundInfo& wi, Samples* s)
- : wave_info(wi), smp(s)
+ : wave_info(wi), smp(*s)
 {
 }
 
@@ -271,8 +272,7 @@ SoundInfo WaveSource::info()
 
 bool WaveSource::read(Samples& s)
 {
-	s.resize(smp->size());
-	memcpy(&s[0], &(*smp)[0], smp->size()); // visual doesn't like copy
+	s = smp;
 	return false;
 }
 
@@ -310,4 +310,3 @@ DLL_EXPORT void* create_snd_wave(void*)
 	return new reaper::hw::snd::WaveDecoder();
 }
 }
-

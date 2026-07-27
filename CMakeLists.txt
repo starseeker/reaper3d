@@ -22,10 +22,13 @@ find_package(Threads REQUIRED)
 # Find GLFW for windowing and input handling
 find_package(glfw3 REQUIRED)
 
-# Try to find OpenAL (may not be available on all systems)
+# OpenAL Soft provides the Linux audio backend.
 find_package(PkgConfig QUIET)
 if(PKG_CONFIG_FOUND)
     pkg_check_modules(OPENAL openal)
+endif()
+if(NOT OPENAL_FOUND)
+    message(FATAL_ERROR "OpenAL development files are required for the Linux sound backend (install libopenal-dev)")
 endif()
 
 # Try to find OSMesa for headless rendering
@@ -75,7 +78,7 @@ target_link_libraries(reaper3d
     Threads::Threads
 )
 
-# Add OpenAL if found
+# Link OpenAL Soft into the Linux runtime.
 if(OPENAL_FOUND)
     target_link_libraries(reaper3d ${OPENAL_LIBRARIES})
     target_include_directories(reaper3d PRIVATE ${OPENAL_INCLUDE_DIRS})

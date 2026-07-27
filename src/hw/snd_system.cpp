@@ -25,8 +25,10 @@
 #include "hw/debug.h"
 #include "hw/worker.h"
 
-// Direct function declaration for dummy sound system
+// Backend factories are kept as direct symbols while the old plugin loader is
+// removed from the monolithic build.
 extern "C" reaper::hw::snd::Subsystem* create_snd_dummy(void*);
+extern "C" reaper::hw::snd::Subsystem* create_snd_openal(void*);
 
 namespace reaper {
 namespace hw {
@@ -71,7 +73,6 @@ class AudioDecoderCreator : public NodeConfig<AudioDecoder>
 public:
 	
 	Ptr create(IdentRef id) {
-		// Simplified - just return null since we're using dummy sound
 		return Ptr(0);
 	}
 };
@@ -85,6 +86,7 @@ struct SoundSystem_impl
 	Subsystem* music_player;
 	Subsystem* sound_player;
 	Subsystem* dummy;
+	Subsystem* openal;
 
 	std::map<string, AudioDecoder*> decoders;
 
@@ -93,12 +95,13 @@ struct SoundSystem_impl
 	SoundSystem_impl()
 	 : glob_volume(0.5), ratio(0.0),
 	   music_player(0), sound_player(0),
-	   dummy(0)
+	   dummy(0), openal(0)
 	{
 		dlog << "SoundSystem_impl enter\n";
 		
-		// Always use dummy sound system - plugin architecture removed
-		dummy = music_player = sound_player = create_snd_dummy(&main);
+		dummy = create_snd_dummy(&main);
+		openal = create_snd_openal(&main);
+		sound_player = music_player = openal;
 
 		sound_player->set_volume(0.8);
 		music_player->set_volume(0.3);
@@ -113,27 +116,34 @@ struct SoundSystem_impl
 		dlog << "~SoundSystem_impl enter\n";
 		for_each(seq(decoders), delete_it);
 
+		if (sound_player == music_player)
+			delete sound_player;
+		else {
+			delete sound_player;
+			delete music_player;
+		}
 		if (dummy != sound_player && dummy != music_player)
 			delete dummy;
-		if (sound_player != music_player)
-			delete sound_player;
-		delete music_player;
 
 //		res::pop_config<AudioDecoder>();
 		dlog << "~SoundSystem_impl done\n";
 	}
 
-	AudioSourcePtr load(const string& id)
+	AudioSourcePtr load(res::ResourceClass type, const string& id)
 	{
-		// Simplified - just return null since we're using dummy sound
-		return 0;
+		AudioDecoder* decoder = type == res::Sound
+			? static_cast<AudioDecoder*>(new WaveDecoder)
+			: static_cast<AudioDecoder*>(new Mp3Decoder);
+		try {
+			decoder->init(new res::res_stream(type, id, res::throw_on_error));
+			AudioSourcePtr source = decoder->get();
+			delete decoder;
+			return source;
+		} catch (...) {
+			delete decoder;
+			throw;
+		}
 	}
-/*
-	AudioSourcePtr load(const string& id)
-	{
-		return res::resource<AudioDecoder>("audio", id).get();
-	}
-*/
 };
 
 
@@ -150,8 +160,13 @@ SoundSystem::~SoundSystem()
 
 bool SoundSystem::init()
 {
-	impl->sound_player->init();
-	impl->music_player->init();
+	if (!impl->sound_player->init()) {
+		derr << "OpenAL device unavailable; falling back to silent audio\n";
+		delete impl->openal;
+		impl->openal = nullptr;
+		impl->sound_player = impl->music_player = impl->dummy;
+		impl->sound_player->init();
+	}
 	return true;
 }
 
@@ -160,7 +175,7 @@ EffectPtr SoundSystem::prepare_effect(const string& id)
 
 	EffectPtr eff;
 	try {
-		if (AudioSource* src = impl->load(id))
+		if (AudioSource* src = impl->load(res::Sound, id))
 			eff = impl->sound_player->prepare(src);
 	} catch (error_base& h) {
 		derr << "sound preparation error: " << h.what() << '\n';
@@ -174,7 +189,7 @@ EffectPtr SoundSystem::prepare_effect(const string& id)
 SoundPtr SoundSystem::prepare_music(const string& id)
 {
 	try {
-		if (AudioSource* src = impl->load(id))
+		if (AudioSource* src = impl->load(res::Music, id))
 			return impl->music_player->prepare_streaming(src);
 	} catch (error_base& e) {
 		derr << "failed to load music: " << e.what() << '\n';
@@ -217,4 +232,3 @@ void SoundSystem::do_stuff()
 }
 }
 }
-
