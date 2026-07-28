@@ -1,31 +1,37 @@
 # Reaper3D
 
-Reaper3D is an early (late-1990s/early-2000s) 3D space-combat game.  See the
-original site at [SourceForge](https://reaper3d.sourceforge.net/). I came
-across it in my early college explorations of the open source landscape.
+Reaper3D is an early (circa 2002) 3D space-combat game.  See the
+original site at [SourceForge](https://reaper3d.sourceforge.net/).
 Originally a third year project by a bunch of students at Chalmers University
 Gothenburg, Sweden, it evidently got out of hand - at least, none of *my*
 student projects ever ended up being this impressive!
 
-It didn't have much game play, but it functioned at a basic level.
-Unfortunately the last update on Sourceforge is from 2002, and it's early C++
-coding style is a (very) poor fit for modern compilers.  The binary was for
-Windows - as a result I've not been able to run it in a *very* long time.
-Modernizing it was a major effort - there's quite a lot of code here.  *Much*
-too heavy a lift to justify just for a little undergraduate nostalgia, so I
-gave up on doing anything with it.
+I came across Reaper3D in the early 2000s during own youthful exploration of
+the open source software landscape.  It didn't have much game play, and I
+couldn't claim to be any good at playing it, but it functioned at a basic
+level and for an open source game of the day it was pretty neat.
+Unfortunately (but unsurprisingly) the original Reaper3D project fizzled out
+and the last update on Sourceforge is from 2002.
+
+It's open source, so theoretically it could be ported to Linux and made to run
+again, but its early C++ coding style is a (very) poor fit for modern
+compilers.  The binary was for Windows - as a result I've not been able to run
+it in a *very* long time.  Modernizing it was a major effort - there's quite a
+lot of code here.  *Much* too heavy a lift to justify just for a little
+decades-later undergraduate nostalgia, so I gave up on doing anything with it.
 
 Then AI happened.
 
-It's still wasn't *justified*, of course, but it was far more *practical* and, well, er...
+Modernizing it still wasn't *justified*, of course, but it was far more
+*practical* and, well, er...
 
 Behold! Reaper3D lives:
 
 ![Reaper3D in-game view](doc/reaper3d_02.png)
 
 The game is functional at a basic level: it opens a GLFW window, displays the
-menu, loads the supplied level and assets, and runs the 3D game loop.  We use
-the original data while updating the build and platform layer to work on
+menu, loads the supplied level and assets, and runs the 3D game loop using the
+original data.  The build and platform layers have been updated to work on
 current Linux systems.  There's no intent to expand it - this is strictly a
 trip down memory lane, not a plan to build out an actual game.
 
