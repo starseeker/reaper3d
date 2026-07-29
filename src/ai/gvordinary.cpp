@@ -34,7 +34,6 @@
  *
 */
 
-#include "hw/compat.h"
 #include "object/ai.h"
 #include "object/base_data.h"
 #include "object/controls.h"

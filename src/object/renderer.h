@@ -1,6 +1,7 @@
 #ifndef REAPER_OBJECT_GFX_H
 #define REAPER_OBJECT_GFX_H
 
+#include <memory>
 #include <string>
 #include "gfx/instances.h"
 #include "object/base.h"
@@ -15,7 +16,10 @@ namespace gfx {
 namespace object {
 
 namespace renderer {
-using namespace ::reaper::gfx;
+using gfx::Color;
+using gfx::EffectPtr;
+using gfx::RenderInfo;
+using gfx::SimEffectPtr;
 
 class Shield
 {
@@ -51,7 +55,7 @@ class Ship
 	RenderInfo hull;
 	Shield shield;
 	SimEffectPtr trail;
-	mutable gfx::HUD* hud;
+	mutable std::unique_ptr<gfx::HUD> hud;
 public:
 	Ship(const std::string &mesh, const Matrix &mtx, float radius, 
 	      hull::Shielded &h, float trail_size, const Point &engine_pos);
@@ -100,7 +104,7 @@ public:
  * rendering reorg and silhouette shadows!
  *
  * Revision 1.29  2002/01/10 23:09:14  macke
- * massa bök
+ * massa bÃ¶k
  *
  * Revision 1.28  2001/11/10 11:58:34  peter
  * diverse minnesfixar och strul...
@@ -118,31 +122,30 @@ public:
  * Grafikfixar
  *
  * Revision 1.23  2001/08/06 12:16:39  peter
- * MegaMerge (se strandy_test-grenen för diffar...)
+ * MegaMerge (se strandy_test-grenen fÃ¶r diffar...)
  *
  * Revision 1.22.2.3  2001/08/05 14:01:33  peter
  * objektmeck...
  *
  * Revision 1.22.2.2  2001/08/04 20:37:08  peter
- * flyttad hud, vapenknôk..
+ * flyttad hud, vapenknÃ´k..
  *
  * Revision 1.22.2.1  2001/08/03 13:44:12  peter
  * pragma once obsolete...
  *
  * Revision 1.22  2001/07/30 23:43:30  macke
- * Häpp, då var det kört.
+ * HÃ¤pp, dÃ¥ var det kÃ¶rt.
  *
  * Revision 1.21  2001/07/23 23:48:10  macke
  * Slimmad grafikhantering samt lite namnbyten
  *
  * Revision 1.20  2001/07/06 01:47:33  macke
- * Refptrfix/headerfilsstäd/objekt-skapande/mm
+ * Refptrfix/headerfilsstÃ¤d/objekt-skapande/mm
  *
  * Revision 1.19  2001/06/09 01:58:58  macke
  * Grafikmotor reorg
  *
  * Revision 1.18  2001/05/14 20:00:56  macke
- * bugfix och rök på missiler..
+ * bugfix och rÃ¶k pÃ¥ missiler..
  *
  */
-

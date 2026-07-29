@@ -94,7 +94,6 @@
  *
  */
 
-#include "hw/compat.h"
 
 #include <string>
 #include <iterator>

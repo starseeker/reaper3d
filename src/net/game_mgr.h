@@ -4,6 +4,7 @@
 #include "hw/event.h"
 #include "net/net.h"
 
+#include <memory>
 #include <set>
 
 namespace reaper {
@@ -29,10 +30,13 @@ struct GameMgr_impl;
 
 class GameMgr
 {
-	GameMgr_impl* impl;
+	std::unique_ptr<GameMgr_impl> impl;
 public:
 	GameMgr(hw::gfx::Gfx&);
 	~GameMgr();
+
+	GameMgr(const GameMgr&) = delete;
+	GameMgr& operator=(const GameMgr&) = delete;
 
 	void start_server();
 	void record_game(bool);
@@ -66,4 +70,3 @@ public:
 
 
 #endif
-

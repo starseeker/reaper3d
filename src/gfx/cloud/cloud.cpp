@@ -1,5 +1,4 @@
 
-#include "hw/compat.h"
 
 #include <iterator>
 #include <functional>
@@ -360,7 +359,7 @@ void CloudEffect::setup() const
 {
 }
 
-void CloudEffect::render(std::pair<float,float> z_range)
+void CloudEffect::render_range(std::pair<float,float> z_range)
 {
 	hw::time::Profiler pf;
 	pf.start();
@@ -434,4 +433,3 @@ void CloudSystem::update(const Camera& cam, const Matrix& mtx)
 }
 }
 }
-

@@ -2,6 +2,7 @@
 #define REAPER_GFX_SHADOW_MAIN_H
 
 #include <map>
+#include <memory>
 
 #include "main/types.h"
 #include "gfx/gfx_types.h"
@@ -16,8 +17,10 @@ namespace reaper {
 namespace gfx {
 namespace shadow {
 
-using namespace world;
 using object::SillyBase;
+using world::Cylinder;
+using world::Frustum;
+using world::WorldRef;
 
 class SimpleShadow : public ShadowRenderer
 {
@@ -67,10 +70,10 @@ class SilhouetteShadowDynamic : public SilhouetteShadow
 {
 public:
 	SilhouetteShadowDynamic();
-	~SilhouetteShadowDynamic();
+	~SilhouetteShadowDynamic() = default;
 	virtual int render(const Frustum &frustum);
 protected:
-	typedef std::deque<DynamicShadow*> ShadowCont;
+	typedef std::vector<std::unique_ptr<DynamicShadow>> ShadowCont;
 	bool generate_shadow(const SillyBase &obj, DynamicShadow &s, const Frustum &f);
 	int gen_dyn_shadows(const Frustum &frustum);
 	void render_dyn_shadows(int n_shadows);
@@ -82,7 +85,7 @@ private:
 class SilhouetteShadowAll : public SilhouetteShadowDynamic
 {
 private:
-	typedef std::map<object::ID, SillyShadow*> ShadowCont;
+	typedef std::map<object::ID, std::unique_ptr<SillyShadow>> ShadowCont;
 	ShadowCont shadows;
 public:
 	static const int max_static_shadows;   
@@ -90,8 +93,6 @@ public:
 	static const int silly_shadow_size;
 
 	SilhouetteShadowAll() {}
-	~SilhouetteShadowAll();
-
 	virtual int render(const Frustum &frustum);
 };
 
@@ -100,4 +101,3 @@ public:
 }
 
 #endif
-

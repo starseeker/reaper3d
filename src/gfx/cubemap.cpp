@@ -1,4 +1,3 @@
-#include "hw/compat.h"
 
 #include "gfx/texture.h"
 #include "gfx/settings.h"
@@ -56,7 +55,9 @@ DynamicCubeMap::DynamicCubeMap(int s) : CubeMap(s)
 	for(int i = PosX; i < PosX + 6; i++ ) {
 		glTexImage2D(i, 0, GL_RGBA8, w, w, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
 	}
-	float size = w*w*4*6* Settings::current.use_sgis_generate_mipmap ? 1.33f : 1;
+	const float mipmap_factor =
+		Settings::current.use_sgis_generate_mipmap ? 1.33f : 1.0f;
+	const float size = static_cast<float>(w * w * 4 * 6) * mipmap_factor;
 	set_size(static_cast<unsigned int>(size));
 }
 
@@ -70,4 +71,3 @@ void DynamicCubeMap::copy_to_texture(Side side)
 }
 }
 }
-

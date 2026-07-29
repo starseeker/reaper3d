@@ -39,8 +39,8 @@ struct Treap_node{
 	Pairdat dat;
 	Treap_node_ptr left, right, parent;
 
-	Treap_node(void):left(NULL), right(NULL), parent(NULL){}
-	Treap_node(const Pairdat& pd, Treap_node_ptr p):dat(pd), left(NULL), right(NULL), parent(p){}
+	Treap_node(void):left(nullptr), right(nullptr), parent(nullptr){}
+	Treap_node(const Pairdat& pd, Treap_node_ptr p):dat(pd), left(nullptr), right(nullptr), parent(p){}
 };
 
 
@@ -66,7 +66,7 @@ private:
 public:
 	Treap_node_ptr find(const Pairdat pd);
 
-	Treap(void):the_size(0), treap(NULL) {}
+	Treap(void):the_size(0), treap(nullptr) {}
 
 	bool insert(const Pairdat &pd);
 	bool update(const Pairdat &pd);

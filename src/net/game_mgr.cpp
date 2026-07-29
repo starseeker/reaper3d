@@ -6,7 +6,6 @@
  *
  */
 
-#include "hw/compat.h"
 
 #include <vector>
 #include <string>
@@ -21,7 +20,6 @@
 
 #include "net/net.h"
 #include "misc/parse.h"
-#include "misc/free.h"
 #include "misc/sequence.h"
 #include "res/config.h"
 
@@ -236,15 +234,10 @@ void GameMgr_impl::send_sync()
 }
 
 GameMgr::GameMgr(hw::gfx::Gfx& gx)
-{
-	impl = new GameMgr_impl(gx);
-}
+	: impl(std::make_unique<GameMgr_impl>(gx))
+{ }
 
-GameMgr::~GameMgr()
-{
-	if (impl)
-		delete impl;
-}
+GameMgr::~GameMgr() = default;
 
 
 class ServerJob : public hw::worker::Job {
@@ -258,7 +251,7 @@ public:
 
 void GameMgr::start_server()
 {
-	hw::worker::worker()->spawn_job(new ServerJob());
+	hw::worker::worker()->spawn_job(std::make_shared<ServerJob>());
 }
 
 void GameMgr::add_sync(NetObjPtr o)
@@ -344,10 +337,9 @@ void GameMgr::playback_game(const string& id)
 
 void GameMgr::shutdown()
 {
-	misc::zero_delete(impl);
+	impl.reset();
 }
 
 
 }
 }
-

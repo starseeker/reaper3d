@@ -57,7 +57,7 @@ public:
 
 	virtual const gfx::RenderInfo* render(bool effects) const = 0;
 
-	virtual void gen_sound() { };
+	virtual void gen_sound() { }
 
 	virtual void collide(const CollisionInfo&) = 0;
 
@@ -179,7 +179,7 @@ struct ObjTracker
  * resurs och ljudmeck
  *
  * Revision 1.32  2001/12/13 17:03:30  peter
- * småfixar...
+ * smÃ¥fixar...
  *
  * Revision 1.31  2001/12/08 23:23:55  peter
  * 'spara/fixar/mm'
@@ -194,7 +194,7 @@ struct ObjTracker
  * objmgrmeck
  *
  * Revision 1.27  2001/11/26 10:46:06  peter
- * kompilatorgnäll... ;)
+ * kompilatorgnÃ¤ll... ;)
  *
  * Revision 1.26  2001/11/26 02:20:15  peter
  * ljudfixar (smartptr), andra mindre fixar..
@@ -212,19 +212,19 @@ struct ObjTracker
  * obj.ptr & fix...
  *
  * Revision 1.21  2001/08/06 12:16:35  peter
- * MegaMerge (se strandy_test-grenen för diffar...)
+ * MegaMerge (se strandy_test-grenen fÃ¶r diffar...)
  *
  * Revision 1.20.2.7  2001/08/05 14:01:29  peter
  * objektmeck...
  *
  * Revision 1.20.2.6  2001/08/05 00:11:10  peter
- * döda...
+ * dÃ¶da...
  *
  * Revision 1.20.2.5  2001/08/04 22:45:24  peter
  * impl.h is no more..
  *
  * Revision 1.20.2.4  2001/08/04 20:37:07  peter
- * flyttad hud, vapenknôk..
+ * flyttad hud, vapenknÃ´k..
  *
  * Revision 1.20.2.3  2001/08/03 13:44:10  peter
  * pragma once obsolete...
@@ -236,21 +236,20 @@ struct ObjTracker
  * *** empty log message ***
  *
  * Revision 1.20  2001/07/30 23:43:25  macke
- * Häpp, då var det kört.
+ * HÃ¤pp, dÃ¥ var det kÃ¶rt.
  *
  * Revision 1.19  2001/07/23 23:48:10  macke
  * Slimmad grafikhantering samt lite namnbyten
  *
  * Revision 1.18  2001/07/06 01:47:30  macke
- * Refptrfix/headerfilsstäd/objekt-skapande/mm
+ * Refptrfix/headerfilsstÃ¤d/objekt-skapande/mm
  *
  * Revision 1.17  2001/05/14 20:00:55  macke
- * bugfix och rök på missiler..
+ * bugfix och rÃ¶k pÃ¥ missiler..
  *
  * Revision 1.16  2001/05/14 11:22:40  picon
- * Fullösningsförberedelse
+ * FullÃ¶sningsfÃ¶rberedelse
  *
  *
  */
-
 

@@ -58,7 +58,6 @@
  *
  */
 
-#include "hw/compat.h"
 
 #include <iostream>
 #include <string>
@@ -305,7 +304,7 @@ AudioSourcePtr WaveDecoder::get()
 }
 
 extern "C" {
-DLL_EXPORT void* create_snd_wave(void*)
+void* create_snd_wave(void*)
 {
 	return new reaper::hw::snd::WaveDecoder();
 }

@@ -2,7 +2,6 @@
 #ifndef REAPER_WORLD_WORLD_IMPL_H
 #define REAPER_WORLD_WORLD_IMPL_H
 
-#include "hw/compat.h"
 
 #include "world/world.h"
 
@@ -10,7 +9,8 @@
 #include "world/exceptions.h"
 #include "world/level.h"
 #include "object/base.h"
-#include "misc/hash.h"
+#include <memory>
+#include <unordered_map>
 
 namespace reaper {
 namespace world {
@@ -30,25 +30,25 @@ typedef quadtree::QuadTree<object::ShotPtr> shot_container;
 
 struct World_impl  : public game::state::Persistent
 {
-	tri_container* tri_tree;
-	si_container* si_tree;
-	st_container* st_tree;
-	dyn_container* dyn_tree;
-	shot_container* shot_tree;
+	std::unique_ptr<tri_container> tri_tree;
+	std::unique_ptr<si_container> si_tree;
+	std::unique_ptr<st_container> st_tree;
+	std::unique_ptr<dyn_container> dyn_tree;
+	std::unique_ptr<shot_container> shot_tree;
 
-	misc::hash_map<object::ID, SillyPtr> sillys;
-	misc::hash_map<object::ID, StaticPtr> statics;
-	misc::hash_map<object::ID, DynamicPtr> dynamics;
-	misc::hash_map<object::ID, ShotPtr> shots;
+	std::unordered_map<object::ID, SillyPtr> sillys;
+	std::unordered_map<object::ID, StaticPtr> statics;
+	std::unordered_map<object::ID, DynamicPtr> dynamics;
+	std::unordered_map<object::ID, ShotPtr> shots;
 
 	PlayerPtr local_player;
 
-	LevelInfo* level_info;
+	std::unique_ptr<LevelInfo> level_info;
 
 //	game::StateHolder sthold;
 	std::string level_name;
 
-	bool in_shutdown;
+	bool in_shutdown = false;
 
 	World_impl(const std::string& level);
 	World_impl(const LevelInfo& level);
@@ -70,5 +70,3 @@ struct World_impl  : public game::state::Persistent
 
 
 #endif
-
-

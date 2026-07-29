@@ -2,6 +2,7 @@
 #define REAPER_HW_EVENT_H
 
 #include <map>
+#include <memory>
 #include <vector>
 
 #include "hw/exceptions.h"
@@ -221,10 +222,13 @@ public:
 
 class EventSystem
 {
-	static EventDispatcher* impl;
+	static std::unique_ptr<EventDispatcher> impl;
 public:
 	EventSystem(hw::gfx::Gfx&);
 	~EventSystem();
+
+	EventSystem(const EventSystem&) = delete;
+	EventSystem& operator=(const EventSystem&) = delete;
 
 	void enable();
 	void disable();
@@ -266,6 +270,5 @@ public:
 }
 
 #endif
-
 
 

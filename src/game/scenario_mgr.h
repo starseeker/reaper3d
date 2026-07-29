@@ -8,12 +8,13 @@
 #include "game/state.h"
 #include "game/mission.h"
 
-using namespace reaper::ai;
-
 namespace reaper{
 namespace game{
 /// Game scenario handling
 namespace scenario{
+
+using reaper::ai::Message;
+using reaper::ai::MsgQueue;
 	
 class ScenarioMgr;
 typedef reaper::misc::UniquePtr<ScenarioMgr> ScenarioRef;
@@ -28,7 +29,7 @@ class ScenarioMgr : public state::Persistent
 
 //	fsm::FSM* ss;
 	misc::SmartPtr<Scenario> scenario;
-	std::map<std::string, StateBase*> states;
+	std::map<std::string, std::unique_ptr<StateBase>> states;
 	std::string current;
 
 	state::StateHolder sh;
@@ -97,7 +98,7 @@ public:
  * *** empty log message ***
  *
  * Revision 1.20  2002/01/03 17:36:50  peter
- * ny ansats pÂ spara/ladda!
+ * ny ansats p√• spara/ladda!
  *
  * Revision 1.19  2001/12/15 22:59:03  peter
  * *** empty log message ***
@@ -109,7 +110,7 @@ public:
  * diverse minnesfixar och strul...
  *
  * Revision 1.16  2001/08/06 12:16:09  peter
- * MegaMerge (se strandy_test-grenen fˆr diffar...)
+ * MegaMerge (se strandy_test-grenen f√∂r diffar...)
  *
  * Revision 1.15.2.1  2001/08/03 13:43:50  peter
  * pragma once obsolete...
@@ -118,13 +119,13 @@ public:
  * get local player from world...
  *
  * Revision 1.14  2001/07/24 23:52:45  macke
- * Jo, explicit ska det vara (fel pÂ annat st‰lle)..  r‰ttade till lite array-fel ocksÂ..
+ * Jo, explicit ska det vara (fel p√• annat st√§lle)..  r√§ttade till lite array-fel ocks√•..
  *
  * Revision 1.13  2001/07/09 13:33:05  peter
  * gcc-3.0 fixar
  *
  * Revision 1.12  2001/07/06 01:47:08  macke
- * Refptrfix/headerfilsst‰d/objekt-skapande/mm
+ * Refptrfix/headerfilsst√§d/objekt-skapande/mm
  *
  * Revision 1.11  2001/05/14 21:12:13  peter
  * *** empty log message ***
@@ -134,4 +135,3 @@ public:
  *
  *
  */
-

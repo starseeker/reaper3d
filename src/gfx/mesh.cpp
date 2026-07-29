@@ -1,4 +1,3 @@
-#include "hw/compat.h"
 
 #include "gfx/mesh.h"
 #include "gfx/exceptions.h"

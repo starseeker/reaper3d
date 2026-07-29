@@ -1,6 +1,5 @@
 /* $Id: snd_mp3.cpp,v 1.19 2002/04/16 19:58:41 pstrand Exp $ */
 
-#include "hw/compat.h"
 
 #include "hw/exceptions.h"
 #include "hw/snd_mp3.h"
@@ -196,7 +195,7 @@ AudioSourcePtr Mp3Decoder::get()
 }
 
 extern "C" {
-DLL_EXPORT void* create_snd_mp3(void* m)
+void* create_snd_mp3(void* m)
 {
 	return new reaper::hw::snd::Mp3Decoder();
 }

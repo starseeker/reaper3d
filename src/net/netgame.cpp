@@ -7,7 +7,6 @@
  *  * split up in low- and high-level parts
  */
 
-#include "hw/compat.h"
 
 #include <vector>
 #include <string>
@@ -271,10 +270,12 @@ public:
 
 class NetFwd : public hw::event::EventFilter
 {
-	ServerTalk* srv_talk;
-	hw::event::EventSource* src;
+	std::shared_ptr<ServerTalk> srv_talk;
+	hw::event::EventSource* src = nullptr;
 public:
-	NetFwd(ServerTalk* s) : srv_talk(s) { }
+	explicit NetFwd(std::shared_ptr<ServerTalk> server)
+		: srv_talk(std::move(server))
+	{ }
 
 	void set_source(hw::event::EventSource* s) { src = s; }
 
@@ -290,14 +291,13 @@ public:
 };
 
 NetGame::NetGame()
- : conn(0), srv_talk(0), next_id(1)
+ : conn(nullptr), next_id(1)
 {
 }
 
 NetGame::~NetGame()
 {
 	shutdown();
-	delete srv_talk;
 }
 
 std::string talk(std::iostream& io, const std::string& s)
@@ -319,7 +319,7 @@ hw::event::EventFilter* NetGame::connect(std::string srv)
 			: read<int>(server.second);
 	derr << "Connecting to " << server.first << ':' << port << '\n';
 
-	conn = new sock_stream(server.first, port);
+	conn = std::make_unique<sock_stream>(server.first, port);
 	char buf[200];
 
 	getline(*conn, buf, 200);
@@ -334,8 +334,8 @@ hw::event::EventFilter* NetGame::connect(std::string srv)
 	hw::time::set_time(srv_time);
 	derr << "  time after " << hw::time::get_time() << '\n';
 
-	srv_talk = new ServerTalk(sync_mtx);
-	srv_talk->set_stream(conn);
+	srv_talk = std::make_shared<ServerTalk>(sync_mtx);
+	srv_talk->set_stream(conn.get());
 	hw::worker::worker()->add_job(srv_talk);
 	return new NetFwd(srv_talk);
 }
@@ -409,8 +409,7 @@ void NetGame::shutdown()
 		send(*conn, "quit");
 
 		srv_talk->set_stream(0);
-		delete conn;
-		conn = 0;
+		conn.reset();
 	}
 }
 
@@ -446,4 +445,3 @@ bool NetGame::get_objinfo(ObjState& st)
 
 }
 }
-

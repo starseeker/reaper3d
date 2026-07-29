@@ -1,6 +1,5 @@
 
 
-#include "compat.h"
 
 #include <string>
 #include <iostream>
@@ -101,16 +100,12 @@ public:
 struct Gfx_data
 {
 	std::set<VideoMode> modes;
-	Main* main;
-
-	Gfx_data()
-	 : main(0)
-	{ }
+	std::unique_ptr<Main> main;
 };
 
 void Gfx::init()
 {
-	data->main = new Main(data->modes);
+	data->main = std::make_unique<Main>(data->modes);
 
 	// Check for headless mode preference
 	res::ConfigEnv cnf("hw_gfx");
@@ -126,17 +121,17 @@ void Gfx::init()
 #ifdef HAVE_OSMESA
 	if (headless || driver_type == "osmesa") {
 		derr << "Using OSMesa headless graphics driver\n";
-		driver = create_gfx_osmesa(data->main);
+		driver.reset(create_gfx_osmesa(data->main.get()));
 	} else {
 		derr << "Using GLFW windowed graphics driver\n";
-		driver = create_gfx_glfw(data->main);
+		driver.reset(create_gfx_glfw(data->main.get()));
 	}
 #else
 	if (headless) {
 		derr << "Headless mode requested but OSMesa not available, using GLFW\n";
 	}
 	// Always use GLFW driver if OSMesa not available
-	driver = create_gfx_glfw(data->main);
+	driver.reset(create_gfx_glfw(data->main.get()));
 #endif
 
 	if (driver == 0)
@@ -145,7 +140,7 @@ void Gfx::init()
 }
 
 Gfx::Gfx(const VideoMode& vm)
- : data(new Gfx_data()), driver(0)
+ : data(std::make_unique<Gfx_data>())
 {
 	init();
 	if (!change_mode(vm))
@@ -153,7 +148,7 @@ Gfx::Gfx(const VideoMode& vm)
 }
 
 Gfx::Gfx()
- : data(new Gfx_data()), driver(0)
+ : data(std::make_unique<Gfx_data>())
 {
 	init();
 
@@ -184,10 +179,8 @@ Gfx::Gfx()
 
 Gfx::~Gfx()
 {
-	driver->restore_mode();
-	delete driver;
-	delete data->main;
-	delete data;
+	if (driver)
+		driver->restore_mode();
 }
 
 
@@ -253,4 +246,3 @@ bool Gfx::stencil() const
 }
 }
 }
-

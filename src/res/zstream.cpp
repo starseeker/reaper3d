@@ -27,7 +27,7 @@
  * *** empty log message ***
  *
  * Revision 1.2  2001/04/18 23:55:54  peter
- * zstream... (möjligt det inte funkar helt..)
+ * zstream... (mÃ¶jligt det inte funkar helt..)
  *
  * Revision 1.1  2001/04/17 22:54:40  peter
  * zstream
@@ -35,14 +35,15 @@
  *
  */
 
-#include "hw/compat.h"
 #include "hw/debug.h"
 #include "res/zstream.h"
 #include "misc/iostream_helper.h"
 
 #include "zlib.h"
 
+#include <array>
 #include <iostream>
+#include <stdexcept>
 
 namespace reaper
 {
@@ -52,52 +53,61 @@ namespace res
 
 class GZip
 {
-	z_stream zstr;
+	z_stream zstr{};
 	std::streambuf& is;
-	int data_len, cur_pos;
-	unsigned char* read_buf;
+	std::array<unsigned char, 4096> read_buf{};
 	bool is_eof;
 public:
 	GZip(std::streambuf& s);
+	~GZip();
 	int read(unsigned char* ptr, int len);
 	bool eof() const;
 };
 
-
-// FIXME.. learn from book, make it good...
-
-void ignore(std::streambuf& is, char stop)
+void ignore_until(std::streambuf& is, char stop)
 {
 	int c;
 	while ((c = is.sbumpc()) != stop && c != -1)
 	{ }
 }
 
-
-GZip::GZip(std::streambuf& s) : is(s), cur_pos(0), is_eof(false)
+void ignore_bytes(std::streambuf& is, unsigned int count)
 {
-	char hdr[10];
-	is.sgetn(hdr, 10);
+	while (count-- > 0 && is.sbumpc() != std::char_traits<char>::eof())
+		;
+}
+
+GZip::GZip(std::streambuf& s) : is(s), is_eof(false)
+{
+	std::array<unsigned char, 10> hdr{};
+	if (is.sgetn(reinterpret_cast<char*>(hdr.data()), hdr.size()) !=
+	    static_cast<std::streamsize>(hdr.size()) ||
+	    hdr[0] != 0x1f || hdr[1] != 0x8b || hdr[2] != 8) {
+		throw std::runtime_error("Invalid gzip header");
+	}
 	if (hdr[3] & 4) {
-		char low = is.sgetc();
-		char high = is.sgetc();
-		ignore(is, low + high * 256);
+		const int low = is.sbumpc();
+		const int high = is.sbumpc();
+		if (low == std::char_traits<char>::eof() ||
+		    high == std::char_traits<char>::eof()) {
+			throw std::runtime_error("Truncated gzip extra-field header");
+		}
+		ignore_bytes(is, static_cast<unsigned int>(low | (high << 8)));
 	}
 	if (hdr[3] & 8)
-		ignore(is, '\0');
+		ignore_until(is, '\0');
 	if (hdr[3] & 16)
-		ignore(is, '\0');
+		ignore_until(is, '\0');
 	if (hdr[3] & 2) {
-		char junk[2];
-		is.sgetn(junk, 2);
+		ignore_bytes(is, 2);
 	}
-	read_buf = new unsigned char[4096];
-	zstr.next_in = 0;
-	zstr.avail_in = 0;
-	zstr.zalloc = 0;
-	zstr.zfree = 0;
-	zstr.opaque = 0;
-	inflateInit2(&zstr, -15);  // -15, magic number.. see zlib docs
+	if (inflateInit2(&zstr, -MAX_WBITS) != Z_OK)
+		throw std::runtime_error("Unable to initialize gzip decompression");
+}
+
+GZip::~GZip()
+{
+	inflateEnd(&zstr);
 }
 
 int GZip::read(unsigned char* ptr, int len)
@@ -108,47 +118,53 @@ int GZip::read(unsigned char* ptr, int len)
 	zstr.avail_out = len;
 	while (zstr.avail_out > 0) {
 		if (zstr.avail_in == 0) {
-			is.sgetn(reinterpret_cast<char*>(read_buf), 4096);
-			zstr.next_in = read_buf;
-			zstr.avail_in = 4096;
+			const std::streamsize count = is.sgetn(
+				reinterpret_cast<char*>(read_buf.data()),
+				read_buf.size());
+			if (count <= 0) {
+				is_eof = true;
+				break;
+			}
+			zstr.next_in = read_buf.data();
+			zstr.avail_in = static_cast<uInt>(count);
 		}
-		int res = inflate(&zstr, Z_NO_FLUSH);
-		if (res == Z_STREAM_END) {
+		const int status = inflate(&zstr, Z_NO_FLUSH);
+		if (status == Z_STREAM_END) {
 			is_eof = true;
 			break;
 		}
+		if (status != Z_OK && status != Z_BUF_ERROR)
+			throw std::runtime_error("Invalid compressed gzip data");
 	}
-	return len - zstr.avail_out;
+	const int count = len - static_cast<int>(zstr.avail_out);
+	return (count == 0 && is_eof) ? -1 : count;
 }
 
+bool GZip::eof() const
+{
+	return is_eof;
+}
 
-typedef std::char_traits<char> ct;
+using ct = std::char_traits<char>;
 
 izstreambuf::izstreambuf(std::streambuf& s)
- : is(s), gzip(0)
+ : is(s), gzip(std::make_unique<GZip>(is))
 {
-	setg(ibuf, ibuf, ibuf);
-	init();
+	setg(ibuf.data(), ibuf.data(), ibuf.data());
 }
 
-izstreambuf::~izstreambuf()
-{
-	delete gzip;
-}
-
-void izstreambuf::init()
-{
-	gzip = new GZip(is);
-}
+izstreambuf::~izstreambuf() = default;
 
 int izstreambuf::read_some()
 {
-	int n = 512;
-	if ((n = gzip->read((unsigned char*)ibuf, n)) == -1) {
-		setg(0,0,0);
+	int n = gzip->read(
+		reinterpret_cast<unsigned char*>(ibuf.data()),
+		static_cast<int>(ibuf.size()));
+	if (n == -1) {
+		setg(nullptr, nullptr, nullptr);
 		return -1;
 	} else {
-		setg(ibuf, ibuf, ibuf + n);
+		setg(ibuf.data(), ibuf.data(), ibuf.data() + n);
 		return n;
 	}
 }
@@ -177,4 +193,3 @@ izstream::izstream(std::istream& is)
 
 }
 }
-

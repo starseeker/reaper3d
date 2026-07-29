@@ -27,7 +27,7 @@
  * get_row -> get_col
  *
  * Revision 1.25  2001/10/09 01:12:53  macke
- * Ska man ha nÂn chans mot den nya turret-ai:n sÂ.. :)
+ * Ska man ha n√•n chans mot den nya turret-ai:n s√•.. :)
  *
  * Revision 1.24  2001/08/27 12:57:59  peter
  * *** empty log message ***
@@ -42,14 +42,13 @@
  * obj.ptr & fix...
  *
  * Revision 1.20  2001/08/09 18:11:42  macke
- * Fyllefix.. lite h‰r Â d‰r..
+ * Fyllefix.. lite h√§r √• d√§r..
  *
  * Revision 1.19  2001/08/06 12:16:40  peter
- * MegaMerge (se strandy_test-grenen fˆr diffar...)
+ * MegaMerge (se strandy_test-grenen f√∂r diffar...)
  *
  */
 
-#include "hw/compat.h"
 
 #include <iostream>
 
@@ -118,7 +117,7 @@ public:
 				s->events().death.add_listener(
 					event::mk_rm_on_death(s->get_id()));
 				reaper::phys::Engine::get_ref()->insert(s);
-				use_cannon = ++use_cannon % info.weaps.size();
+				use_cannon = (use_cannon + 1) % info.weaps.size();
 				last_fired = trk.sim_time;
 			}
 		}
@@ -141,7 +140,7 @@ public:
 	ShotPtr create_shot(const ObjTracker& trk)
 	{
 		Matrix create_pos = randomize_x_y(rnd, trk.mtx * weapon_pos(), 1);
-		ShotPtr lp = laser(create_pos, Projectile, trk.sim_time, trk.id);
+		ShotPtr lp(laser(create_pos, Projectile, trk.sim_time, trk.id));
 		return lp;
 	}
 };
@@ -205,7 +204,7 @@ public:
 	{
 		Matrix pos = MeshMgr::get_ref()->get_matrix(ri, barrel_name);
 		Matrix create_pos = randomize_x_y(rnd, trk.mtx * pos * weapon_pos(), 3);
-		ShotPtr lp = laser(create_pos, Projectile, trk.sim_time, trk.id);
+		ShotPtr lp(laser(create_pos, Projectile, trk.sim_time, trk.id));
 		return lp;
 	}
 };

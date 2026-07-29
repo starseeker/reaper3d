@@ -12,7 +12,7 @@
  * 'erase'
  *
  * Revision 1.12  2001/11/27 00:54:55  peter
- * worlditeratorer lämnar inte ifrån sig döda objekt längre..
+ * worlditeratorer lÃ¤mnar inte ifrÃ¥n sig dÃ¶da objekt lÃ¤ngre..
  *
  * Revision 1.11  2001/11/10 13:57:05  peter
  * minnesfixar...
@@ -21,25 +21,25 @@
  * no message
  *
  * Revision 1.9  2001/08/20 19:12:16  macke
- * Grin från intel..
+ * Grin frÃ¥n intel..
  *
  * Revision 1.8  2001/08/20 17:11:45  peter
  * obj.ptr
  *
  * Revision 1.7  2001/08/06 12:16:46  peter
- * MegaMerge (se strandy_test-grenen för diffar...)
+ * MegaMerge (se strandy_test-grenen fÃ¶r diffar...)
  *
  * Revision 1.6.2.1  2001/07/31 17:34:10  peter
  * testgren...
  *
  * Revision 1.6  2001/07/30 23:43:35  macke
- * Häpp, då var det kört.
+ * HÃ¤pp, dÃ¥ var det kÃ¶rt.
  *
  * Revision 1.5  2001/05/14 21:58:45  niklas
  * Deallokerar inte objekt vid borttagning
  *
  * Revision 1.4  2001/05/06 09:25:33  peter
- * frustum, const.. (förebygga senilitet hos undertecknad..)
+ * frustum, const.. (fÃ¶rebygga senilitet hos undertecknad..)
  *
  * Revision 1.3  2001/05/06 00:44:21  peter
  * erase
@@ -52,7 +52,6 @@
  *
  */
 
-#include "hw/compat.h"
 
 #include <map>
 #include <limits>
@@ -135,18 +134,18 @@ template<class C> void search_iterator<C>::init_find()
 
 
 
-bool not_dead(Box<object::DynamicPtr> p)
+bool not_dead(const Box<object::DynamicPtr>& p)
 {
 	return ! p->is_dead();
 }
 
-bool not_dead(Box<object::ShotPtr> p)
+bool not_dead(const Box<object::ShotPtr>& p)
 {
 	return ! p->is_dead();
 }
 
 template<class C>
-bool not_dead(C)
+bool not_dead(const C&)
 {
 	return true;
 }
@@ -198,5 +197,4 @@ template class search_iterator<SearchCont<object::ShotPtr> >;
 
 }
 }
-
 

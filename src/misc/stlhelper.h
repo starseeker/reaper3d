@@ -124,27 +124,6 @@ bind_t<A,R> bind(R (*f)(A a), A a) {
 	return bind_t<A,R>(f,a);
 }
 
-// Visual STL binder2nd lacks copy constructor
-template<class F>
-class binder2nd
-{
-	typedef typename F::first_argument_type arg;
-	typedef typename F::result_type res;
-public:
-	binder2nd(const binder2nd<F> &b) : op(b.op), value(b.value) {}
-	binder2nd(const F& f, const typename F::second_argument_type& v) : op(f), value(v) {}
-	res operator()(const arg& a) const { return (op(a, value)); }
-protected:
-	F op;
-	typename F::second_argument_type value;
-};
-
-template<class F, class T>
-binder2nd<F> bind2nd(const F& f, const T& a) {
-	typedef typename F::second_argument_type arg_t;
-	return binder2nd<F>(f, arg_t(a));
-}
-
 template<class A, class R>
 class unary_object
 

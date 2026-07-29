@@ -2,6 +2,7 @@
 #ifndef REAPER_HW_GL_EXT_H
 #define REAPER_HW_GL_EXT_H
 
+#include <memory>
 #include <string>
 
 namespace reaper {
@@ -12,13 +13,14 @@ struct OpenGLinfo_data;
 
 class OpenGLinfo
 {
-	OpenGLinfo_data* data;
+	std::unique_ptr<OpenGLinfo_data> data;
 
 	friend OpenGLinfo& opengl_info_inst();
 	friend void reinit_opengl();
 
 	OpenGLinfo();
-	OpenGLinfo(const OpenGLinfo&);
+	OpenGLinfo(const OpenGLinfo&) = delete;
+	OpenGLinfo& operator=(const OpenGLinfo&) = delete;
 	void init();
 public:
 	~OpenGLinfo();
@@ -47,4 +49,3 @@ const OpenGLinfo& opengl_info();
 }
 
 #endif
-

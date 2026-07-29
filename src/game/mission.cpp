@@ -1,14 +1,11 @@
 
-#include "hw/compat.h"
 #include "hw/debug.h"
 #include "game/mission.h"
 #include "res/resource.h"
 #include "res/config.h"
 #include "misc/parse.h"
-#include "misc/free.h"
 #include "main/types_io.h"
 #include "game/scenario_states.h"
-#include "misc/sequence.h"
 #include "world/world.h"
 
 namespace reaper {
@@ -22,8 +19,6 @@ using namespace res;
 using namespace misc;
 
 typedef vector<string> strvec;
-
-Goal::~Goal() { }
 
 class GoalImpl : public Goal
 {
@@ -99,43 +94,47 @@ public:
 	}
 };
 
-Goal* mk_goal(const string& s)
+std::unique_ptr<Goal> mk_goal(const string& s)
 {
 	strvec arg;
 	misc::split(s, back_inserter(arg));
 	string g = arg.front();
 	if (g == "goto")
-		return new Goto(arg);
+		return std::make_unique<Goto>(arg);
 	else if (g == "timeout")
-		return new TimeOut(arg);
+		return std::make_unique<TimeOut>(arg);
 	else if (g == "objects")
-		return new Objects(arg);
+		return std::make_unique<Objects>(arg);
 	else if (g == "msg")
-		return new Msg(arg);
+		return std::make_unique<Msg>(arg);
 
 	derr << "Unknown goal type: " << g << '\n';
-	return 0;
+	return nullptr;
 }
 
 void read(const ConfigEnv& env, Scenario* scen, string pfx)
 {
 	if (pfx.empty() || pfx == "end")
 		return;
-	Mission* m = new Mission();
+	auto mission = std::make_unique<Mission>();
+	Mission* m = mission.get();
 	m->name = pfx;
 	m->dialog = static_cast<std::string>(env[pfx+"_dialog"]);
 	misc::split(env[pfx+"_objects"], back_inserter(m->objectgroups));
+	scen->missions.emplace(pfx, std::move(mission));
 	int i = 1;
 	do {
 		string goal(pfx+"_goal"+misc::ltos(i++));
 		if (!env.defined(goal))
 			break;
-		Goal* g = mk_goal(env[goal]);
-		m->goals.push_back(g);
-		if (scen->missions.find(g->next()) == scen->missions.end())
-			read(env, scen, g->next());
+		auto g = mk_goal(env[goal]);
+		if (!g)
+			continue;
+		const std::string next = g->next();
+		m->goals.push_back(std::move(g));
+		if (scen->missions.find(next) == scen->missions.end())
+			read(env, scen, next);
 	} while (true);
-	scen->missions[pfx] = m;
 }
 
 class MissionCreate : public NodeConfig<Scenario>
@@ -146,12 +145,12 @@ public:
 
 	Ptr create(IdentRef id)
 	{
-		const ConfigEnv& env = resource<ConfigEnv>("scenario/" + id);
-		if (env.empty())
+		const auto env = resource_ptr<ConfigEnv>("scenario/" + id);
+		if (env->empty())
 			return Ptr(0);
-		Scenario* scen = new Scenario;
-		read(env, scen, "start");
-		return Ptr(scen);
+		auto scen = std::make_unique<Scenario>();
+		read(*env, scen.get(), "start");
+		return Ptr(scen.release());
 	}
 
 };
@@ -180,7 +179,7 @@ string MissionState::on_enter()
 
 string MissionState::update(float time)
 {
-	if (world::WorldRef()->get_local_player().valid()
+	if (world::WorldRef()->get_local_player()
 	 && world::WorldRef()->get_local_player()->is_dead())
 		return "end";
 	for (size_t i = 0; i < m->goals.size(); ++i) {
@@ -195,27 +194,6 @@ void MissionState::on_exit()
 	derr << "Exiting " << m->name << '\n';
 }
 
-Mission::Mission()
-{
-}
-
-Mission::~Mission()
-{
-	for_each(seq(goals), delete_it);
-}
-
-Scenario::Scenario()
-{
-}
-
-Scenario::~Scenario()
-{
-	for_each(seq(missions), delete_it);
-}
-
-
 }
 }
 }
-
-

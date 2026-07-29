@@ -27,10 +27,13 @@ public:
 class MenuSystem
 {
 	class Impl;
-	Impl* i;
+	std::unique_ptr<Impl> i;
 public:
 	MenuSystem();
 	~MenuSystem();
+
+	MenuSystem(const MenuSystem&) = delete;
+	MenuSystem& operator=(const MenuSystem&) = delete;
 
 	void draw_background(Texture&);
 	void draw_mouse_ptr(float x, float y);

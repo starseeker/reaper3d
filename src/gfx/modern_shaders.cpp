@@ -2,7 +2,6 @@
  * Modern GLSL shader support implementation
  */
 
-#include "hw/compat.h"
 #include "gfx/modern_shaders.h"
 #include "hw/debug.h"
 #include "res/res.h"
@@ -177,9 +176,6 @@ ShaderManager::~ShaderManager()
 
 void ShaderManager::cleanup()
 {
-    for (auto& pair : shaders) {
-        delete pair.second;
-    }
     shaders.clear();
     current_shader = nullptr;
 }
@@ -191,17 +187,17 @@ GLSLShader* ShaderManager::load_shader(const std::string& name,
     // Check if already loaded
     auto it = shaders.find(name);
     if (it != shaders.end()) {
-        return it->second;
+        return it->second.get();
     }
     
-    GLSLShader* shader = new GLSLShader(name);
+    auto shader = std::make_unique<GLSLShader>(name);
     if (!shader->load_shaders_from_files(vertex_file, fragment_file) || !shader->link()) {
-        delete shader;
         return nullptr;
     }
     
-    shaders[name] = shader;
-    return shader;
+    GLSLShader* result = shader.get();
+    shaders[name] = std::move(shader);
+    return result;
 }
 
 GLSLShader* ShaderManager::create_shader(const std::string& name,
@@ -211,25 +207,25 @@ GLSLShader* ShaderManager::create_shader(const std::string& name,
     // Check if already exists
     auto it = shaders.find(name);
     if (it != shaders.end()) {
-        return it->second;
+        return it->second.get();
     }
     
-    GLSLShader* shader = new GLSLShader(name);
+    auto shader = std::make_unique<GLSLShader>(name);
     if (!shader->load_vertex_shader(vertex_source) || 
         !shader->load_fragment_shader(fragment_source) || 
         !shader->link()) {
-        delete shader;
         return nullptr;
     }
     
-    shaders[name] = shader;
-    return shader;
+    GLSLShader* result = shader.get();
+    shaders[name] = std::move(shader);
+    return result;
 }
 
 GLSLShader* ShaderManager::get_shader(const std::string& name)
 {
     auto it = shaders.find(name);
-    return (it != shaders.end()) ? it->second : nullptr;
+    return (it != shaders.end()) ? it->second.get() : nullptr;
 }
 
 bool ShaderManager::use_shader(const std::string& name)

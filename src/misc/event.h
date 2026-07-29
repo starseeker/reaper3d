@@ -8,15 +8,6 @@
 namespace reaper {
 namespace misc {
 
-struct LocalPing
-{
-	template<class T>
-	void operator()(T t)
-	{
-		t();
-	}
-};
-
 template<class Cmd>
 class Event
 {
@@ -39,7 +30,8 @@ class Event
 public:
 	void ping_all()
 	{
-		for_each(seq(listeners), LocalPing());
+		for (auto& listener : listeners)
+			listener();
 	}
 //public:
 	void add_listener(Cmd cmd)
@@ -62,5 +54,4 @@ public:
 }
 
 #endif
-
 

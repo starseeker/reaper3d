@@ -1,5 +1,4 @@
 
-#include "hw/compat.h"
 
 #include <vector>
 #include <climits>
@@ -9,25 +8,9 @@
 #include "hw/debug.h"
 #include "misc/map.h"
 
-#include "misc/sequence.h"
-
 namespace reaper {
 namespace {
 debug::DebugOutput dout("gl::state",0);
-
-template<class Map>
-void clear_map(Map& map)
-{
-	using namespace reaper::misc;
-	std::vector<typename Map::mapped_type> tmp(map.size());
-	typename Map::iterator c, e = map.end();
-	for (c = map.begin(); c != e; ++c) {
-		dout << "del: " << c->second << '\n';
-		tmp.push_back(c->second);
-	}
-	map.clear();
-	for_each(seq(tmp), delete_it);
-}
 
 // INT_MAX is not good, but better than -1 (unsigned...)
 const GLuint Not_Init = INT_MAX;
@@ -124,14 +107,14 @@ GLvoid glActiveTextureARB(GLenum unit)
 {
 	if(unit != active_texture_unit) {
 		active_texture_unit = unit;
-		glActiveTextureARB(unit);
+		::glActiveTextureARB(unit);
 	}
 }
 GLvoid glClientActiveTextureARB(GLenum unit)
 {
 	if(unit != active_client_texture_unit) {
 		active_client_texture_unit = unit;
-		glClientActiveTextureARB(unit);
+		::glClientActiveTextureARB(unit);
 	}
 }
 

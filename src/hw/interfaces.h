@@ -11,7 +11,6 @@ namespace hw {
 
 namespace gfx { class VideoMode; }
 namespace event { struct AxisConfig; }
-namespace worker { struct Job; }
 
 namespace ifs {
 
@@ -23,7 +22,6 @@ struct Debug {
 struct Snd : public Debug
 {
 	virtual std::string config(const std::string& ) = 0;
-	virtual void add_job(worker::Job*) = 0;
 };
 
 struct Gfx : public Debug {

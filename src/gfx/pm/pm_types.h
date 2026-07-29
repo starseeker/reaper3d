@@ -3,7 +3,6 @@
 
 #include <list>
 
-#include "hw/compat.h"
 #include "main/types.h"
 #include "main/types4.h"
 #include "gfx/gfx_types.h"

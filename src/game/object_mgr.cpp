@@ -63,11 +63,10 @@
  * object-death-callback (object manager..)
  *
  * Revision 1.30  2001/11/26 10:46:02  peter
- * kompilatorgn‰ll... ;)
+ * kompilatorgn√§ll... ;)
  *
  */
 
-#include "hw/compat.h"
 #include "game/object_mgr.h"
 #include "object/factory.h"
 #include "object/object.h"
@@ -123,7 +122,7 @@ void load_objs(F& f, C& c, const string& fn)
 			c.push_back(g);
 		} while (true);
 	}
-	catch (res::resource_not_found) {
+	catch (const res::resource_not_found&) {
 //		dout << "not found: " << r.what() << '\n';
 	}
 }
@@ -250,6 +249,5 @@ void ObjectMgr::get_objectnames(std::set<std::string>& s)
 }
 }
 }
-
 
 

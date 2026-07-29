@@ -15,7 +15,7 @@
  * object/base.h-meck...
  *
  * Revision 1.10  2001/11/27 00:54:51  peter
- * worlditeratorer l‰mnar inte ifrÂn sig dˆda objekt l‰ngre..
+ * worlditeratorer l√§mnar inte ifr√•n sig d√∂da objekt l√§ngre..
  *
  * Revision 1.9  2001/11/11 01:23:09  peter
  * minnesfixar..
@@ -24,19 +24,19 @@
  * obj.ptr.
  *
  * Revision 1.7  2001/08/06 12:16:02  peter
- * MegaMerge (se strandy_test-grenen fˆr diffar...)
+ * MegaMerge (se strandy_test-grenen f√∂r diffar...)
  *
  * Revision 1.6.2.1  2001/08/05 14:01:24  peter
  * objektmeck...
  *
  * Revision 1.6  2001/07/30 23:43:12  macke
- * H‰pp, dÂ var det kˆrt.
+ * H√§pp, d√• var det k√∂rt.
  *
  * Revision 1.5  2001/07/06 01:47:06  macke
- * Refptrfix/headerfilsst‰d/objekt-skapande/mm
+ * Refptrfix/headerfilsst√§d/objekt-skapande/mm
  *
  * Revision 1.4  2001/05/13 17:22:24  niklas
- * st‰d
+ * st√§d
  *
  * Revision 1.3  2001/05/12 22:05:29  peter
  * world::Line
@@ -45,17 +45,18 @@
  * krockar inte lika ofta...
  *
  * Revision 1.1  2001/05/10 02:02:24  niklas
- * TvÂ olika skepp-ai
+ * Tv√• olika skepp-ai
  *
 */
 
-#include "hw/compat.h"
+#include <algorithm>
+#include <cfloat>
+#include <cstdlib>
+
 #include "object/ai.h"
 #include "object/controls.h"
 #include "object/base_data.h"
 #include "world/world.h"
-#include <cstdlib>
-#include <cfloat>
  
 namespace reaper
 {
@@ -187,7 +188,7 @@ namespace ai
 				float dist = length(Vector((*si_it)->get_pos() - pos));
 				if(dist < min_dist){
 					min_dist = dist;	
-					target_ptr = (*si_it).get_weak_ptr(); // remember this target
+					target_ptr = *si_it; // remember this target
 					target_found = true;
 				}
 			}
@@ -199,14 +200,15 @@ namespace ai
 
 	void ShipBomber::attack(void)
 	{		
+		const auto target = target_ptr.lock();
 		// Check if target has been killed
-		if(target_ptr->is_dead()){
+		if(!target || target->is_dead()){
 			fsm->state_transition(EVENT_ENEMY_KILLED);	
 			sc.fire = false;
 			return;					
 		}
 
-		Vector dir_t = target_ptr->get_pos() - pos; // Direction to target
+		Vector dir_t = target->get_pos() - pos; // Direction to target
 		float dist = length(dir_t);
 
 		// Check if target is out of sight
@@ -227,7 +229,10 @@ namespace ai
 			// calculate point to evade to
 			// TODO: make sure it's not outside the terrain
 			ep = pos + norm(Vector(vel.x,0,vel.z))*DIST_NEW_ATTACK;
-			ep = Point(ep.x, 50 + max(ep.y, wr->get_altitude(Point2D(ep.x, ep.z))), ep.z);
+			ep = Point(
+				ep.x,
+				50 + std::max(ep.y, wr->get_altitude(Point2D(ep.x, ep.z))),
+				ep.z);
 			fsm->state_transition(EVENT_NEW_ATTACK);	
 			new_attack = true;
 			sc.fire = false;

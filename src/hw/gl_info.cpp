@@ -1,5 +1,4 @@
 
-#include "hw/compat.h"
 
 #define GLH_EXT_SINGLE_FILE
 #include "hw/gl.h"
@@ -31,7 +30,7 @@ using std::string;
 
 string win_extstr();
 
-#ifdef WIN32
+#ifdef _WIN32
 string win_extstr()
 {
 	PFNWGLGETEXTENSIONSSTRINGARBPROC wglGetExtensionsStringARB = 
@@ -84,15 +83,11 @@ struct OpenGLinfo_data
 
 };
 
-OpenGLinfo::OpenGLinfo()
- : data(0)
-{
-}
+OpenGLinfo::OpenGLinfo() = default;
 
 void OpenGLinfo::init()
 {
-	delete data;
-	data = new OpenGLinfo_data;
+	data = std::make_unique<OpenGLinfo_data>();
 	data->vend = gl_getstring(GL_VENDOR);
 	data->rend = gl_getstring(GL_RENDERER);
 	data->ver  = gl_getstring(GL_VERSION);
@@ -113,10 +108,7 @@ void OpenGLinfo::init()
 	}
 }
 
-OpenGLinfo::~OpenGLinfo()
-{
-	delete data;
-}
+OpenGLinfo::~OpenGLinfo() = default;
 
 std::ostream& operator<<(std::ostream &s, const OpenGLinfo &info)
 {

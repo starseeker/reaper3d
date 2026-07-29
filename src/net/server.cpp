@@ -47,13 +47,13 @@
 */
 
 
-#include "hw/compat.h"
 
 #include <iostream>
 #include <iomanip>
 #include <algorithm>
 #include <functional>
 #include <list>
+#include <memory>
 #include <set>
 #include <map>
 #include <vector>
@@ -67,7 +67,6 @@
 #include "main/types_io.h"
 #include "misc/sequence.h"
 #include "misc/stlhelper.h"
-#include "misc/free.h"
 #include "misc/iostream_helper.h"
 #include "hw/event.h"
 #include "hw/abstime.h"
@@ -86,6 +85,7 @@ namespace net {
 
 using hw::net::addr_t;
 using hw::net::Socket;
+using hw::net::addr2string;
 using hw::event::Event;
 using hw::event::PlayerID;
 using hw::event::EventSystem;
@@ -111,15 +111,18 @@ typedef const std::string& CStrRef;
 
 class Client
 {
-	Socket* sock;
-	sock_stream ss;
+	std::unique_ptr<Socket> socket;
+	sock_stream stream_impl;
 
 	event_queue* incoming_events;
 	event_queue my_events;
 	int id;
 public:
-	Client(Socket* s)
-	 : sock(s), ss(s), incoming_events(0)
+	explicit Client(std::unique_ptr<Socket> connection)
+	 : socket(std::move(connection)),
+	   stream_impl(socket.get()),
+	   incoming_events(nullptr),
+	   id(0)
 	{ }
 
 	void set_incoming_queue(event_queue* eq)
@@ -142,52 +145,29 @@ public:
 	bool dump()
 	{
 		while (! my_events.empty()) {
-			net::send(ss, my_events.front());
+			net::send(stream_impl, my_events.front());
 			my_events.pop_front();
 		}
-		net::send(ss, "end");
+		net::send(stream_impl, "end");
 		return true;
 	}
 
 	int get_id() const { return id; }
 	void set_id(int i) { id = i; }
 
-	sock_stream& stream() { return ss; }
+	sock_stream& stream() { return stream_impl; }
 
 	void log(CStrRef msg) {
-		derr << "[server] client: " << addr2string(sock->remote_addr())
-		     << ": " << sock->remote_port()
+		derr << "[server] client: " << addr2string(socket->remote_addr())
+		     << ": " << socket->remote_port()
 		     << ": " << msg << '\n';
 	}
-};
-
-class Command
-{
-public:
-	virtual bool run(Client* c, CStrRef) = 0;
 };
 
 using misc::seq;
 using misc::cseq;
 using misc::find;
 using misc::apply_to;
-
-class Server;
-
-class ServerCommand
- : public Command
-{
-	Server* server;
-	typedef bool (Server::*srv_method)(Client*, const std::string&);
-	srv_method method;
-public:
-
-	ServerCommand(Server* s, srv_method m) : server(s), method(m) { }
-	bool run(Client* c, CStrRef str)
-	{
-		return (server->*method)(c, str);
-	}
-};
 
 void send_ack(Client* c)
 {
@@ -214,7 +194,7 @@ struct Game
 	{ }
 };
 
-typedef map<Socket*, Client*> ClientMap;
+using ClientMap = map<Socket*, std::unique_ptr<Client>>;
 
 using std::max;
 
@@ -237,8 +217,8 @@ float avg_sync(const ObjStateMap& objs)
 	return objs.empty() ? 0 : sum / objs.size();
 }
 
-typedef map<string, Command*> CommandMap;
-typedef CommandMap::iterator CmdIter;
+using Command = std::function<bool(Client*, CStrRef)>;
+using CommandMap = map<string, Command>;
 
 class Server
 {
@@ -256,28 +236,26 @@ class Server
 public:
 	Server()
 	{
-		commands["serverinfo"]	= new ServerCommand(this, &Server::server_info);
-		commands["gameinfo"]	= new ServerCommand(this, &Server::game_info);
-		commands["join"]	= new ServerCommand(this, &Server::join);
-		commands["obs"]  	= new ServerCommand(this, &Server::obs);
-		commands["start"]	= new ServerCommand(this, &Server::start);
-		commands["poll"]	= new ServerCommand(this, &Server::poll);
-		commands["event"]	= new ServerCommand(this, &Server::event);
-		commands["quit"]	= new ServerCommand(this, &Server::quit);
-		commands["time"]	= new ServerCommand(this, &Server::time);
-		commands["putobj"]	= new ServerCommand(this, &Server::putobj);
-		commands["getobjs"]	= new ServerCommand(this, &Server::getobjs);
-		commands["go"]          = new ServerCommand(this, &Server::go);
+		const auto bind = [this](auto method) {
+			return [this, method](Client* client, CStrRef arguments) {
+				return (this->*method)(client, arguments);
+			};
+		};
+		commands.emplace("serverinfo", bind(&Server::server_info));
+		commands.emplace("gameinfo", bind(&Server::game_info));
+		commands.emplace("join", bind(&Server::join));
+		commands.emplace("obs", bind(&Server::obs));
+		commands.emplace("start", bind(&Server::start));
+		commands.emplace("poll", bind(&Server::poll));
+		commands.emplace("event", bind(&Server::event));
+		commands.emplace("quit", bind(&Server::quit));
+		commands.emplace("time", bind(&Server::time));
+		commands.emplace("putobj", bind(&Server::putobj));
+		commands.emplace("getobjs", bind(&Server::getobjs));
+		commands.emplace("go", bind(&Server::go));
 
 		start_time = hw::time::get_time();
 		event_count = 0;
-	}
-
-	~Server()
-	{
-		for_each(seq(clients), misc::delete_it);
-		for_each(seq(active), misc::delete_it);
-		for_each(seq(commands), misc::delete_it);
 	}
 
 	bool putobj(Client* c, CStrRef ln)
@@ -418,14 +396,19 @@ public:
 	int serve(Socket* s)
 	{
 		if (s == &main) {
-			Socket* ns = main.accept();
-			Client* c = new Client(ns);
-			clients[ns] = c;
-			active.push_back(ns);
+			auto connection = main.accept();
+			Socket* socket = connection.get();
+			auto client = std::make_unique<Client>(std::move(connection));
+			Client* c = client.get();
+			clients.emplace(socket, std::move(client));
+			active.push_back(socket);
 			send(c->stream(), "Welcome");
 			c->log("connect");
 		} else {
-			Client* c = clients[s];
+			auto client_entry = clients.find(s);
+			if (client_entry == clients.end())
+				return 0;
+			Client* c = client_entry->second.get();
 			do {
 				if (!c->stream().good())
 					c->log("[server] stream bad!");
@@ -436,23 +419,28 @@ public:
 				misc::skip_crlf(c->stream());
 
 				bool client_ok = false;
-				CmdIter i = commands.find(cmd);
+				auto i = commands.find(cmd);
 				if (i == commands.end()) {
 					c->log("invalid command: " + cmd);
 				} else {
-					Command* cm = i->second;
-					if (cm->run(c, rest) && c->stream().good())
+					if (i->second(c, rest) && c->stream().good())
 						client_ok = true;
 				}
 				if (!client_ok) {
 					c->log("removing => shutdown");
 					s->close();
-					active.erase(find(seq(active), s));
-					ClientMap::iterator i = clients.find(s);
-					delete i->second;
-					clients.erase(i);
+					active.erase(
+						std::remove(active.begin(), active.end(), s),
+						active.end());
 					game.players.erase(c);
 					game.observers.erase(c);
+					scheduled_starts.erase(
+						std::remove(
+							scheduled_starts.begin(),
+							scheduled_starts.end(),
+							c),
+						scheduled_starts.end());
+					clients.erase(client_entry);
 
 					if (clients.empty()) {
 						game.state = init;
@@ -492,8 +480,7 @@ public:
 		while (! game.events.empty()) {
 			++event_count;
 			const Event& ev = game.events.front();
-			ClientMap::iterator c, e = clients.end();
-			for (c = clients.begin(); c != e; ++c) {
+			for (auto c = clients.begin(); c != clients.end(); ++c) {
 				if (c->second->get_id() != ev.recv)
 					c->second->send(ev);
 			}
@@ -526,14 +513,11 @@ public:
 
 
 GameServer::GameServer()
+	: server(std::make_unique<Server>())
 {
-	server = new Server();
 }
 
-GameServer::~GameServer()
-{
-	delete server;
-}
+GameServer::~GameServer() = default;
 
 void GameServer::run()
 {
@@ -543,4 +527,3 @@ void GameServer::run()
 
 }
 }
-

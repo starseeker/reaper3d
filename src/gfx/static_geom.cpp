@@ -1,4 +1,3 @@
-#include "hw/compat.h"
 #include <vector>
 #include "hw/gl.h"
 #include "hw/gl_info.h"
@@ -94,7 +93,6 @@ void StaticGeometry::init(
 			}
 		}
 	} else {
-		//FIXME: eek!
 		setup(reinterpret_cast<const float*>(v), 
 			reinterpret_cast<const float*>(c), 
 			reinterpret_cast<const float*>(n), 
@@ -102,36 +100,10 @@ void StaticGeometry::init(
 			separate_arrays ? 0 : stride);
 		list.begin();
 
-// totally sucky and utterly stupid matrox driver workaround... 
-#ifdef WIN32
-		const hw::gfx::OpenGLinfo& gl = hw::gfx::opengl_info();
-
-		if(gl.renderer() == "Matrox G200") {
-			glBegin(GL_TRIANGLES);
-			if(indices) {
-				for(const int *i = indices; i < indices + num_indices; i++) {
-					if(c) glColor4(c[*i]);
-					if(t) glTexCoord(t[*i]);
-					if(n) glNormal(n[*i]);
-					glVertex(v[*i]);
-				}
-			} else {
-				for(int i = 0; i < num_verts; i++) {
-					if(c) glColor4(c[i]);
-					if(t) glTexCoord(t[i]);
-					if(n) glNormal(n[i]);
-					glVertex(v[i]);
-				}
-			}
-			glEnd();
-		} else 
-#endif		
-		{
-			if(indices) {
-				glDrawElements(GL_TRIANGLES, num_indices, GL_UNSIGNED_INT, indices);
-			} else {
-				glDrawArrays(GL_TRIANGLES, 0, num_verts);
-			}
+		if(indices) {
+			glDrawElements(GL_TRIANGLES, num_indices, GL_UNSIGNED_INT, indices);
+		} else {
+			glDrawArrays(GL_TRIANGLES, 0, num_verts);
 		}
 		list.end();
 		restore(reinterpret_cast<const float*>(c),

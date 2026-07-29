@@ -1,7 +1,6 @@
 /* $Id: snd_system.cpp,v 1.68 2002/05/21 10:09:28 pstrand Exp $ */
 
 
-#include "hw/compat.h"
 
 #include <deque>
 #include <map>
@@ -23,7 +22,6 @@
 #include "res/resource.h"
 
 #include "hw/debug.h"
-#include "hw/worker.h"
 
 // Backend factories are kept as direct symbols while the old plugin loader is
 // removed from the monolithic build.
@@ -57,9 +55,6 @@ public:
 	std::string config(const std::string& s) {
 		res::ConfigEnv env("hw_snd_system");
 		return env[s];
-	}
-	void add_job(worker::Job* j) {
-		worker::worker()->add_job(j, false);
 	}
 };
 
@@ -148,14 +143,11 @@ struct SoundSystem_impl
 
 
 SoundSystem::SoundSystem()
- : impl(new SoundSystem_impl())
+ : impl(std::make_unique<SoundSystem_impl>())
 {
 }
 
-SoundSystem::~SoundSystem()
-{
-	delete impl;
-}
+SoundSystem::~SoundSystem() = default;
 
 
 bool SoundSystem::init()

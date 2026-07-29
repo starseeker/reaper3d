@@ -1,12 +1,12 @@
 #ifndef PAIRS_H
 #define PAIRS_H
-#include "hw/compat.h"
 #include "world/triangle.h"
 #include "world/world.h"
 #include "main/types.h"
 #include "phys/physConstants.h"
 
 #include <vector>
+#include <utility>
 
 
 using reaper::world::Triangle;
@@ -35,7 +35,7 @@ public:
 	
 	virtual void calc_lower_bound() = 0;
 	virtual double check_distance() = 0;
-	virtual CollisionData* get_collision() = 0;
+	virtual CollisionData get_collision() = 0;
 	virtual void simulate(const double& to_time) = 0;
 	virtual bool collide(const CollisionData&) = 0;
 	virtual double get_sim_time() const = 0;
@@ -50,7 +50,7 @@ public:
 
 	inline bool less_than(const Pair& rh) const { return lower_bound < rh.lower_bound; };
 	inline bool larger_than(const Pair& rh) const { return lower_bound > rh.lower_bound; };
-	virtual bool to_insert(const double& framestop) {return true;};
+	virtual bool to_insert(const double&) { return true; }
 
 	inline objId get_id1() const { return id1;}
 	inline objId get_id2() const { return id2;}
@@ -80,7 +80,7 @@ public:
 	virtual void calc_lower_bound() ;
 	virtual double check_distance() ;
 	
-	virtual CollisionData* get_collision();
+	virtual CollisionData get_collision();
 	virtual void simulate(const double& to_time) ;
 	virtual bool collide(const CollisionData&);
 	virtual double get_sim_time() const {return obj->get_sim_time();}
@@ -105,7 +105,7 @@ public:
 	
 	virtual void calc_lower_bound();
 	virtual double check_distance();	
-	virtual CollisionData* get_collision();
+	virtual CollisionData get_collision();
 	virtual void simulate(const double& to_time);
 	virtual bool collide(const CollisionData&);
 	virtual double get_sim_time() const {return obj->get_sim_time();}
@@ -131,7 +131,7 @@ public:
 	double get_sim_time() const;
 	void calc_lower_bound();
 	virtual double check_distance() ;
-	CollisionData* get_collision();
+	CollisionData get_collision();
 	void simulate(const double& to_time);
 	bool collide(const CollisionData&);
 
@@ -152,7 +152,7 @@ public:
 
 	double get_sim_time() const;
 	void calc_lower_bound();
-	CollisionData* get_collision();
+	CollisionData get_collision();
 	virtual void simulate(const double &to_time);
 	bool collide(const CollisionData&);
 
@@ -165,11 +165,13 @@ protected:
 
 class StaticDynPair : public SillyDynPair {
 public:
-	StaticDynPair(StaticPtr obj1, DynamicPtr obj2)
-	 : SillyDynPair(obj1,obj2), obj1(obj1) {}
+	StaticDynPair(StaticPtr static_object, DynamicPtr dynamic_object)
+	 : SillyDynPair(static_object, std::move(dynamic_object)),
+	   static_object(std::move(static_object)) {}
 	void simulate(const double& to_time);
-protected:
-	StaticPtr obj1;
+
+private:
+	StaticPtr static_object;
 };
 
 class ShotSillyPair : public Pair {
@@ -181,7 +183,7 @@ public:
 
 	virtual double get_sim_time() const;
 	virtual void calc_lower_bound();
-	CollisionData* get_collision();
+	CollisionData get_collision();
 	virtual void simulate(const double& to_time);
 	bool collide(const CollisionData&);
 	double check_distance();
@@ -214,5 +216,3 @@ private:
 }
 
 #endif
-
-

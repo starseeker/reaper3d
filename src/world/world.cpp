@@ -1,6 +1,5 @@
 /* $Id: world.cpp,v 1.143 2002/09/23 12:08:44 fizzgig Exp $ */
 
-#include "hw/compat.h"
 
 #include "world/world.h"
 
@@ -22,10 +21,6 @@
 namespace reaper {
 namespace { 
         reaper::debug::DebugOutput dlog("world", 5); 
-}
-namespace misc {
-	template <>
-	UniquePtr<world::World>::I UniquePtr<world::World>::inst = {};
 }
 namespace object { int get_obj_count(); }
 namespace world
@@ -80,13 +75,11 @@ WorldRef World::get_ref() { return WorldRef(); }
 
 
 
-World::World()
- : impl(0)
-{ }
+World::World() = default;
 
 void World::load(const string& lv)
 {
-	impl = new World_impl(lv);
+	impl = std::make_unique<World_impl>(lv);
 }
 
 
@@ -95,8 +88,7 @@ void World::shutdown()
 	dlog << "shutdown\n";
 	if (impl) {
 		impl->shutdown();
-		delete impl;
-		impl = 0;
+		impl.reset();
 	}
 }
 
@@ -321,25 +313,25 @@ void World::add_object(Triangle* o)
 void World::add_object(SillyPtr o)
 {
 	impl->si_tree->insert(o);
-	impl->sillys.insert(o->get_id(), o);
+	impl->sillys.insert_or_assign(o->get_id(), o);
 }
 
 void World::add_object(StaticPtr o)
 {
 	impl->st_tree->insert(o);
-	impl->statics.insert(o->get_id(), o);
+	impl->statics.insert_or_assign(o->get_id(), o);
 }
 
 void World::add_object(DynamicPtr o)
 {
 	impl->dyn_tree->insert(o);
-	impl->dynamics.insert(o->get_id(), o);
+	impl->dynamics.insert_or_assign(o->get_id(), o);
 }
 
 void World::add_object(ShotPtr o)
 {
 	impl->shot_tree->insert(o);
-	impl->shots.insert(o->get_id(), o);
+	impl->shots.insert_or_assign(o->get_id(), o);
 }
 
 
@@ -372,16 +364,16 @@ void erase_obj_s(W* w, B o) {
 }
 
 
-void World::erase(SillyPtr o)    { if (! impl->in_shutdown) { impl->sillys.erase(o->get_id());   erase_obj_q<si_iterator>(impl->si_tree, o); } }
-void World::erase(StaticPtr o)   { if (! impl->in_shutdown) { impl->statics.erase(o->get_id());  erase_obj_q<st_iterator>(impl->st_tree, o); } }
-void World::erase(DynamicPtr o)  { if (! impl->in_shutdown) { impl->dynamics.erase(o->get_id()); erase_obj_q<dyn_iterator>(impl->dyn_tree, o); } }
-void World::erase(ShotPtr o)     { if (! impl->in_shutdown) { impl->shots.erase(o->get_id());    erase_obj_q<shot_iterator>(impl->shot_tree, o); } }
+void World::erase(SillyPtr o)    { if (! impl->in_shutdown) { impl->sillys.erase(o->get_id());   erase_obj_q<si_iterator>(impl->si_tree.get(), o); } }
+void World::erase(StaticPtr o)   { if (! impl->in_shutdown) { impl->statics.erase(o->get_id());  erase_obj_q<st_iterator>(impl->st_tree.get(), o); } }
+void World::erase(DynamicPtr o)  { if (! impl->in_shutdown) { impl->dynamics.erase(o->get_id()); erase_obj_q<dyn_iterator>(impl->dyn_tree.get(), o); } }
+void World::erase(ShotPtr o)     { if (! impl->in_shutdown) { impl->shots.erase(o->get_id());    erase_obj_q<shot_iterator>(impl->shot_tree.get(), o); } }
 void World::erase(PlayerPtr o)   { erase(DynamicPtr(o)); }
 
 
 void World::erase(tri_iterator i)  { impl->tri_tree->erase(i); }
-void World::erase(st_iterator i)   { impl->sillys.erase((*i)->get_id()); impl->st_tree->erase(i); }
-void World::erase(si_iterator i)   { impl->statics.erase((*i)->get_id()); impl->si_tree->erase(i); }
+void World::erase(st_iterator i)   { impl->statics.erase((*i)->get_id()); impl->st_tree->erase(i); }
+void World::erase(si_iterator i)   { impl->sillys.erase((*i)->get_id()); impl->si_tree->erase(i); }
 void World::erase(dyn_iterator i)  { impl->dynamics.erase((*i)->get_id()); impl->dyn_tree->erase(i); }
 void World::erase(shot_iterator i) { impl->shots.erase((*i)->get_id()); impl->shot_tree->erase(i); }
 
@@ -389,16 +381,16 @@ void World::erase(shot_iterator i) { impl->shots.erase((*i)->get_id()); impl->sh
 bool World::erase(object::ID id) {
 	if (impl->in_shutdown) {
 		return true;
-	} else if (erase_id<si_iterator>(impl->si_tree, id)) {
+	} else if (erase_id<si_iterator>(impl->si_tree.get(), id)) {
 		impl->sillys.erase(id);
 		return true;
-	} else if (erase_id<st_iterator>(impl->st_tree, id)) {
+	} else if (erase_id<st_iterator>(impl->st_tree.get(), id)) {
 		impl->statics.erase(id);
 		return true;
-	} else if (erase_id<dyn_iterator>(impl->dyn_tree, id)) {
+	} else if (erase_id<dyn_iterator>(impl->dyn_tree.get(), id)) {
 		impl->dynamics.erase(id);
 		return true;
-	} else if (erase_id<shot_iterator>(impl->shot_tree, id)) {
+	} else if (erase_id<shot_iterator>(impl->shot_tree.get(), id)) {
 		impl->shots.erase(id);
 		return true;
 	} else {

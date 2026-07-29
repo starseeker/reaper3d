@@ -16,7 +16,6 @@
  *
  */
 
-#include "hw/compat.h"
 #include "main/types.h"
 #include "gfx/abstracts.h"
 #include "gfx/instances.h"

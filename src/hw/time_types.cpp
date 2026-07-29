@@ -1,89 +1,46 @@
-
-/* $Id: time_types.cpp,v 1.7 2002/09/22 08:50:14 pstrand Exp $ */
-
-#include "hw/compat.h"
-
-#ifdef WIN32
-# include "hw/windows.h"
-#else
-// Modern C++ time headers - no need for legacy C time functions
-#include <thread>    // For std::this_thread::sleep_for
-#include <chrono>    // For std::chrono::milliseconds
-#endif
-
 #include "hw/time_types.h"
 
-
-
-
-
-namespace reaper
-{
-namespace hw
-{
-namespace time
+namespace reaper::hw::time
 {
 
-
-TimeSpan TimeSpan::from_us(long us)
+TimeSpan TimeSpan::from_us(TimeRep us)
 {
-	return TimeSpan(0, us);
+	return TimeSpan(us);
 }
 
-TimeSpan TimeSpan::from_ms(long ms) {
-	return TimeSpan(ms / low_mod_ms, (ms % low_mod_ms) * 1000);
+TimeSpan TimeSpan::from_ms(TimeRep ms)
+{
+	return TimeSpan(ms * 1'000);
 }
 
-TimeSpan& TimeSpan::operator+=(const TimeSpan& t) {
-	high += t.high;
-	low += t.low;
-	fixup();
+TimeSpan& TimeSpan::operator+=(const TimeSpan& other)
+{
+	microseconds += other.microseconds;
 	return *this;
 }
 
-TimeSpan& TimeSpan::operator-=(const TimeSpan& t) {
-	high -= t.high;
-	low -= t.low;
-	fixup();
+TimeSpan& TimeSpan::operator-=(const TimeSpan& other)
+{
+	microseconds -= other.microseconds;
 	return *this;
 }
 
-TimeSpan& TimeSpan::operator*=(double m)
-{ 
-	high = static_cast<long>(high * m);
-	low = static_cast<long>(low * m);
-	fixup();
+TimeSpan& TimeSpan::operator*=(double multiplier)
+{
+	microseconds = static_cast<TimeRep>(microseconds * multiplier);
 	return *this;
 }
 
-TimeSpan operator+(const TimeSpan& t1, const TimeSpan& t2)
+TimeSpan operator+(TimeSpan lhs, const TimeSpan& rhs)
 {
-	return TimeSpan(t1.approx().upper() + t2.approx().upper(),
-			t1.approx().lower() + t2.approx().lower());
+	lhs += rhs;
+	return lhs;
 }
 
-TimeSpan operator-(const TimeSpan& t1, const TimeSpan& t2)
+TimeSpan operator-(TimeSpan lhs, const TimeSpan& rhs)
 {
-	return TimeSpan(t1.approx().upper() - t2.approx().upper(),
-			t1.approx().lower() - t2.approx().lower());
-
+	lhs -= rhs;
+	return lhs;
 }
 
-#ifdef WIN32
-
-void msleep(long t) {
-	Sleep(t);
-}
-
-#else
-
-void msleep(long t) {
-	// Modernized: Using C++11 std::this_thread::sleep_for instead of nanosleep
-	std::this_thread::sleep_for(std::chrono::milliseconds(t));
-}
-
-#endif
-
-}
-}
 }

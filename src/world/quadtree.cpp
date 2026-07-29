@@ -89,7 +89,6 @@
  */
 
 
-#include "hw/compat.h"
 #include "hw/debug.h"
 #include "main/types.h"
 #include "main/types_io.h"
@@ -122,7 +121,7 @@ Square Square::shrinked(Quadrant q) const
 	switch (q) {
 	case LL:  break;
 	case LR:  sq.xoff += half_size; break;
-	case UR:  sq.xoff += half_size;
+	case UR:  sq.xoff += half_size; sq.yoff += half_size; break;
 	case UL:  sq.yoff += half_size; break;
 	}
 	sq.half_size /= 2;
@@ -262,8 +261,6 @@ struct Geom<world::Triangle*>
 
 	static Quadrant quadrant(Tri* t, const Square& sq)
 	{
-		Quadrant q = quadtree::get_quadrant(mintri(t->a, t->b, t->c),
-					      maxtri(t->a, t->b, t->c), sq);
 		return quadtree::get_quadrant(mintri(t->a, t->b, t->c),
 					      maxtri(t->a, t->b, t->c), sq);
 	}
@@ -644,7 +641,7 @@ float radius(misc::SmartPtr<T> p) {
 	return p->get_radius();
 }
 
-float radius(gfx::light::Light* t) {
+float radius(gfx::light::Light*) {
 	return 0;
 }
 
@@ -862,4 +859,3 @@ INST_QUADTREE(gfx::SimEffect*, 3, 8);
 
 }
 }
-

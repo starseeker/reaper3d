@@ -1,4 +1,3 @@
-#include "hw/compat.h"
 
 #include <vector>
 #include <cmath>
@@ -75,7 +74,7 @@ bool scale_image_stb(GLenum format, int src_w, int src_h, GLenum type,
 		pixel_layout, stb_type, STBIR_EDGE_CLAMP, STBIR_FILTER_DEFAULT
 	);
 	
-	return result != NULL;
+	return result != nullptr;
 }
 
 // Manual mipmap generation using stb_image_resize as replacement for gluBuild2DMipmaps
@@ -486,7 +485,7 @@ Texture::Texture(Unique id)
 		try {
 			size = load_s3tc(file);
 		} 
-		catch ( res::resource_not_found ) {
+		catch (const res::resource_not_found&) {
 			size = generate_save_s3tc(file);
 		}
 		glTexParameter2D(GL_TEXTURE_MAG_FILTER, GL_LINEAR);

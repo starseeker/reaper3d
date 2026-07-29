@@ -21,7 +21,6 @@
  *
  */
 
-#include "hw/compat.h"
 
 #include <cfloat>
 #include <cmath>

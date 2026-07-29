@@ -6,7 +6,7 @@
  * gcc-varningar
  *
  * Revision 1.9  2001/11/26 10:46:04  peter
- * kompilatorgnäll... ;)
+ * kompilatorgnÃ¤ll... ;)
  *
  * Revision 1.8  2001/04/28 19:24:02  truls
  * Completely New Makeprog Function. Treap improved. 35 - 80 % Faster treap.update(). Correct Quadric Calculation. Penalties Correct. Etc.
@@ -31,7 +31,6 @@
  *
  */
 
-#include "hw/compat.h"
 #include "pm.h"
 #include "treap.h"
 #include "hw/debug.h"
@@ -43,6 +42,9 @@ namespace gfx
 namespace pm
 {
 
+using std::cin;
+using std::cout;
+using std::endl;
 
 bool Treap::pair_id(const Pairdat& pd1, const Pairdat& pd2)
 {
@@ -69,8 +71,8 @@ bool Treap::insert(const Pairdat &pd)
 	Treap_node_ptr neue = 0;
 
 	// Is this the first insert and thus the root node?
-	if(treap == NULL){
-		treap = new Treap_node(pd, NULL);
+	if(treap == nullptr){
+		treap = new Treap_node(pd, nullptr);
 		return false;
 	}
 
@@ -90,7 +92,7 @@ bool Treap::insert(const Pairdat &pd)
 		}
 
 		if(pair_lt(pd, current->dat)){
-			if(current->left != NULL){
+			if(current->left != nullptr){
 				current = current->left;
 			} else {
 				current->left = new Treap_node(pd, current);
@@ -99,7 +101,7 @@ bool Treap::insert(const Pairdat &pd)
 				neue = current->left;
 			}
 		} else {
-			if(current->right != NULL){
+			if(current->right != nullptr){
 				current = current->right;
 			} else {
 				current->right = new Treap_node(pd, current);
@@ -113,7 +115,7 @@ bool Treap::insert(const Pairdat &pd)
 
 	// Verifying Heap Property
 
-	while((neue->parent != NULL) && (neue->dat.cost < neue->parent->dat.cost)){
+	while((neue->parent != nullptr) && (neue->dat.cost < neue->parent->dat.cost)){
 		//cout << neue->dat << endl;
 		//cout << neue->parent << endl;
 		rot_up(neue);
@@ -131,7 +133,7 @@ bool Treap::rot_left(Treap_node *node)
 	Treap_node_ptr tmp;
 
 	// 3:
-	if(node->parent != NULL){
+	if(node->parent != nullptr){
 		if(node->parent->left == node)
 			node->parent->left = node->right;
 		else if(node->parent->right == node)
@@ -142,16 +144,16 @@ bool Treap::rot_left(Treap_node *node)
 		}
 	} else {
 		treap = node->right;
-		//node->right->parent = NULL;
+		//node->right->parent = nullptr;
 	}
 
 	// 5:
-	if(node->right->left != NULL)
+	if(node->right->left != nullptr)
 		node->right->left->parent = node;
 	
 	// 4:
-	tmp = NULL;
-	if(node->right != NULL){
+	tmp = nullptr;
+	if(node->right != nullptr){
 		node->right->parent = node -> parent;
 		tmp = node->right->left;
 		node->right->left = node;
@@ -169,7 +171,7 @@ bool Treap::rot_right(Treap_node *node)
 	Treap_node_ptr tmp;
 
 	// 3:
-	if(node->parent != NULL){
+	if(node->parent != nullptr){
 		if(node->parent->left == node)
 			node->parent->left = node->left;
 		else if(node->parent->right == node)
@@ -183,13 +185,13 @@ bool Treap::rot_right(Treap_node *node)
 	}
 
 	// 5:
-	if(node->left->right != NULL)
+	if(node->left->right != nullptr)
 		node->left->right->parent = node;
 
 
 	// 4:
-	tmp = NULL;
-	if(node->left != NULL){
+	tmp = nullptr;
+	if(node->left != nullptr){
 		node->left->parent = node->parent;
 		tmp = node->left->right;
 		node->left->right = node;
@@ -204,7 +206,7 @@ bool Treap::rot_right(Treap_node *node)
 
 bool Treap::rot_up(Treap_node_ptr node)
 {
-	if(node->parent == NULL){
+	if(node->parent == nullptr){
 		cout << "Cannot rot_up top node" << endl;
 		return true;
 	}
@@ -223,7 +225,7 @@ Treap_node_ptr Treap::find(const Pairdat pd)
 {
 	Treap_node_ptr current = treap;
 
-	while ((current != NULL) && (!pair_id(pd, current->dat))){
+	while ((current != nullptr) && (!pair_id(pd, current->dat))){
 
 		if(pair_lt(current->dat, pd)){
 			current = current->right;
@@ -243,22 +245,22 @@ bool Treap::remove(const Pairdat &pd)
 
 	Treap_node_ptr current = find(pd);
 
-	if(current == NULL)return true;
+	if(current == nullptr)return true;
 
 	for(;;){
 
-		if( (current->left == NULL) && (current->right == NULL)){
-			if(current->parent != NULL)
+		if( (current->left == nullptr) && (current->right == nullptr)){
+			if(current->parent != nullptr)
 				if(current->parent->left == current)
-					current->parent->left = NULL;
+					current->parent->left = nullptr;
 				else if(current->parent->right == current)
-					current->parent->right = NULL;
+					current->parent->right = nullptr;
 				else {
 					cout << "EXCEPTION: Treap -> remove -> disintegrity warning!" << endl;
 					cin.get();
 				}
 			else
-				treap = NULL;
+				treap = nullptr;
 
 			delete(current);
 
@@ -267,9 +269,9 @@ bool Treap::remove(const Pairdat &pd)
 			return false;
 		}
 
-		if(current->left == NULL)
+		if(current->left == nullptr)
 			rot_left(current);
-		else if (current->right == NULL) 
+		else if (current->right == nullptr)
 			rot_right(current);
 		else if (current->right->dat.cost > current->left->dat.cost)
 			rot_right(current);
@@ -281,7 +283,7 @@ bool Treap::remove(const Pairdat &pd)
 	
 bool Treap::rec_print(Treap_node_ptr node)
 {
-	if(node == NULL)return true;
+	if(node == nullptr)return true;
 	rec_print(node->left);
 	cout << node->dat << endl;
 	rec_print(node->right);
@@ -296,7 +298,7 @@ bool Treap::print(void)
 
 Pairdat Treap::pop(void)
 {
-	if(treap == NULL) cout << "EXCEPTION -> Treap -> Cannot pop empty heap" << endl;
+	if(treap == nullptr) cout << "EXCEPTION -> Treap -> Cannot pop empty heap" << endl;
 
 	Pairdat pd = treap->dat;
 	
@@ -313,7 +315,7 @@ Pairdat Treap::top(void)
 
 bool Treap::empty(void)
 {
-	return (treap == NULL);
+	return (treap == nullptr);
 }
 
 bool Treap::update(const Pairdat &pd)
@@ -322,25 +324,25 @@ bool Treap::update(const Pairdat &pd)
 	Treap_node_ptr nod = find(pd);
 
 	// Cant update what isn't there!
-	if( nod == NULL) cout << "EXCEPTION -> Treap -> Update -> Nothing to Update!" << endl;
+	if( nod == nullptr) cout << "EXCEPTION -> Treap -> Update -> Nothing to Update!" << endl;
 
 	// Rotate Upwards if the cost has been reduced
-	while( (nod->parent != NULL) && (nod->dat.cost < nod->parent->dat.cost) )
+	while( (nod->parent != nullptr) && (nod->dat.cost < nod->parent->dat.cost) )
 		rot_up(nod);
 
 	// Rotate Downwards if the cost has increased
 	bool not_in_position = true;
 	while(not_in_position){
 
-		if(nod->left == NULL)
-			if(nod->right == NULL)
+		if(nod->left == nullptr)
+			if(nod->right == nullptr)
 				not_in_position = false;
 			else if(nod->dat.cost > nod->right->dat.cost)
 				rot_left(nod);
 			else
 				not_in_position = false;
 		else 
-			if(nod->right == NULL)
+			if(nod->right == nullptr)
 				if(nod->dat.cost > nod->left->dat.cost)
 					rot_right(nod);
 				else

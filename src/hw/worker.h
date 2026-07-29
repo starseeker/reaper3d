@@ -4,7 +4,7 @@
 #ifndef REAPER_HW_WORKER_H
 #define REAPER_HW_WORKER_H
 
-#include "misc/stlhelper.h"
+#include <memory>
 
 
 namespace reaper {
@@ -18,12 +18,15 @@ struct Job
 	virtual ~Job() { }
 };
 
+using JobPtr = std::shared_ptr<Job>;
+
 class Worker
 {
 public:
-	virtual void spawn_job(Job*) = 0;
-	virtual void add_job(Job*, bool delete_when_done = false) = 0;
+	virtual void spawn_job(JobPtr) = 0;
+	virtual void add_job(JobPtr) = 0;
 	virtual void shutdown() = 0;
+	virtual ~Worker() = default;
 };
 
 Worker* worker();
@@ -33,4 +36,3 @@ Worker* worker();
 }
 
 #endif
-

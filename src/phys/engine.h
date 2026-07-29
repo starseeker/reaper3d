@@ -1,13 +1,6 @@
 #ifndef PHYS_PHYSENGINE2_H
 #define PHYS_PHYSENGINE2_H
 
-#include "hw/compat.h"
-
-#if _MSC_VER > 1000
-#pragma once
-#endif // _MSC_VER > 1000
-
-#include "misc/hash.h"
 
 #include "misc/uniqueptr.h"
 #include "object/baseptr.h"
@@ -16,19 +9,19 @@
 #include "main/types.h"
 #include "phys/collisionQueue.h"
 
-#include <vector>
-using std::vector;
-
-#include "misc/uniqueptr.h"
-
-using namespace reaper;
-using namespace reaper::object;
-using reaper::misc::hash_map;
+#include <deque>
+#include <unordered_map>
 
 namespace reaper{
 typedef int objId;
    
 namespace phys{
+
+using object::DynamicPtr;
+using object::PlayerPtr;
+using object::ShotPtr;
+using object::SillyPtr;
+using object::StaticPtr;
 
 class Engine;
 typedef reaper::misc::UniquePtr<reaper::phys::Engine> PhysRef;
@@ -65,7 +58,6 @@ private:
 
 	Engine();
 
-	bool to_insert(double framestop,const Pair& p);
 	void startup();
 	void clean_dead_objects();
 
@@ -78,7 +70,7 @@ private:
 
 	float last_garbage;
 
-	hash_map< objId, double >  dead_objects;
+	std::unordered_map<objId, double> dead_objects;
 	PriorityQueue prio_queue;
 	
 	std::deque<SillyPtr>   sillys;

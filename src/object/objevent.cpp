@@ -1,5 +1,4 @@
 
-#include "hw/compat.h"
 
 #include "object/event.h"
 #include "world/world.h"

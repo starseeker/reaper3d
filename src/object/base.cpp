@@ -1,5 +1,4 @@
 
-#include "hw/compat.h"
 
 #include "hw/debug.h"
 
@@ -31,20 +30,17 @@ int get_obj_count();
 SillyData::SillyData(const Matrix &mtx, CompanyID c, const std::string& n, ID i)
 : id(i == -1 ? world::alloc_id() : i), name(n), dead(false), 
   radius(gfx::MeshMgr::get_ref()->get_radius(name)), 
-  company(c), m(mtx), events(new event::Events())
+  company(c), m(mtx), events(std::make_unique<event::Events>())
 {
 }
 
 SillyData::SillyData(const Matrix &mtx, CompanyID c, const std::string& n, float r, ID i)
 : id(i == -1 ? world::alloc_id() : i), name(n), dead(false), 
-  radius(r), company(c), m(mtx), events(new event::Events())
+  radius(r), company(c), m(mtx), events(std::make_unique<event::Events>())
 {
 }
 
-SillyData::~SillyData()
-{
-	delete events;
-}
+SillyData::~SillyData() = default;
 
 ID SillyData::get_id() const
 {
@@ -225,5 +221,4 @@ const Vector& ShotBase::get_velocity() const
 
 }
 }
-
 

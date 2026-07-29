@@ -7,8 +7,9 @@
 #define REAPER_GFX_MODERN_SHADERS_H
 
 #include "hw/gl.h"
-#include <string>
 #include <map>
+#include <memory>
+#include <string>
 
 namespace reaper {
 namespace gfx {
@@ -61,7 +62,7 @@ private:
 // Shader manager for loading and caching shaders
 class ShaderManager {
 private:
-    std::map<std::string, GLSLShader*> shaders;
+    std::map<std::string, std::unique_ptr<GLSLShader>> shaders;
     GLSLShader* current_shader;
     
 public:

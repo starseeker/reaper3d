@@ -28,6 +28,7 @@ class Ping
 {
 public:
 	virtual void ping() = 0;
+	virtual ~Ping() = default;
 };
 
 class Engine
@@ -35,6 +36,7 @@ class Engine
 public:
 	virtual void engine_pitch(float p) = 0;
 	virtual void inside_view(bool inside) = 0;
+	virtual ~Engine() = default;
 };
 
 class Moving
@@ -42,6 +44,7 @@ class Moving
 public:
 	virtual void set_location(const Matrix& m) = 0;
 	virtual void set_velocity(const Vector& vel) = 0;
+	virtual ~Moving() = default;
 };
 
 class Projectile : public Base, public Moving { };
@@ -67,4 +70,3 @@ Projectile* create_proj(const std::string& name, const Matrix& mat, const Vector
 
 #endif
 	
-

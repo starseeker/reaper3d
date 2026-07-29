@@ -31,7 +31,6 @@
  *
  */
 
-#include "hw/compat.h"
 
 #include <string>
 #include <vector>

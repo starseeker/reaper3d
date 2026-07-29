@@ -1,4 +1,3 @@
-#include "hw/compat.h"
 
 #include "gfx/shadow/utility.h"
 #include "gfx/abstracts.h"

@@ -6,11 +6,13 @@
 
 #include <iosfwd>
 #include <map>
+#include <memory>
 #include <string>
 
 #include "main/types.h"
 #include "misc/smartptr.h"
 #include "res/config.h"
+#include "object/base.h"
 #include "object/mkinfo.h"
 
 namespace reaper {
@@ -72,14 +74,23 @@ public:
 	/** Load an object from an istream. Make vc happy...*/
 	template<class T>
 	misc::SmartPtr<T> load(std::istream& is, TMap<T>) {
-		return dynamic_cast<T*>(gen_load(is));
+		std::unique_ptr<ObjBase> object(gen_load(is));
+		T* converted = dynamic_cast<T*>(object.get());
+		if (!converted)
+			return {};
+		object.release();
+		return misc::SmartPtr<T>(converted);
 	}
 
 	/** Create an object given a name and initial state. */
 	template<class T>
 	misc::SmartPtr<T> create(MkInfo mk, TMap<T>) {
-		ObjBase* o = gen_make(mk);
-		return dynamic_cast<T*>(o);
+		std::unique_ptr<ObjBase> object(gen_make(mk));
+		T* converted = dynamic_cast<T*>(object.get());
+		if (!converted)
+			return {};
+		object.release();
+		return misc::SmartPtr<T>(converted);
 	}
 	ObjBase* gen_make(MkInfo);
 
@@ -99,4 +110,3 @@ Factory& inst();
 }
 
 #endif
-

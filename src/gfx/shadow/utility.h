@@ -11,7 +11,8 @@ namespace gfx {
 namespace shadow {
 
 using object::SillyBase;
-using namespace world;
+using world::World;
+using world::WorldRef;
 
 namespace {
 // FIXME: move this magic number to a better place	
@@ -83,10 +84,8 @@ void purge_old_shadows(Cont &shadows, const hw::time::RelTime &now)
 	typedef typename Cont::iterator iterator;
 
 	for(iterator i = shadows.begin(); i != shadows.end();) {
-		if((now - i->second->last_used) > silly_shadow_lifetime) {			
-			delete i->second;
-			iterator j = i++;
-			shadows.erase(j);
+		if((now - i->second->last_used) > silly_shadow_lifetime) {
+			i = shadows.erase(i);
 		} else {
 			++i;
 		}
@@ -99,9 +98,8 @@ template<typename It, typename IIt, typename Cont>
 void gen_silly_shadows(It i, const It &end, IIt render_ii, 
 		       Cont &shadows, const world::Frustum &frustum)
 {
-	using namespace hw::time;
 	typedef typename Cont::iterator iterator;
-	const RelTime now   = hw::time::get_rel_time();
+	const hw::time::RelTime now = hw::time::get_rel_time();
 	bool purge_attempted = false; 
 
 	while(i != end) {
@@ -122,16 +120,20 @@ void gen_silly_shadows(It i, const It &end, IIt render_ii,
 					}
 				}
 
-				SillyShadow* shadow = new SillyShadow(sd, SilhouetteShadowAll::silly_shadow_size);
+				auto shadow = std::make_unique<SillyShadow>(
+					sd,
+					SilhouetteShadowAll::silly_shadow_size);
 				render_shadow(*(*i).get());
 				shadow->tex.copy_to_texture();
-				si = shadows.insert(std::make_pair((*i)->get_id(), shadow)).first;			
-				render_ii = si->second;
+				si = shadows.emplace(
+					(*i)->get_id(),
+					std::move(shadow)).first;
+				render_ii = si->second.get();
 			}
 		} 
 		else if(si->second->visible(frustum)) {
 			si->second->last_used = now;
-			render_ii = si->second;
+			render_ii = si->second.get();
 		}
 		++i;
 	}

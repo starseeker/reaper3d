@@ -8,7 +8,6 @@
  */
 
 
-#include "hw/compat.h"
 
 #include <string>
 #include <cstring>
@@ -24,7 +23,7 @@ namespace net
 {
 
 
-#ifdef WIN32
+#ifdef _WIN32
 
 std::string dnsstrerror()
 {

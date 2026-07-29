@@ -9,32 +9,31 @@
  * object/base.h-meck...
  *
  * Revision 1.7  2001/08/06 12:16:01  peter
- * MegaMerge (se strandy_test-grenen för diffar...)
+ * MegaMerge (se strandy_test-grenen fÃ¶r diffar...)
  *
  * Revision 1.6.2.1  2001/08/05 14:01:22  peter
  * objektmeck...
  *
  * Revision 1.6  2001/07/30 23:43:11  macke
- * Häpp, då var det kört.
+ * HÃ¤pp, dÃ¥ var det kÃ¶rt.
  *
  * Revision 1.5  2001/05/13 17:19:43  niklas
  * fix
  *
  * Revision 1.4  2001/05/10 10:14:03  niklas
- * småfix
+ * smÃ¥fix
  *
  * Revision 1.3  2001/05/10 02:02:52  niklas
- * småfix
+ * smÃ¥fix
  *
  * Revision 1.2  2001/05/09 21:03:00  niklas
- * småfix
+ * smÃ¥fix
  *
  * Revision 1.1  2001/05/06 14:18:57  niklas
- * gvs uppdelade på containers och turrets, gvturret är inte klar än...
+ * gvs uppdelade pÃ¥ containers och turrets, gvturret Ã¤r inte klar Ã¤n...
  *
 */
 
-#include "hw/compat.h"
 #include "object/ai.h"
 #include "game/scenario_mgr.h"
 #include "object/base_data.h"
@@ -77,7 +76,8 @@ namespace ai{
 				if(wp_it == waypoints.end()){
 					// let the scenario manager know this
 					game::scenario::ScenarioRef sr = game::scenario::ScenarioRef();
-					sr->receive(Message(MSG_DEST_REACHED,data.get_company()));
+					sr->receive(
+						Message(reaper::ai::MSG_DEST_REACHED, data.get_company()));
 					sc.thrust = 0.0;
 					dest_reached = true;
 				}

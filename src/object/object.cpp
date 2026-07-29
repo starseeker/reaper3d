@@ -1,4 +1,3 @@
-#include "hw/compat.h"
 #include "object/object.h"
 #include "object/object_impl.h"
 #include "object/projectile.h"

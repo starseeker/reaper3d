@@ -1,4 +1,3 @@
-#include "hw/compat.h"
 
 #include "gfx/shadow/main.h"
 #include "gfx/settings.h"

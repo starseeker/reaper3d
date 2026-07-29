@@ -1,21 +1,14 @@
 
-#include "hw/compat.h"
 #include "game/scenario_mgr.h"
 #include "hw/gl.h"
 #include "gfx/matrix_utils.h"
 #include "misc/font.h"
-#include "misc/free.h"
 #include "misc/parse.h"
 #include "res/config.h"
 #include "res/resource.h"
 #include "game/mission.h"
 
 namespace reaper {
-namespace misc {
-	template <>
-	UniquePtr<game::scenario::ScenarioMgr>::I UniquePtr<game::scenario::ScenarioMgr>::inst = {};
-}
-
 namespace {
 debug::DebugOutput dout("scenario");
 }
@@ -39,7 +32,10 @@ namespace scenario {
 
 		Missions::iterator c, e = scenario->missions.end();
 		for (c = scenario->missions.begin(); c != e; ++c) {
-			states[c->first] = new MissionState(c->second, om, messages);
+			states[c->first] = std::make_unique<MissionState>(
+				c->second.get(),
+				om,
+				messages);
 		}
 	}
 
@@ -48,7 +44,7 @@ namespace scenario {
 		shutdown();
 
 //		ScenarioRef::destroy();
-		dout << "manager destroyed" << endl;
+		dout << "manager destroyed\n";
 	}
 
 	void ScenarioMgr::update(double timediff)
@@ -96,7 +92,7 @@ namespace scenario {
 				getline(is, junk);
 				info += junk+"\n";
 			}
-		} catch (res::resource_not_found) {
+		} catch (const res::resource_not_found&) {
 			info = "Dialog \"" + name + "\" missing!";
 		}
 
@@ -145,7 +141,6 @@ namespace scenario {
 	void ScenarioMgr::shutdown()
 	{
 		om.shutdown();
-		misc::for_each(misc::seq(states), misc::delete_it);
 		states.clear();
 	}
 
@@ -160,4 +155,3 @@ namespace scenario {
 }
 }
 }
-

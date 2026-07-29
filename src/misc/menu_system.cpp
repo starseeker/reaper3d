@@ -81,7 +81,6 @@
  *
  */
 
-#include "hw/compat.h"
 
 #include <cmath>
 #include <memory>
@@ -264,15 +263,12 @@ void MenuSystem::Impl::press_snd() {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-MenuSystem::MenuSystem() : i(0) {
+MenuSystem::MenuSystem() {
 	gfx::Settings::current = gfx::Settings::defaults;
-	i = new Impl();
+	i = std::make_unique<Impl>();
 }
 
-MenuSystem::~MenuSystem()
-{
-	delete i;
-}
+MenuSystem::~MenuSystem() = default;
 
 void MenuSystem::draw_background(Texture& t)      { i->draw_background(t); }
 void MenuSystem::draw_mouse_ptr(float x, float y) { i->draw_mouse_ptr(x,y); }

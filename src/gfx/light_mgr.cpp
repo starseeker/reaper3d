@@ -1,4 +1,3 @@
-#include "hw/compat.h"
 
 #include "hw/gl.h"
 #include "hw/debug.h"
@@ -28,10 +27,6 @@
 #include <iterator>
 
 namespace reaper {
-namespace misc {
-	template <>
-	UniquePtr<gfx::LightMgr>::I UniquePtr<gfx::LightMgr>::inst = {};
-}
 namespace gfx {
 namespace lowlevel {
 namespace {

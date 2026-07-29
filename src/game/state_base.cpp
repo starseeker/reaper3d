@@ -49,7 +49,6 @@
  *
 */
 
-#include "hw/compat.h"
 #include "game/scenario_states.h"
 #include "game/scenario_mgr.h"
 #include "hw/reltime.h"

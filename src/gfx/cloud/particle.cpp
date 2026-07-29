@@ -1,5 +1,4 @@
 
-#include "hw/compat.h"
 
 #include "main/types.h"
 #include "gfx/gfx_types.h"

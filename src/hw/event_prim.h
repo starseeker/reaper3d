@@ -110,6 +110,7 @@ class InputDeviceModule
 {
 public:
 	virtual void scan_inputdevices(lowlevel::Gfx_driver_data*, device_inserter out) = 0;
+	virtual ~InputDeviceModule() = default;
 };
 
 
@@ -119,4 +120,3 @@ public:
 }
 
 #endif
-

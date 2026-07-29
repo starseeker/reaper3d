@@ -1,5 +1,4 @@
 
-#include "hw/compat.h"
 
 #include <map>
 
@@ -115,7 +114,7 @@ class GameLoader : public NodeConfig<SavedGame>
 public:
 	Ptr create(IdentRef id)
 	{
-		SavedGame* g = new SavedGame();
+		auto game = std::make_shared<SavedGame>();
 		res::res_stream is(res::GameState, id);
 		while (! is.eof()) {
 			string junk, sec;
@@ -123,7 +122,7 @@ public:
 			while (!is.eof() && !elem(is.peek(), "\r\n")) {
 				string var, val;
 				config_line(is, var, val);
-				g->cfg[sec][var] = val;
+				game->cfg[sec][var] = val;
 			}
 			is >> crlf;
 		}
@@ -138,10 +137,10 @@ public:
 				isg >> mk;
 				og.objs.push_back(mk);
 			}
-			g->grp[lbl] = og;
+			game->grp[lbl] = og;
 			isg >> crlf;
 		}
-		return g;
+		return game;
 	}
 };
 
@@ -156,7 +155,7 @@ public:
 	Ptr create(IdentRef id) {
 		ConfigMap::iterator i = game->cfg.find(id);
 		if (i != game->cfg.end())
-			return new ConfigEnv(game->cfg[id]);
+			return std::make_shared<ConfigEnv>(game->cfg[id]);
 		else
 			return Ptr(0);
 	}
@@ -189,4 +188,3 @@ void restore(const string& fn)
 }
 }
 }
-

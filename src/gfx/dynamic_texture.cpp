@@ -1,4 +1,3 @@
-#include "hw/compat.h"
 
 #include "gfx/texture.h"
 #include "gfx/exceptions.h"
@@ -41,7 +40,7 @@ DynamicTexture::DynamicTexture(int w, int h, bool black_white)
 	//FIXME: Optimize formats for different frame buffer layouts (16-bit, 24-bit)
 	glTexImage2D(GL_TEXTURE_2D, 0, black_white ? GL_ALPHA8 : GL_RGBA8,
 	             width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
-	set_size(width*height * black_white ? 1 : 4);
+	set_size(width * height * (black_white ? 1U : 4U));
 
         throw_on_gl_error("DynamicTexture::init(): ");
 }

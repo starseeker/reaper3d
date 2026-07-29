@@ -1,5 +1,4 @@
 
-#include "hw/compat.h"
 
 #include "world/level.h"
 #include "gfx/io.h"
@@ -45,7 +44,9 @@ LevelInfo::LevelInfo(const string &n)
  : name(n)
 {
 	try {
-		const ConfigEnv& env = resource<ConfigEnv>("levels/" + n + ".rl");
+		const auto env_owner =
+			resource_ptr<ConfigEnv>("levels/" + n + ".rl");
+		const ConfigEnv& env = *env_owner;
 
 		sky_texture  = static_cast<std::string>(env["SkyTexture"]);
 		sky_color    = read<Color>(env["SkyColor"]);
@@ -133,4 +134,3 @@ void LevelInfo::save(const std::string &file) const
 
 }
 }
-

@@ -15,7 +15,6 @@
  *
  */
 
-#include "hw/compat.h"
 
 
 #include "hw/event.h"

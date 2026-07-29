@@ -41,7 +41,7 @@ public:
 	void receive(const reaper::ai::Message &) { }
 	float get_damage() const		  { return phys_data.damage; }
 	void simulate(double dt);
-	void gen_sound(reaper::sound::Interface& si) { move(); }
+	void gen_sound() override { move(); }
 };
 
 class Laser
@@ -70,4 +70,3 @@ public:
 }
 }
 #endif
-

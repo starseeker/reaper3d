@@ -176,7 +176,7 @@ std::istream& operator>>(std::istream& is, ConfigLine<T>& cl)
 bool config_line(std::istream& is, std::string& var, std::string& val);
 
 inline
-bool elem(char c, std::string s) {
+bool elem(char c, const std::string& s) {
 	return s.find(c) != std::string::npos;
 }
 

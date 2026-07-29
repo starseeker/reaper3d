@@ -15,29 +15,28 @@
  * object/base.h-meck...
  *
  * Revision 1.31  2001/11/27 00:54:51  peter
- * worlditeratorer l‰mnar inte ifrÂn sig dˆda objekt l‰ngre..
+ * worlditeratorer l√§mnar inte ifr√•n sig d√∂da objekt l√§ngre..
  *
  * Revision 1.30  2001/10/09 01:12:23  macke
- * Nu siktar den r‰tt.. (fulhack)
+ * Nu siktar den r√§tt.. (fulhack)
  *
  * Revision 1.29  2001/08/27 12:55:23  peter
  * objektmeck...
  *
  * Revision 1.28  2001/08/09 18:11:39  macke
- * Fyllefix.. lite h‰r Â d‰r..
+ * Fyllefix.. lite h√§r √• d√§r..
  *
  * Revision 1.27  2001/08/06 12:16:03  peter
- * MegaMerge (se strandy_test-grenen fˆr diffar...)
+ * MegaMerge (se strandy_test-grenen f√∂r diffar...)
  *
  * Revision 1.26  2001/08/01 21:47:37  macke
- * Lite mer vÂldsamt.. :)
+ * Lite mer v√•ldsamt.. :)
  *
  *
  */
 
 
 #include <math.h>
-#include "hw/compat.h"
 #include "hw/debug.h"
 #include "object/ai.h"
 #include "object/base_data.h"
@@ -55,7 +54,7 @@ namespace ai
 {
 	enum TurretSpec
 	{
-		RADIUS = 15, // ƒndra eventuellt
+		RADIUS = 15, // √Ñndra eventuellt
 		AIM_PRECISION =  5,
 		VIEW_RANGE = 1000
 	};
@@ -64,21 +63,15 @@ namespace ai
 		: data(d), tc(tctrl), current(cctrl), pos(d.get_pos()), wr(world::World::get_ref()), barrel_vec(bv),
 		  laser_speed(object::factory::inst().info("laser")["speed"])
 	{
-		state[0] = new fsm::State(IDLE, 1);
+		fsm = std::make_unique<fsm::FSM>(IDLE);
+		state[0] = fsm->add_state(std::make_unique<fsm::State>(IDLE, 1));
 		state[0]->add_transition(EVENT_OBJECT_DETECTED, ATTACKING);
 		
-		state[1] = new fsm::State(ATTACKING, 1);
+		state[1] = fsm->add_state(std::make_unique<fsm::State>(ATTACKING, 1));
 		state[1]->add_transition(EVENT_TARGET_LOST, IDLE);
-		
-		fsm = new fsm::FSM(IDLE); // start at idle
-		fsm->add_state(state[0]);
-		fsm->add_state(state[1]);
 	}
 
-	Turret::~Turret()
-	{
-		delete fsm; // FSM destructor also deallocates all states inside
-	}
+	Turret::~Turret() = default;
 
 	void Turret::think()
 	{
@@ -86,7 +79,7 @@ namespace ai
 		{
 			case IDLE      : idle();   break;
 			case ATTACKING : attack(); break;
-			default        : cout << "Turret, unknown state!!!" << endl;
+			default        : std::cerr << "Turret, unknown state!!!\n";
 		}
 	}
 

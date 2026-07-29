@@ -3,6 +3,7 @@
 #define REAPER_OBJECT_BASE_DATA_H
 
 #include "object/base.h"
+#include <memory>
 #include <string>
 
 namespace reaper {
@@ -18,7 +19,7 @@ class SillyData {
 	CompanyID company;
 	Matrix m;
 
-	event::Events* events;
+	std::unique_ptr<event::Events> events;
 	friend class SillyBase;
 public:
 	// fetches radius from mesh
@@ -46,4 +47,3 @@ public:
 }
 
 #endif
-

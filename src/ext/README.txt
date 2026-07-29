@@ -1,6 +1,10 @@
-Här kan vi lägga källkod som kommer utifrån och som
-vi modiferat lite lätt för att passa in i vårat system.
+Bundled third-party source used by the current build:
 
-glsdk - bibliotek som underlättar OpenGL32.dll böket på windows
-glui  - GLUT User Interface - halvtaskigt gui-toolkit som f.n. används till leveleditorn
-mpegsound - Modified splay-sources.
+- `mpegsound`: modified Splay MPEG audio decoder sources
+- `imgui`: Dear ImGui and its GLFW/OpenGL 2 editor backends
+- `stb`: image-resizing support used by texture mipmap generation
+- `glh`: the small legacy OpenGL extension-loader subset still used by the
+  compatibility renderer
+
+The former GLUI toolkit and extension-generator utility are no longer part of
+the supported source tree.

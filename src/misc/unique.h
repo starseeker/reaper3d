@@ -12,7 +12,8 @@ class Unique
 public:
 	static void reset();
 
-	Unique(const Unique &x) : val(x.val) {}
+	Unique(const Unique&) = default;
+	Unique& operator=(const Unique&) = default;
 	Unique(const std::string &);
 	Unique(const char *);
 
@@ -39,12 +40,12 @@ public:
  * mackefix
  *
  * Revision 1.2  2001/08/06 12:16:33  peter
- * MegaMerge (se strandy_test-grenen för diffar...)
+ * MegaMerge (se strandy_test-grenen fÃ¶r diffar...)
  *
  * Revision 1.1.4.1  2001/08/03 13:44:08  peter
  * pragma once obsolete...
  *
  * Revision 1.1  2001/07/06 01:47:28  macke
- * Refptrfix/headerfilsstäd/objekt-skapande/mm
+ * Refptrfix/headerfilsstÃ¤d/objekt-skapande/mm
  *
  */

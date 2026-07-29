@@ -5,6 +5,7 @@
 #include <string>
 #include <deque>
 #include <map>
+#include <memory>
 
 #include "ai/msg.h"
 #include "game/object_mgr.h"
@@ -17,27 +18,21 @@ class Goal {
 public:
 	virtual bool test(double time, ObjectMgr&, ai::MsgQueue&) = 0;
 	virtual std::string next() const = 0;
-	virtual ~Goal();
+	virtual ~Goal() = default;
 };
 
-Goal* mk_goal(const std::string& goal);
+std::unique_ptr<Goal> mk_goal(const std::string& goal);
 
 struct Mission {
 	std::string name;
 	std::string dialog;
 	std::deque<std::string> objectgroups;
-	std::deque<Goal*> goals;
-
-	Mission();
-	~Mission();
+	std::deque<std::unique_ptr<Goal>> goals;
 };
 
-typedef std::map<std::string, Mission*>  Missions;
+using Missions = std::map<std::string, std::unique_ptr<Mission>>;
 struct Scenario {
 	Missions missions;
-
-	Scenario();
-	~Scenario();
 };
 
 void init_mission_loader();
@@ -48,4 +43,3 @@ void init_mission_loader();
 }
 
 #endif
-

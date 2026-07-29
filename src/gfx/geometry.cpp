@@ -1,4 +1,3 @@
-#include "hw/compat.h"
 
 #include <iterator>
 #include <set>

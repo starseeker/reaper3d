@@ -1,4 +1,3 @@
-#include "hw/compat.h"
 #include "phys/engine.h"
 #include "world/world.h"
 #include "phys/exceptions.h"
@@ -24,16 +23,9 @@ using namespace reaper::world;
 #include "main/types_io.h"
 
 namespace reaper {
-        typedef reaper::misc::SmartPtr<reaper::phys::Pair> pairPtr;
 namespace {
 	debug::DebugOutput dout("phys::Engine", 5);
 }
-namespace misc {
-	template <>
-	UniquePtr<phys::Engine>::I UniquePtr<phys::Engine>::inst = {};
-}
-
-
 namespace phys {
 
 #include <time.h>
@@ -88,12 +80,10 @@ void Engine::update_world(double start_time, double delta_time)
 		tri_iterator tr(wr->find_tri(Sphere(d->get_pos(),radius)));
 		
 		for( ; tr != wr->end_tri(); ++tr){
-			Pair* objtri = new DynTriPair(d,*tr);
+			auto objtri = std::make_shared<DynTriPair>(d, *tr);
 			objtri->calc_lower_bound();
 			if(objtri->get_lower_bound() < frame_stop)
-				prio_queue.push(objtri);
-			else 
-				delete objtri;
+				prio_queue.push(std::move(objtri));
 			
 		}				
 	}
@@ -103,32 +93,27 @@ void Engine::update_world(double start_time, double delta_time)
 		while( !prio_queue.empty() && prio_queue.top()->get_lower_bound() < frame_stop ) {
 			
 			//Now check if we want to simulate a collision between objects                                 
-			Pair* pair = prio_queue.top();
+			PairPtr pair = prio_queue.top();
 
 			//the object will be simulated this far when the loop has ended
 
 			prio_queue.pop();
 			//Pair simulate simulates until lower_bound 
-			if(dead_objects.elem(pair->get_id1()) || 
-				dead_objects.elem(pair->get_id2()) ){
-				delete pair;
+			if(dead_objects.count(pair->get_id1()) != 0 ||
+			   dead_objects.count(pair->get_id2()) != 0) {
 			}
 			else{
 				pair->simulate( pair->get_lower_bound() );                                        
 				
 				if(pair->check_distance() < Collision_Distance ) {
-					CollisionData* cd = pair->get_collision();
-					pair->collide(*cd);
-					if (cd) {
-						delete cd;
-					}
+					const CollisionData collision =
+						pair->get_collision();
+					pair->collide(collision);
 				}				
 				
 				pair->calc_lower_bound();
 				if(pair->to_insert(frame_stop)  )
-					prio_queue.push(pair);								
-				else
-					delete pair;
+					prio_queue.push(std::move(pair));
 				
 			}
 		}
@@ -185,22 +170,12 @@ void Engine::remove(objId id)
 
 void Engine::clean_dead_objects()
 {
-	int i = 0, j = 0;
-	reaper::misc::hash_map<objId,double>::iterator tmp, it = dead_objects.begin();
-
-	while(it != dead_objects.end() ){
-		++i;
-		tmp = it++;
-		if(tmp->second < frame_stop) {
-			++j;
-			dead_objects.erase(tmp->first);
-		}
+	for (auto it = dead_objects.begin(); it != dead_objects.end();) {
+		if(it->second < frame_stop)
+			it = dead_objects.erase(it);
+		else
+			++it;
 	}
-}
-
-bool Engine::to_insert(double framestop,const Pair& p)
-{
-	return true;  //Check if any object is dead?
 }
 
 void Engine::startup()
@@ -210,27 +185,27 @@ void Engine::startup()
 		dyn_iterator i(dyn);
 		++i;
 		for(; i != wr->end_dyn();++i) {
-			DynDynPair* pair = new DynDynPair(*dyn, *i);
+			auto pair = std::make_shared<DynDynPair>(*dyn, *i);
 			pair->calc_lower_bound();
-			prio_queue.push(pair);
+			prio_queue.push(std::move(pair));
 		}
 	}
 
 	
 	for(dyn_iterator dyn(wr->begin_dyn()); dyn != wr->end_dyn(); ++dyn) {
 		for(st_iterator i(wr->begin_st()); i != wr->end_st(); ++i) {
-			StaticDynPair* pair = new StaticDynPair(*i, *dyn);
+			auto pair = std::make_shared<StaticDynPair>(*i, *dyn);
 			pair->calc_lower_bound();
-			prio_queue.push(pair);
+			prio_queue.push(std::move(pair));
 		}
 	}
 
 	
 	for(dyn_iterator dyn(wr->begin_dyn()); dyn != wr->end_dyn(); ++dyn) {
 		for(si_iterator i(wr->begin_si()); i != wr->end_si(); ++i) {
-			SillyDynPair* pair = new SillyDynPair(*i, *dyn);
+			auto pair = std::make_shared<SillyDynPair>(*i, *dyn);
 			pair->calc_lower_bound();
-			prio_queue.push(pair);
+			prio_queue.push(std::move(pair));
 		}
 	}
 }
@@ -280,13 +255,11 @@ void Engine::insert(ShotPtr shot,double sim_time)
 
 	for( ; di != wr->end_dyn(); ++di) {
 		if((*di)->get_id() != parent) {
-			Pair* pair = new ShotDynPair(shot, *di );
+			auto pair = std::make_shared<ShotDynPair>(shot, *di);
 			pair->calc_lower_bound();
 			
 			if(pair->get_lower_bound() < dies_at )
-				prio_queue.push(pair);
-			else 
-				delete pair; 
+				prio_queue.push(std::move(pair));
 		}
 	}
 	
@@ -294,13 +267,11 @@ void Engine::insert(ShotPtr shot,double sim_time)
 
 	for(; st != wr->end_st(); ++st) {
 		if((*st)->get_id() != parent) {
-			Pair* pair = new ShotSillyPair(shot, *st);
+			auto pair = std::make_shared<ShotSillyPair>(shot, *st);
 			pair->calc_lower_bound();
 			
 			if(pair->get_lower_bound() < dies_at)
-				prio_queue.push(pair);
-			else
-				delete pair;
+				prio_queue.push(std::move(pair));
 		}
 	}
 	
@@ -310,26 +281,22 @@ void Engine::insert(ShotPtr shot,double sim_time)
 
 	for (; si != wr->end_si(); ++si) {
 		if ((*si)->get_id() != parent){
-			ShotSillyPair* pair = new ShotSillyPair(shot, *si);
+			auto pair = std::make_shared<ShotSillyPair>(shot, *si);
 			pair->calc_lower_bound();
 			
 			if(pair->get_lower_bound() < dies_at)
-				prio_queue.push(pair);
-			else
-				delete pair;
+				prio_queue.push(std::move(pair));
 		}
 	}
 	
 	world::tri_iterator tri(wr->find_tri(line));
 
 	for( ; tri != wr->end_tri(); ++tri){
-		ShotTriPair* pair = new ShotTriPair(shot, *tri);
+		auto pair = std::make_shared<ShotTriPair>(shot, *tri);
 		pair->calc_lower_bound();
 		float lb = pair->get_lower_bound();
 		if (lb < dies_at) {
-			prio_queue.push(pair);												
-		} else {
-			delete pair;
+			prio_queue.push(std::move(pair));
 		}
 	}
 	
@@ -347,12 +314,12 @@ template<class PairType, class Prio, class Iter>
 void create_pairs(Prio& prio_queue, DynamicPtr dyn, Iter begin, Iter end)
 {
 	for (Iter i = begin; i != end; ++i) {
-		if (! length(dyn->get_pos() - (*i)->get_pos())
+		if (length(dyn->get_pos() - (*i)->get_pos())
 		      - (dyn->get_radius() + (*i)->get_radius())
 		     < Collision_Distance) {
-			Pair* pair = new PairType(*i, dyn);
+			auto pair = std::make_shared<PairType>(*i, dyn);
 			pair->calc_lower_bound();
-			prio_queue.push(pair);
+			prio_queue.push(std::move(pair));
 		}
 	}
 }
@@ -382,12 +349,12 @@ void Engine::insert(SillyPtr sil)
 		
 	
 	for(dyn_iterator i(wr->begin_dyn()); i != wr->end_dyn(); ++i) {
-		if(! length(sil->get_pos() - (*i)->get_pos()) - 
+		if(length(sil->get_pos() - (*i)->get_pos()) -
 			(sil->get_radius() + (*i)->get_radius() )
 			< Collision_Distance){
-			Pair* pair = new SillyDynPair(sil, *i);
+			auto pair = std::make_shared<SillyDynPair>(sil, *i);
 			pair->calc_lower_bound();
-			prio_queue.push(pair);
+			prio_queue.push(std::move(pair));
 		}
 	}
 	wr->add_object(sil);
@@ -404,12 +371,12 @@ void Engine::insert(StaticPtr stat)
 	stat->set_sim_time(frame_stop);
 	
 	for(dyn_iterator i(wr->begin_dyn()); i!= wr->end_dyn(); ++i){
-		if(! length(stat->get_pos() - (*i)->get_pos()) - 
+		if(length(stat->get_pos() - (*i)->get_pos()) -
 			(stat->get_radius() + (*i)-> get_radius() )
 			< Collision_Distance){
-			Pair* pair = new StaticDynPair(stat,*i);
+			auto pair = std::make_shared<StaticDynPair>(stat, *i);
 			pair->calc_lower_bound();
-			prio_queue.push(pair);
+			prio_queue.push(std::move(pair));
 		}
 	}
 	wr->add_object(stat);
@@ -421,19 +388,15 @@ int Engine::size()
 	return prio_queue.size();
 }
 
-template<class P>
-void dealloc(P& pairs)
+void clear(PriorityQueue& pairs)
 {
-	while(!pairs.empty()) {
-		Pair* p = pairs.top();
-		delete p;
+	while(!pairs.empty())
 		pairs.pop();
-	}
 }
 
 void Engine::shutdown()
 {
-	dealloc(prio_queue);
+	clear(prio_queue);
 	sillys.clear();
 	statics.clear();
 	dynamics.clear();
@@ -443,14 +406,14 @@ void Engine::shutdown()
 void Engine::reinit()
 {
 	dout << "Rebuilding pairs\n";
-	dealloc(prio_queue);
+	clear(prio_queue);
 	startup();
 }
 
 Engine::~Engine()
 {
 	dout << "destroyed\n";
-	dealloc(prio_queue);
+	clear(prio_queue);
 //	PhysRef::destroy();
 }
 
@@ -460,5 +423,3 @@ void Engine::StateRestore::dump(game::state::Env&) const
 
 }//phys
 }//reaper
-
-

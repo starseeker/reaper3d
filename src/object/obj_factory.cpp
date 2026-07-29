@@ -1,7 +1,6 @@
 
 /* $Id: obj_factory.cpp,v 1.6 2001/12/11 22:54:28 peter Exp $ */
 
-#include "hw/compat.h"
 
 #include <string>
 

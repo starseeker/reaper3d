@@ -45,10 +45,8 @@ void send(std::ostream& os, const T& t)
 
 struct crlf_foo { };
 struct spaces_foo { };
-namespace {
-crlf_foo crlf;
-spaces_foo spaces;
-}
+inline constexpr crlf_foo crlf{};
+inline constexpr spaces_foo spaces{};
 
 inline
 std::istream& operator>>(std::istream& is, const crlf_foo&)
@@ -70,5 +68,4 @@ std::istream& operator>>(std::istream& is, const spaces_foo&)
 }
 
 #endif
-
 

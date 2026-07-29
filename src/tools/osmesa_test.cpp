@@ -6,6 +6,7 @@
 #include <iostream>
 #include <fstream>
 #include <cstring>
+#include <vector>
 
 #ifdef HAVE_OSMESA
 #include <GL/osmesa.h>
@@ -50,13 +51,11 @@ int main()
     }
     
     // Allocate image buffer
-    unsigned char* buffer = new unsigned char[width * height * 4];
-    memset(buffer, 0, width * height * 4);
+    std::vector<unsigned char> buffer(width * height * 4, 0);
     
     // Make context current
-    if (!OSMesaMakeCurrent(ctx, buffer, GL_UNSIGNED_BYTE, width, height)) {
+    if (!OSMesaMakeCurrent(ctx, buffer.data(), GL_UNSIGNED_BYTE, width, height)) {
         std::cerr << "Failed to make OSMesa context current\n";
-        delete[] buffer;
         OSMesaDestroyContext(ctx);
         return 1;
     }
@@ -95,14 +94,13 @@ int main()
     glFlush();
     
     // Save the rendered image
-    if (save_ppm("osmesa_test.ppm", width, height, buffer)) {
+    if (save_ppm("osmesa_test.ppm", width, height, buffer.data())) {
         std::cout << "Rendered image saved to osmesa_test.ppm\n";
     } else {
         std::cerr << "Failed to save image\n";
     }
     
     // Clean up
-    delete[] buffer;
     OSMesaDestroyContext(ctx);
     
     std::cout << "OSMesa test completed successfully\n";

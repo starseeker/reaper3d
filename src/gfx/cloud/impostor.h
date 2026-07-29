@@ -65,25 +65,25 @@ public:
 	template<class A, class B>
 	ImpostorWrap(A a, B b) : T(a,b), imp(this->get_radius()) { }
 
-	virtual void setup() const {
+	void setup() const override {
 		T::setup();
 	}
-	virtual void render() {
+	void render() override {
 		if (imp.use_impostor())
 			imp.render(this->get_pos(), this->get_radius());
 		else
-			T::render(imp.z_range(0));
+			T::render_range(imp.z_range(0));
 	}
-	virtual void restore() const {
+	void restore() const override {
 		T::restore();
 	}
-	virtual void update(const Camera& cam, const Matrix& ply) {
+	void update(const Camera& cam, const Matrix& ply) override {
 		T::update(cam, ply);
 		if (imp.regen(cam, this->get_pos(), this->get_radius())) {
 			imp.before_render(cam, ply);
 			for (int i = 0; i < imp.num_layers(); ++i) {
 //				derr << "render to imposter " << imp.z_range(i).first << "  " << imp.z_range(i).second << '\n';
-				T::render(imp.z_range(i));
+				T::render_range(imp.z_range(i));
 				imp.grab_texture(i);
 			}
 			imp.after_render();

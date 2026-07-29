@@ -1,6 +1,5 @@
 /* $Id: world_impl.cpp,v 1.11 2002/09/23 12:08:44 fizzgig Exp $ */
 
-#include "hw/compat.h"
 
 #include "world/world.h"
 
@@ -63,9 +62,7 @@ object::ID alloc_id()
 
 
 World_impl::World_impl(const std::string& level)
- : tri_tree(0), si_tree(0), st_tree(0), dyn_tree(0),
-   // sthold("world", this),
-   level_name(level), in_shutdown(false)
+ : level_name(level)
 {
 	reset_id();
 	init();
@@ -73,6 +70,7 @@ World_impl::World_impl(const std::string& level)
 
 
 World_impl::~World_impl() {
+	shutdown();
 //		dlog << "dyn world size: " << *dyn_objs.front().get().getcount().count
 //		     << ' ' << dyn_objs.size() << '\n';
 //		dlog << "shot world size: " << *dyn_objs.front().get().getcount().count
@@ -85,17 +83,18 @@ World_impl::~World_impl() {
 void World_impl::init()
 {
 	using std::max;
-	level_info = new LevelInfo(level_name);
+	level_info = std::make_unique<LevelInfo>(level_name);
 	float min_x = level_info->terrain_min_x;
 	float min_z = level_info->terrain_min_z;
 	float dim = max(level_info->terrain_max_x - level_info->terrain_min_x,
 			level_info->terrain_max_x - level_info->terrain_min_x);
 
-	tri_tree = new tri_container(min_x, min_z, dim);
-	si_tree  = new si_container(min_x, min_z, dim);
-	st_tree  = new st_container(min_x, min_z, dim);
-	dyn_tree = new dyn_container(min_x, min_z, dim);
-	shot_tree = new shot_container(min_x, min_z, dim);
+	tri_tree = std::make_unique<tri_container>(min_x, min_z, dim);
+	si_tree = std::make_unique<si_container>(min_x, min_z, dim);
+	st_tree = std::make_unique<st_container>(min_x, min_z, dim);
+	dyn_tree = std::make_unique<dyn_container>(min_x, min_z, dim);
+	shot_tree = std::make_unique<shot_container>(min_x, min_z, dim);
+	in_shutdown = false;
 
 }
 
@@ -155,6 +154,7 @@ void World_impl::restore(std::istream& is)
 {
 	object::factory::Factory& f = object::factory::inst();
 	chk_ld(is, "level", level_name);
+	shutdown();
 	init();
 	object::ID id;
 	chk_ld(is, "local_player", id);
@@ -179,25 +179,26 @@ void World_impl::restore(std::istream& is)
 void World_impl::set_local_player(object::ID id)
 {
 	DynamicPtr d = dynamics[id];
-	if (!d.valid())
+	if (!d)
 		throw world_error("get_local_player: not found");
-	local_player.dynamic_assign(d);
-	if (!local_player.valid())
+	local_player = std::dynamic_pointer_cast<object::PlayerBase>(d);
+	if (!local_player)
 		throw world_error("get_local_player: not a player object!");
 }
 
 void World_impl::shutdown()
 {
 	in_shutdown = true;
-	for_each(seq(*tri_tree), misc::delete_it);
+	if (tri_tree)
+		for_each(seq(*tri_tree), misc::delete_it);
 
-	misc::zero_delete(tri_tree);
-	misc::zero_delete(st_tree);
-	misc::zero_delete(si_tree);
-	misc::zero_delete(dyn_tree);
-	misc::zero_delete(shot_tree);
-	misc::zero_delete(level_info);
-	local_player.invalidate();
+	tri_tree.reset();
+	st_tree.reset();
+	si_tree.reset();
+	dyn_tree.reset();
+	shot_tree.reset();
+	level_info.reset();
+	local_player.reset();
 	sillys.clear();
 	statics.clear();
 	dynamics.clear();

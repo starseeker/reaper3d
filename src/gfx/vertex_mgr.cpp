@@ -72,7 +72,6 @@
  *
  */
 
-#include "hw/compat.h"
 
 #include <sstream>
 #include <algorithm>
@@ -95,10 +94,6 @@
 namespace reaper {
 namespace {
         debug::DebugOutput dout("gfx::vertex_array",2);
-}
-namespace misc {
-	template <>
-        UniquePtr<gfx::VertexMgr>::I UniquePtr<gfx::VertexMgr>::inst = {};
 }
 namespace gfx {
 namespace lowlevel {

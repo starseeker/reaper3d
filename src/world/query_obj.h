@@ -72,14 +72,11 @@ class Sphere
 {
 public:
 	Point p;
-	float r;
-	Sphere() : r(0) { }
+	float r = 0;
+	Sphere() = default;
 	Sphere(const Point& c, float rr) : p(c), r(rr) { }
-	Sphere& operator=(const Sphere& sph) {
-		p = sph.p;
-		r = sph.r;
-		return *this;
-	}
+	Sphere(const Sphere&) = default;
+	Sphere& operator=(const Sphere&) = default;
 };
 
 class Line
@@ -88,17 +85,15 @@ public:
 	Point p1, p2;
 	Line(const Point& pp1, const Point& pp2)
 	 : p1(pp1), p2(pp2) { }
-	Line& operator=(const Line& line) {
-		p1 = line.p1; p2 = line.p2;
-		return *this;
-	}
+	Line(const Line&) = default;
+	Line& operator=(const Line&) = default;
 };
 
 class Rect
 {
 public:
 	Point2D ll, ur;
-	Rect() { }
+	Rect() = default;
 	Rect(const Point2D& x, const Point2D& y)
 	: ll(x), ur(y) { }
 };
@@ -122,7 +117,7 @@ public:
  * obj.ptr
  *
  * Revision 1.10  2001/08/06 12:16:46  peter
- * MegaMerge (se strandy_test-grenen för diffar...)
+ * MegaMerge (se strandy_test-grenen fÃ¶r diffar...)
  *
  * Revision 1.9.4.1  2001/08/03 13:44:17  peter
  * pragma once obsolete...
@@ -131,10 +126,10 @@ public:
  * intel fix..
  *
  * Revision 1.8  2001/07/06 01:47:39  macke
- * Refptrfix/headerfilsstäd/objekt-skapande/mm
+ * Refptrfix/headerfilsstÃ¤d/objekt-skapande/mm
  *
  * Revision 1.7  2001/05/06 09:25:33  peter
- * frustum, const.. (förebygga senilitet hos undertecknad..)
+ * frustum, const.. (fÃ¶rebygga senilitet hos undertecknad..)
  *
  * Revision 1.6  2001/04/24 13:49:24  peter
  * flyttat runt lite...
@@ -149,11 +144,10 @@ public:
  * *** empty log message ***
  *
  * Revision 1.2  2001/04/05 10:14:56  peter
- * picon vill ha mat, så det blir inga kommentarer... ;)
+ * picon vill ha mat, sÃ¥ det blir inga kommentarer... ;)
  *
  * Revision 1.1  2001/02/19 23:40:41  peter
  * altitude..
  *
  */
-
 

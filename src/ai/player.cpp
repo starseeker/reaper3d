@@ -35,7 +35,6 @@
  *
 */
 
-#include "hw/compat.h"
 #include "main/types.h"
 #include "object/player_ai.h"
 #include "object/controls.h"

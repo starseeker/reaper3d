@@ -14,7 +14,7 @@ namespace misc {
 /// (maxval indicates the value where the meter is at length)
 void meter(float x, float y, float length, float width, float maxval, float value);
 
-/// Loads a png texture into data (memory malloced by function), returns number of channels
+/// Loads a PNG texture into malloc-allocated data; returns its channel count.
 int load_png(const std::string &file,char *&data,int &w,int &h, bool check_dim = true);
 void save_png(const std::string &file,char *data,int w,int h);
 
@@ -71,28 +71,27 @@ public:
  * unique_ptr -> ptr
  *
  * Revision 1.21  2002/01/10 23:09:08  macke
- * massa bˆk
+ * massa b√∂k
  *
  * Revision 1.20  2001/11/20 21:44:09  picon
  * firing shots after restart now works..
  *
  * Revision 1.19  2001/09/10 00:24:54  macke
- * Grafikfix... (skum cpu-l‰cka i ljuss‰ttningen kvarstÂr)
+ * Grafikfix... (skum cpu-l√§cka i ljuss√§ttningen kvarst√•r)
  *
  * Revision 1.18  2001/08/06 12:16:14  peter
- * MegaMerge (se strandy_test-grenen fˆr diffar...)
+ * MegaMerge (se strandy_test-grenen f√∂r diffar...)
  *
  * Revision 1.17.4.1  2001/08/03 13:43:53  peter
  * pragma once obsolete...
  *
  * Revision 1.17  2001/07/06 01:47:12  macke
- * Refptrfix/headerfilsst‰d/objekt-skapande/mm
+ * Refptrfix/headerfilsst√§d/objekt-skapande/mm
  *
  * Revision 1.16  2001/06/07 05:14:18  macke
  * Reaper v0.9
  *
  * Revision 1.15  2001/05/10 11:40:13  macke
- * h‰pp
+ * h√§pp
  *
  */
-

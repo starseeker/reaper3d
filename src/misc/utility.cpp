@@ -1,5 +1,4 @@
 
-#include "hw/compat.h"
 #include "misc/utility.h"
 #include "math.h"
 

@@ -6,7 +6,6 @@
  *
  */
 
-#include "hw/compat.h"
 
 #include <functional>
 #include <string>
@@ -73,26 +72,26 @@ std::istream& operator>>(std::istream& is, Event& e)
 
 EventSystem::EventSystem(gfx::Gfx& g)
 {
-	impl = new EventDispatcher(g);
+	impl = std::make_unique<EventDispatcher>(g);
 }
 
 
 EventSystem::~EventSystem()
 {
-	delete impl;
+	impl.reset();
 }
 
 EventProxy EventSystem::get_ref(PlayerID id)
 {
-	return EventProxy(EventSystem::impl, id);
+	return EventProxy(EventSystem::impl.get(), id);
 }
 
 EventProxy* EventSystem::create_ref(PlayerID id)
 {
-	return new EventProxy(EventSystem::impl, id);
+	return new EventProxy(EventSystem::impl.get(), id);
 }
 
-EventDispatcher* EventSystem::impl = 0;
+std::unique_ptr<EventDispatcher> EventSystem::impl;
 
 EventProxy::EventProxy(EventDispatcher* i, PlayerID id)
  : listener_id(id), state(10)
@@ -321,5 +320,4 @@ bool EventProxy::axis_changed(int a)
 }
 }
 }
-
 

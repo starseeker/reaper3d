@@ -3,7 +3,6 @@
  * Direct GLFW integration - plugin architecture removed
  */
 
-#include "hw/compat.h"
 
 #include <string>
 #include <iostream>

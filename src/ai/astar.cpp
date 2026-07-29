@@ -1,4 +1,3 @@
-#include "hw/compat.h"
 
 #include <algorithm>
 #include <cmath>
@@ -13,42 +12,32 @@ namespace astar{
 
 namespace { debug::DebugOutput dout("ai::astar"); }
 
-Node::Node(void)
-{}
-
-Node::Node(navigation_graph::NodePtr &ndata) :
-	navidata(ndata)
-{}
-
-AStar::AStar(navigation_graph::Graph &ng) :
-	navigraph(ng),
-	current(NULL),
-	search_state(SEARCH_STATE_NOT_INITIALISED)
-{
-	start = new Node;
-	goal = new Node;
-
-}
-
-AStar::~AStar(void) 
-{
-	open.clear();
-	closed.clear();
-	successors.clear();
-	delete start;
-	delete goal;
-}
+AStar::AStar(navigation_graph::Graph& ng)
+	: navigraph(ng)
+{ }
 	
-// Initiallize a new search
-void AStar::new_search(Point &sp, Point &gp)
+// Initialize a new search
+void AStar::new_search(const Point& sp, const Point& gp)
 {
-	navigraph.find_onoff_ramps(sp, gp, start->navidata, goal->navidata);
+	reset();
+
+	navigation_graph::NodePtr start_data = nullptr;
+	navigation_graph::NodePtr goal_data = nullptr;
+	navigraph.find_onoff_ramps(sp, gp, start_data, goal_data);
+	if (start_data == nullptr || goal_data == nullptr) {
+		search_state = SEARCH_STATE_FAILED;
+		return;
+	}
+
+	start = get_node(start_data);
+	goal = get_node(goal_data);
 
 	// Initialise the A* specific parts of the start node
 	start->g = 0.0; 
 	start->h = estimate_cost_to_goal(start);
 	start->f = start->g + start->h;
-	start->parent = 0;
+	start->parent = nullptr;
+	start->visited = true;
 
 	// Push the start node on the open list (heap)
 	open.push_back(start);
@@ -62,7 +51,7 @@ void AStar::new_search(Point &sp, Point &gp)
 
 
 // Take one step forward in the search and return the resulting state
-int AStar::search_step(void)
+int AStar::search_step()
 {
 	// Break if the search is not initialised or the search is finished
 	if(search_state != SEARCH_STATE_SEARCHING)
@@ -110,7 +99,7 @@ int AStar::search_step(void)
 		get_successors(n);
 		
 		// Handle each successor
-		for(NodeListIterator succ = successors.begin(); succ != successors.end(); succ++)
+	for(NodeListIterator succ = successors.begin(); succ != successors.end(); ++succ)
 		{
 			// Calculate the cost from start to this node
 			float newg = n->g + get_cost(n,(*succ));
@@ -123,7 +112,7 @@ int AStar::search_step(void)
 			// TODO: Improve to better complexity than linear
 
 			NodeListIterator open_it;
-			for(open_it = open.begin(); open_it != open.end(); open_it++){
+			for(open_it = open.begin(); open_it != open.end(); ++open_it){
 				if((*open_it) == (*succ))
 					break;
 			}
@@ -135,7 +124,7 @@ int AStar::search_step(void)
 			// Now do the same check on closed list
 
 			NodeListIterator closed_it;
-			for(closed_it = closed.begin(); closed_it != closed.end(); closed_it++){
+			for(closed_it = closed.begin(); closed_it != closed.end(); ++closed_it){
 				if((*closed_it) == (*succ))
 					break;
 			}
@@ -173,21 +162,20 @@ int AStar::search_step(void)
  	return search_state; // return the resulting state of this search step
 }
 
-/*
 // Methods for traversing a solution when a search has ended 
-Node* AStar::get_solution_start(void)
+Node* AStar::get_solution_start()
 {
 	current = start;
 	return current;
 }
 
-Node* AStar::get_solution_end(void)
+Node* AStar::get_solution_end()
 {
 	current = goal;
 	return current;
 }
 
-Node* AStar::get_solution_next(void)
+Node* AStar::get_solution_next()
 {
 	if(current){
 		if(current->child){
@@ -195,10 +183,10 @@ Node* AStar::get_solution_next(void)
 			return current;
 		}			
 	}
-	return NULL;
+	return nullptr;
 }
 
-Node* AStar::get_solution_prev(void)
+Node* AStar::get_solution_prev()
 {
 	if(current){
 		if(current->parent){
@@ -206,11 +194,11 @@ Node* AStar::get_solution_prev(void)
 			return current;
 		}				
 	}
-	return NULL;
+	return nullptr;
 }
 
 // Methods to view the open list during a search
-Node* AStar::get_open_start(void)
+Node* AStar::get_open_start()
 {
 	float f,g,h;
 	return get_open_start(f,g,h);
@@ -225,10 +213,10 @@ Node* AStar::get_open_start(float& f, float& g, float& h)
 		h = (*dbg_open_it)->h;
 		return (*dbg_open_it);
 	}
-	return NULL;
+	return nullptr;
 }
 
-Node* AStar::get_open_next(void)
+Node* AStar::get_open_next()
 {
 	float f,g,h;
 	return get_open_next(f,g,h);
@@ -242,11 +230,11 @@ Node* AStar::get_open_next(float& f, float& g, float& h)
 		h = (*dbg_open_it)->h;
 		return (*dbg_open_it);
 	}
-	return NULL;
+	return nullptr;
 }
 
 // Methods to view the closed list during a search
-Node* AStar::get_closed_start(void)
+Node* AStar::get_closed_start()
 {
 	float f,g,h;
 	return get_closed_start(f,g,h);
@@ -261,10 +249,10 @@ Node* AStar::get_closed_start(float& f, float& g, float& h)
 		h = (*dbg_closed_it)->h;
 		return (*dbg_closed_it);
 	}
-	return NULL;
+	return nullptr;
 }
 
-Node* AStar::get_closed_next(void)
+Node* AStar::get_closed_next()
 {
 	float f,g,h;
 	return get_closed_next(f,g,h);
@@ -278,25 +266,37 @@ Node* AStar::get_closed_next(float& f, float& g, float& h)
 		h = (*dbg_closed_it)->h;
 		return (*dbg_closed_it);
 	}
-	return NULL;
+	return nullptr;
 }
 
 // Return the number of steps taken in the search
-int AStar::get_step_count(void) const
+int AStar::get_step_count() const
 {
 	return steps;
 }
 
 // Function for reseting the search and clearing all lists
-void AStar::reset(void)
+void AStar::reset()
 {
 	open.clear();
 	closed.clear();
 	successors.clear();
+	nodes.clear();
+	start = nullptr;
+	goal = nullptr;
+	current = nullptr;
+	steps = 0;
 	search_state = SEARCH_STATE_NOT_INITIALISED;
 }
 
-*/
+Node* AStar::get_node(navigation_graph::NodePtr navigation_node)
+{
+	auto [position, inserted] =
+		nodes.try_emplace(navigation_node, nullptr);
+	if (inserted)
+		position->second = std::make_unique<Node>(navigation_node);
+	return position->second.get();
+}
 
 void AStar::get_successors(Node* node)
 {
@@ -310,13 +310,13 @@ void AStar::get_successors(Node* node)
 	
 	// push each possible move except allowing the search to go backwards
 
-	navigation_graph::LinkIterator it = node->navidata->links.begin();
-	for(; it != node->navidata->links.end(); it++){
-		if((*it).node_id != parent_id){
-/*
-			Node* succ = new Node;((*it));
-			successors.push_back(succ);
-*/		}
+	for (const auto& link : node->navidata->links) {
+		if (static_cast<int>(link.node_id) == parent_id)
+			continue;
+
+		auto* navigation_node = navigraph.find_node(link.node_id);
+		if (navigation_node != nullptr)
+			successors.push_back(get_node(navigation_node));
 	}
 }
 
@@ -329,13 +329,12 @@ float AStar::estimate_cost_to_goal(astar::Node* node)
 
 float AStar::get_cost(astar::Node* node1, astar::Node* node2)
 {
-	navigation_graph::LinkIterator it = node1->navidata->links.begin();
-	for(; it != node1->navidata->links.end(); it++){
-		if((*it).node_id == node2->navidata->id)
-			return (*it).cost;
+	for (const auto& link : node1->navidata->links) {
+		if(link.node_id == node2->navidata->id)
+			return link.cost;
 	}	
 
-	throw ai_error("Navigation graph error");;
+	throw ai_error("Navigation graph error");
 }
 
 

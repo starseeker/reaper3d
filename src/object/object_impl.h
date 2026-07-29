@@ -17,7 +17,7 @@
 
 #include "main/types_param.h"
 
-
+#include <memory>
 #include <vector>
 
 namespace reaper {
@@ -58,10 +58,10 @@ protected:
 	phys::Ship phys;
 	renderer::Ship rd;
 	controls::Ship ctrl;
-	sound::Ship* snd;
+	std::unique_ptr<sound::Ship> snd;
 
-	weapon::Weapon* laser;
-	weapon::Missiles* missiles;
+	std::unique_ptr<weapon::Weapon> laser;
+	std::unique_ptr<weapon::Missiles> missiles;
 
 	phys::ObjectAccessor phys_access;
 
@@ -102,4 +102,3 @@ public:
 }
 }
 #endif
-

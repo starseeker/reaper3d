@@ -3,7 +3,6 @@
  * Direct GLFW integration - plugin architecture removed
  */
 
-#include "hw/compat.h"
 
 #include "hw/debug.h"
 #include "hw/event_prim.h"

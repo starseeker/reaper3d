@@ -1,4 +1,3 @@
-#include "hw/compat.h"
 #include "main/types_ops.h"
 #include "main/types_io.h"
 #include "main/types4.h"

@@ -1,4 +1,3 @@
-#include "hw/compat.h"
 
 #include "misc/sequence.h"
 #include "gfx/shadow/main.h"
@@ -12,12 +11,6 @@ namespace shadow {
 const int SilhouetteShadowAll::max_static_shadows = 50;
 const int SilhouetteShadowAll::shadow_lifetime = 5000;
 const int SilhouetteShadowAll::silly_shadow_size = 128;
-
-SilhouetteShadowAll::~SilhouetteShadowAll() 
-{
-	using namespace reaper::misc;
-	for_each(seq(shadows), delete_it);
-}
 
 int SilhouetteShadowAll::render(const Frustum &frustum)
 {
@@ -50,4 +43,3 @@ int SilhouetteShadowAll::render(const Frustum &frustum)
 }
 }
 }
-

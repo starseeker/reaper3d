@@ -1,6 +1,8 @@
 #ifndef REAPER_AI_A_STAR_H
 #define REAPER_AI_A_STAR_H
 
+#include <memory>
+#include <unordered_map>
 #include <vector>
 #include "ai/navigation_graph.h"
 
@@ -21,21 +23,21 @@ namespace astar{
 	class Node
 	{
 	public:
-		navigation_graph::NodePtr navidata;
-		bool visited;
+		navigation_graph::NodePtr navidata = nullptr;
+		bool visited = false;
 
-		Node *parent, *child;
+		Node* parent = nullptr;
+		Node* child = nullptr;
 					
-		float g; // Cost of this node + it's predecessors
-		float h; // Heuristic estimate of cost to goal
-		float f; // Sum of g and h
+		float g = 0; // Cost of this node + its predecessors
+		float h = 0; // Heuristic estimate of cost to goal
+		float f = 0; // Sum of g and h
 		
-		// Constructors
-		Node(void);
-		Node(navigation_graph::NodePtr &navidata);
+		Node() = default;
+		explicit Node(navigation_graph::NodePtr data) : navidata(data) { }
 
-		// For debugging purpouses
-		void draw(void);
+		// For debugging purposes
+		void draw();
 	};
 
 	class NodeCmp
@@ -58,59 +60,66 @@ namespace astar{
 		std::vector<Node*> open;   // The Open list (vector but used as a heap)
 		std::vector<Node*> closed; // The Closed list
 		
-		std::vector<Node*> successors; // Used to hold the successors to the current node 
+		std::vector<Node*> successors;
+		std::unordered_map<
+			navigation_graph::NodePtr,
+			std::unique_ptr<Node>> nodes;
 		
-		Node* start; // Pointers to start
-		Node* goal;  // and goal nodes
+		Node* start = nullptr;
+		Node* goal = nullptr;
 
-		Node* current; // Pointer to current node when traversing a solution
+		Node* current = nullptr;
 		
-		int search_state; // Current search state
-		int steps;	  // Number of search steps taken
+		SearchState search_state = SEARCH_STATE_NOT_INITIALISED;
+		int steps = 0;
 		
 		// Iterators for debugging the open and closed lists
 		NodeListIterator dbg_open_it;
 		NodeListIterator dbg_closed_it;
 
 		void get_successors(Node* node);
+		Node* get_node(navigation_graph::NodePtr node);
 		float estimate_cost_to_goal(Node* node);
 		float get_cost(Node* node1, Node* node2);
 
 	public:
 
-		AStar(navigation_graph::Graph &ng);
-		~AStar(void);
+		explicit AStar(navigation_graph::Graph& ng);
+		~AStar() = default;
 
-		// Initiallize the search
-		void new_search(Point &sp, Point &gp);
+		AStar(const AStar&) = delete;
+		AStar& operator=(const AStar&) = delete;
+
+		// Initialize the search
+		void new_search(const Point& sp, const Point& gp);
 
 		// Take one step forward in the search
 		// and return the resulting state
-		int search_step(void);
+		int search_step();
 
 		// Methods for traversing a solution when a search has ended 
-		Node* get_solution_start(void);
-		Node* get_solution_end(void);
-		Node* get_solution_next(void);
-		Node* get_solution_prev(void);
+		Node* get_solution_start();
+		Node* get_solution_end();
+		Node* get_solution_next();
+		Node* get_solution_prev();
 
 		// Methods to view the open list during a search
-		Node* get_open_start(void);
+		Node* get_open_start();
 		Node* get_open_start(float& f, float& g, float& h);
-		Node* get_open_next(void);
+		Node* get_open_next();
 		Node* get_open_next(float& f, float& g, float& h);
 		
 		// Methods to view the closed list during a search
-		Node* get_closed_start(void);
+		Node* get_closed_start();
 		Node* get_closed_start(float& f, float& g, float& h);
-		Node* get_closed_next(void);
+		Node* get_closed_next();
 		Node* get_closed_next(float& f, float& g, float& h);
 
 		// Return the number of steps taken in the search
-		int get_step_count(void) const;
+		int get_step_count() const;
 
 		// Function for reseting the search and clearing all lists
-		void reset(void);
+		void reset();
 	};
 
 }

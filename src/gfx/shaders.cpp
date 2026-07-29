@@ -13,7 +13,6 @@
  *
  */
 
-#include "hw/compat.h"
 
 #include <sstream>
 #include <list>

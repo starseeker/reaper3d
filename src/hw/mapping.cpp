@@ -1,7 +1,6 @@
 
 /* $Id: mapping.cpp,v 1.19 2002/04/06 20:16:25 pstrand Exp $  */
 
-#include "hw/compat.h"
 
 #include <string>
 #include <iostream>
@@ -112,7 +111,7 @@ class GameMap
 				val = misc::stof(tov[2].c_str() + 1);
 				switch (tov[2][0]) {
 				case '=': op = Abs; break;
-				case '-': val = -val;
+				case '-': val = -val; op = Rel; break;
 				case '+': op = Rel; break;
 				case 'n': op = Pass; break;
 				case 'r': op = Rev; break;

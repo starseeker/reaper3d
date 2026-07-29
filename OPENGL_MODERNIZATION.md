@@ -61,31 +61,33 @@ This document tracks the modernization of Reaper3D's OpenGL rendering from immed
 
 ## Current OpenGL Support Level
 
-The analysis shows that Reaper3D currently uses **OpenGL 1.x** with the following characteristics:
+The main Reaper3D renderer still presents an **OpenGL 1.x compatibility
+pipeline**, with the following characteristics:
 
 - **Fixed Pipeline**: Uses glBegin/glEnd immediate mode rendering
-- **Legacy Extensions**: Uses older OpenGL extension system via glh_extensions
+- **Legacy Extensions**: The remaining GLH extension loader is isolated behind
+  `src/hw/gl.h`; GLFW supplies context-specific function addresses and the
+  build uses current system OpenGL headers rather than a bundled platform
+  header snapshot
 - **Texture Combiners**: Uses GL_COMBINE for multi-texturing instead of shaders
-- **No VBO Support**: Vertex Buffer Objects not available in current setup
-- **No GLSL Support**: Programmable shaders not available
+- **Optional VBO/GLSL Support**: VBO and shader abstractions are built and
+  smoke-tested, but the primary renderer has not migrated to them
 
 ## Immediate Mode Usage Analysis
 
-Found **51 files** using immediate mode OpenGL calls (`glBegin/glEnd/glVertex/glColor`):
+Immediate-mode calls (`glBegin/glEnd/glVertex/glColor`) remain in the core
+renderer, UI/font code, debug drawing, and graphics tests.
 
-### Categories:
-1. **Test Files** (13 files): Debug visualization and unit tests
-2. **Graphics Core** (8 files): Core rendering systems (FPS meter, HUD, etc.)
-3. **Font/UI** (6 files): Text rendering and menu systems  
-4. **Tools** (5 files): Level editors and utilities
-5. **External Libraries** (19 files): Third-party GLUI library
+### Modernization Strategy
 
-### Modernization Strategy:
-- **Keep test files as-is**: Debug/test code benefits from immediate mode simplicity
-- **Modernize core graphics**: Key rendering systems should use VBOs
-- **Update font/UI gradually**: UI systems can be modernized incrementally
-- **Leave tools unchanged**: Editor tools work fine with immediate mode
-- **External libraries**: GLUI should remain unchanged
+- Move high-volume terrain, mesh, particle, and effect paths to buffered
+  geometry first.
+- Move fixed-function lighting and texture combiners to shaders after their
+  geometry paths are buffered.
+- Keep small compatibility/debug paths until the main renderer no longer
+  requires a compatibility context.
+- The old GLUT/GLUI editors have already been removed; current tools use
+  GLFW and Dear ImGui.
 
 ## Architecture Improvements
 
@@ -132,9 +134,10 @@ if (shaders.is_glsl_supported()) {
 ## Next Steps for Full Modernization
 
 ### Immediate Priority
-1. **Add OpenGL Extension Detection**: Properly detect and load VBO and GLSL extensions
-2. **Modernize Core Rendering**: Update key graphics systems to use VBOs
-3. **Shader Pipeline**: Create GLSL shaders for common rendering tasks
+1. **Modernize Core Rendering**: Update key graphics systems to use VBOs
+2. **Shader Pipeline**: Create GLSL shaders for common rendering tasks
+3. **Compatibility Context Audit**: Track and remove the remaining
+   fixed-function-only paths
 
 ### Medium Priority  
 4. **Asset Pipeline**: Add support for embedded asset data
@@ -142,38 +145,25 @@ if (shaders.is_glsl_supported()) {
 6. **Lighting System**: Update lighting to use modern OpenGL
 
 ### Future Enhancements
-7. **OpenGL 3.0+ Support**: Add support for newer OpenGL versions
-8. **Compute Shaders**: Add compute shader support for advanced effects
-9. **Modern Debugging**: Add modern OpenGL debugging and profiling
+7. **OpenGL 3.0+ Support**: Request a core context once compatibility calls are gone
+8. **Modern Debugging**: Add OpenGL debug callbacks and profiling
 
 ## Testing
 
 All modernization features include comprehensive testing:
 
 ```bash
-# Build and test
-mkdir build && cd build
-cmake ..
-make -j4
-
-# Test headless rendering
-REAPER_HEADLESS=1 ./bin/osmesa_test
-
-# Test VBO modernization  
-./bin/vbo_test
-
-# Test shader system
-./bin/shader_test
-
-# Run main application in headless mode
-REAPER_HEADLESS=1 ./bin/reaper3d
+cmake -S . -B build
+cmake --build build -j4
+ctest --test-dir build --output-on-failure
 ```
 
 ## Compatibility
 
 - **Backward Compatible**: All changes maintain compatibility with existing code
 - **Graceful Degradation**: Modern features automatically fall back when unavailable
-- **Cross Platform**: Headless mode works on systems without X11/display
+- **Headless Linux**: OSMesa mode works without an X11/Wayland display when
+  its development package is available
 - **Existing Assets**: All existing data files continue to work unchanged
 
 ## Benefits Achieved

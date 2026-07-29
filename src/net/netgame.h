@@ -3,6 +3,8 @@
 #ifndef NET_NETGAME_H
 #define NET_NETGAME_H
 
+#include <memory>
+
 #include "hw/abstime.h"
 #include "hw/reltime.h"
 #include "net/net.h"
@@ -19,25 +21,28 @@ class ServerTalk;
 
 struct GameInfo
 {
-	GameInfo() { }
-	PlayerID local_id;
+	GameInfo() = default;
+	PlayerID local_id = 0;
 	Players players;
-	GameState state;
-	hw::time::TimeSpan start_time;
+	GameState state = init;
+	hw::time::TimeSpan start_time{};
 };
 
 
 
 class NetGame
 {
-	sock_stream* conn;
+	std::unique_ptr<sock_stream> conn;
 	GameInfo game;
-	ServerTalk* srv_talk;
+	std::shared_ptr<ServerTalk> srv_talk;
 	hw::concurrent::Mutex sync_mtx;
 	PlayerID my_id, next_id;
 public:
 	NetGame();
 	~NetGame();
+
+	NetGame(const NetGame&) = delete;
+	NetGame& operator=(const NetGame&) = delete;
 
 	hw::event::EventFilter* connect(std::string srv);
 	void shutdown();
@@ -61,4 +66,3 @@ public:
 }
 
 #endif
-

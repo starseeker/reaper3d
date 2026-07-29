@@ -1,4 +1,3 @@
-#include "hw/compat.h"
 #include "main/types_ops.h"
 #include "object/phys.h"
 #include "object/collide.h"
@@ -53,7 +52,7 @@ void DynTriPair::simulate(const double& to_time)
 double DynTriPair::check_distance()
 {
 	//Formel: dist = (R-P) dot norm
-	//R är punkt i planet, norm är normal, P är punkten att testa
+	//R Ã¤r punkt i planet, norm Ã¤r normal, P Ã¤r punkten att testa
 	const Point& pos = obj->get_pos();
 
 	double dist = dot(tri->normal, pos - tri->a);
@@ -76,9 +75,10 @@ double DynTriPair::check_distance()
 	
 }
 
-CollisionData* DynTriPair::get_collision(){			
-
-	return 0;
+CollisionData DynTriPair::get_collision()
+{
+	return CollisionData(
+		obj->get_pos() - tri->normal * obj->get_radius());
 }
 
 bool DynTriPair::to_insert(const double& fs)
@@ -104,24 +104,24 @@ void DynTriPair::calc_lower_bound(){
 
 bool DynTriPair::collide(const CollisionData&)
 {
-	const double& e = 0.6;  //stötcoefficient
+	const double& e = 0.6;  //stÃ¶tcoefficient
 
-	//Vid sned central stöt kommer följande att ske. 
+	//Vid sned central stÃ¶t kommer fÃ¶ljande att ske.
 	//De individuella objekten kommer att ha samma hastighet i tangentplanet 
-	//före som efter stöt. Enbart hastigheten i normalriktingen kommer att ändras.
+	//fÃ¶re som efter stÃ¶t. Enbart hastigheten i normalriktingen kommer att Ã¤ndras.
 
-	//tag först reda på hastigheterna i normalriktningen. Räkna därefer ut de nya 
-	//hastigheterna. Addera en hastighetsvektor i normalriktningen som gör att 
-	//objekten får de korrekta hastigheterna
+	//tag fÃ¶rst reda pÃ¥ hastigheterna i normalriktningen. RÃ¤kna dÃ¤refer ut de nya
+	//hastigheterna. Addera en hastighetsvektor i normalriktningen som gÃ¶r att
+	//objekten fÃ¥r de korrekta hastigheterna
 
-	//I detta enkla fall är normalriktningen samma som vektorn från centrum till
-	//punkten där kollisionen har skett.
+	//I detta enkla fall Ã¤r normalriktningen samma som vektorn frÃ¥n centrum till
+	//punkten dÃ¤r kollisionen har skett.
 	ObjectAccessor &obj_data = obj->get_physics() ;
 
 	const Vector r_pos2(-tri->normal*obj->get_radius());
 	const Vector n1(norm(-r_pos2));
 	
-	//vi behöver bara en normalvektor
+	//vi behÃ¶ver bara en normalvektor
 	//Hastigheterna i normalriktninen
 
 	const Vector& vel_2 = obj_data.vel;
@@ -179,9 +179,10 @@ bool DynTriPair::collide(const CollisionData&)
 	return true;
 }
 
-CollisionData* ShotTriPair::get_collision()
+CollisionData ShotTriPair::get_collision()
 {
-	return 0;
+	return CollisionData(
+		obj->get_pos() - tri->normal * obj->get_radius());
 }
 
 void ShotTriPair::simulate(const double& to_time)
@@ -199,7 +200,7 @@ bool ShotTriPair::to_insert(const double& fs)
 double ShotTriPair::check_distance()
 {
 	//Formel: dist = (R-P) dot norm
-	//R är punkt i planet, norm är normal, P är punkten att testa
+	//R Ã¤r punkt i planet, norm Ã¤r normal, P Ã¤r punkten att testa
 	const Point& pos = obj->get_pos();
 
 	double dist = dot(tri->normal, pos - tri->a);
@@ -295,7 +296,7 @@ double DynDynPair::check_distance()
 		(obj1->get_radius() + obj2->get_radius() ) ;
 }
 
-CollisionData* DynDynPair::get_collision(){
+CollisionData DynDynPair::get_collision(){
 	Vector n1 = norm(obj2->get_pos()-obj1->get_pos());
 	Vector n2 = norm(obj1->get_pos()-obj2->get_pos());
 			
@@ -304,7 +305,7 @@ CollisionData* DynDynPair::get_collision(){
 	n2 *= obj2->get_radius();
 	n2 += obj2->get_pos();
 			
-	return new CollisionData( 0.5*(n1+n2) );
+	return CollisionData(0.5 * (n1 + n2));
 }
 
 using reaper::object::phys::ObjectAccessor;
@@ -348,18 +349,18 @@ void DynDynPair::calc_lower_bound(){
 
 bool DynDynPair::collide(const CollisionData& col)
 {
-	double e = 0.4;  //stötcoefficient
+	double e = 0.4;  //stÃ¶tcoefficient
 
-	//Vid sned central stöt kommer följande att ske. 
+	//Vid sned central stÃ¶t kommer fÃ¶ljande att ske.
 	//De individuella objekten kommer att ha samma hastighet i tangentplanet 
-	//före som efter stöt. Enbart hastigheten i normalriktingen kommer att ändras.
+	//fÃ¶re som efter stÃ¶t. Enbart hastigheten i normalriktingen kommer att Ã¤ndras.
 
-	//tag först reda på hastigheterna i normalriktningen. Räkna därefer ut de nya 
-	//hastigheterna. Addera en hastighetsvektor i normalriktningen som gör att 
-	//objekten får de korrekta hastigheterna
+	//tag fÃ¶rst reda pÃ¥ hastigheterna i normalriktningen. RÃ¤kna dÃ¤refer ut de nya
+	//hastigheterna. Addera en hastighetsvektor i normalriktningen som gÃ¶r att
+	//objekten fÃ¥r de korrekta hastigheterna
 
-	//I detta enkla fall är normalriktningen samma som vektorn från centrum till
-	//punkten där kollisionen har skett.
+	//I detta enkla fall Ã¤r normalriktningen samma som vektorn frÃ¥n centrum till
+	//punkten dÃ¤r kollisionen har skett.
 	ObjectAccessor &obj1_data = obj1->get_physics() ;
 	ObjectAccessor &obj2_data = obj2->get_physics() ;
 
@@ -379,7 +380,7 @@ bool DynDynPair::collide(const CollisionData& col)
 	}
 
 	Vector n1 = norm(r_pos1);
-	//vi behöver bara en normalvektor
+	//vi behÃ¶ver bara en normalvektor
 
 	//Hastigheterna i normalriktninen
 
@@ -449,7 +450,7 @@ double SillyDynPair::check_distance()
 	       (obj1->get_radius()+obj2->get_radius() );
 }
 
-CollisionData* SillyDynPair::get_collision(){
+CollisionData SillyDynPair::get_collision(){
 	Vector n1 = norm(obj2->get_pos()-obj1->get_pos());
 	Vector n2 = norm(obj1->get_pos()-obj2->get_pos());
 			
@@ -458,7 +459,7 @@ CollisionData* SillyDynPair::get_collision(){
 	n2 *= obj2->get_radius();
 	n2 += obj2->get_pos();
 			
-	return new CollisionData(0.5*(n1+n2));
+	return CollisionData(0.5 * (n1 + n2));
 }
 
 void SillyDynPair::calc_lower_bound()
@@ -496,18 +497,18 @@ void SillyDynPair::calc_lower_bound()
 
 bool SillyDynPair::collide(const CollisionData& col)
 {
-	double e = 0.4;  //stötcoefficient
+	double e = 0.4;  //stÃ¶tcoefficient
 
-	//Vid sned central stöt kommer följande att ske. 
+	//Vid sned central stÃ¶t kommer fÃ¶ljande att ske.
 	//De individuella objekten kommer att ha samma hastighet i tangentplanet 
-	//före som efter stöt. Enbart hastigheten i normalriktingen kommer att ändras.
+	//fÃ¶re som efter stÃ¶t. Enbart hastigheten i normalriktingen kommer att Ã¤ndras.
 
-	//tag först reda på hastigheterna i normalriktningen. Räkna därefer ut de nya 
-	//hastigheterna. Addera en hastighetsvektor i normalriktningen som gör att 
-	//objekten får de korrekta hastigheterna
+	//tag fÃ¶rst reda pÃ¥ hastigheterna i normalriktningen. RÃ¤kna dÃ¤refer ut de nya
+	//hastigheterna. Addera en hastighetsvektor i normalriktningen som gÃ¶r att
+	//objekten fÃ¥r de korrekta hastigheterna
 
-	//I detta enkla fall är normalriktningen samma som vektorn från centrum till
-	//punkten där kollisionen har skett.
+	//I detta enkla fall Ã¤r normalriktningen samma som vektorn frÃ¥n centrum till
+	//punkten dÃ¤r kollisionen har skett.
 
 	ObjectAccessor &obj2_data = obj2->get_physics() ;
 
@@ -524,7 +525,7 @@ bool SillyDynPair::collide(const CollisionData& col)
 	}
 
 	Vector n1 = norm(r_pos1);
-	//vi behöver bara en normalvektor
+	//vi behÃ¶ver bara en normalvektor
 
 
 	//Hastigheterna i normalriktninen
@@ -568,9 +569,9 @@ bool SillyDynPair::collide(const CollisionData& col)
 void StaticDynPair::simulate(const double& to_time)
 {
 	double  delta;
-	delta = to_time - obj1->get_sim_time();
+	delta = to_time - static_object->get_sim_time();
 	if(delta > 0)
-		obj1->simulate(delta);
+		static_object->simulate(delta);
 	
 	delta = to_time - obj2->get_sim_time();
 	if(delta >0)
@@ -611,7 +612,7 @@ double ShotSillyPair::check_distance(){
                 (shot->get_radius() + obj->get_radius() ) ;
 }
 
-CollisionData* ShotSillyPair::get_collision(){
+CollisionData ShotSillyPair::get_collision(){
 	Vector n1 = norm(obj->get_pos()-shot->get_pos());
 	Vector n2 = norm(shot->get_pos()-obj->get_pos());
 			
@@ -620,7 +621,7 @@ CollisionData* ShotSillyPair::get_collision(){
 	n2 *= obj->get_radius();
 	n2 += obj->get_pos();
 			
-	return new CollisionData(0.5*(n1+n2));
+	return CollisionData(0.5 * (n1 + n2));
 }	
 
 void ShotSillyPair::calc_lower_bound(){
@@ -687,7 +688,7 @@ bool ShotSillyPair::collide(const CollisionData&)
 
 
 
-//a är punkt 1, b är punkt 2, edge är b-1, r är punkten vi vill ha
+//a Ã¤r punkt 1, b Ã¤r punkt 2, edge Ã¤r b-1, r Ã¤r punkten vi vill ha
 Point closestPoint(const Point& a, const Point& b, const Vector& edge, const Point& r)
 {
   double t = dot((r - a),edge) / dot(edge,edge);

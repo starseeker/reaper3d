@@ -1,6 +1,5 @@
 /* $Id: factory.cpp,v 1.31 2002/04/16 20:00:49 pstrand Exp $ */
   
-#include "hw/compat.h"
 
 #include <string>
 #include <map>
@@ -76,10 +75,9 @@ Factory::Factory()
 {
 }
 
-const ConfigEnv& Factory::info(const string& real_id, const string& id)
+const ConfigEnv& Factory::info(const string&, const string& id)
 {
-	const ConfigEnv& env = resource<ConfigEnv>("objectdata/" + id + "_data");
-	return env;
+	return resource<ConfigEnv>("objectdata/" + id + "_data");
 }
 
 ObjBase* Factory::gen_make(MkInfo mk)
@@ -131,4 +129,3 @@ Factory& inst()
 }
 }
 }
-

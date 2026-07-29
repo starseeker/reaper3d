@@ -11,7 +11,7 @@ namespace reaper {
 inline Matrix4::Matrix4(const Quaternion &quat)
 {
 	/* Code taken from CQuat class made by 
-	   Tim C. Schröder (tcs) tcs@thereisnofate.net 
+	   Tim C. SchrÃ¶der (tcs) tcs@thereisnofate.net
 	   http://glvelocity.gamedev.net
 	*/
 
@@ -132,12 +132,13 @@ inline bool operator!= (const Vector4& v1, const Vector4& v2)
 
 inline bool operator< (const Vector4& v1, const Vector4& v2)
 {
-        for (int i=0;i<4;++i) 
-                if (v1.get()[i] < v2.get()[i]) 
+        for (int i = 0; i < 4; ++i) {
+                if (v1.get()[i] < v2.get()[i])
                         return true;
-                else if (v1.get()[i] > v2.get()[i]) 
+                if (v1.get()[i] > v2.get()[i])
                         return false;
-                return false;
+        }
+        return false;
 }
 
 inline Vector4 operator- (const Vector4& v) 
@@ -283,16 +284,24 @@ inline Vector4 operator* (const Matrix4& m, const Vector4& v)
 
 inline bool operator== (const Matrix4& m1, const Matrix4& m2)
 {
-        for (int x=0;x<4;++x) for (int y=0;y<4;++y) 
-                if (m1[x][y] != m2[x][y]) return false;
-                return true;      
+        for (int x = 0; x < 4; ++x) {
+                for (int y = 0; y < 4; ++y) {
+                        if (m1[x][y] != m2[x][y])
+                                return false;
+                }
+        }
+        return true;
 }
 
 inline bool operator< (const Matrix4& m1, const Matrix4& m2)
 {
-        for (int x=0;x<4;++x) for (int y=0;y<4;++y) 
-                if (m1[x][y] >= m2[x][y]) return false;
-                return true;      
+        for (int x = 0; x < 4; ++x) {
+                for (int y = 0; y < 4; ++y) {
+                        if (m1[x][y] >= m2[x][y])
+                                return false;
+                }
+        }
+        return true;
 }
 
 inline Matrix4 operator* (const Matrix4& m1, const Matrix4& m2)
@@ -531,19 +540,19 @@ inline Matrix4 inverse3 (const Matrix4& m)
  * matrix <-> matrix4 conversion fix
  *
  * Revision 1.2  2001/08/06 12:16:28  peter
- * MegaMerge (se strandy_test-grenen för diffar...)
+ * MegaMerge (se strandy_test-grenen fÃ¶r diffar...)
  *
  * Revision 1.1.2.1  2001/08/03 13:44:05  peter
  * pragma once obsolete...
  *
  * Revision 1.1  2001/07/30 23:43:23  macke
- * Häpp, då var det kört.
+ * HÃ¤pp, dÃ¥ var det kÃ¶rt.
  *
  * Revision 1.24  2001/07/21 23:09:36  peter
  * intel fix..
  *
  * Revision 1.23  2001/07/06 01:47:24  macke
- * Refptrfix/headerfilsstäd/objekt-skapande/mm
+ * Refptrfix/headerfilsstÃ¤d/objekt-skapande/mm
  *
  * Revision 1.22  2001/05/14 12:49:20  peter
  * *** empty log message ***
@@ -555,4 +564,3 @@ inline Matrix4 inverse3 (const Matrix4& m)
  * no message
  *
  */
-

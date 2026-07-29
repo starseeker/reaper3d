@@ -5,6 +5,7 @@
 #include <queue>
 #include <deque>
 #include <map>
+#include <memory>
 
 #include "hw/event.h"
 #include "hw/gfx_driver.h"
@@ -51,8 +52,9 @@ public:
 
 
 typedef std::deque<EventSource*> InputSources;
-typedef std::deque<EventFilter*> Filters;
-typedef std::map<PlayerID, EventQueue*> PlayerQueues;
+using Filters = std::deque<std::unique_ptr<EventFilter>>;
+using PlayerQueues =
+	std::map<PlayerID, std::unique_ptr<EventQueue>>;
 
 ///
 class EventDispatcher
@@ -87,4 +89,3 @@ public:
 }
 
 #endif
-

@@ -1,7 +1,6 @@
 
 /* $Id: sound_system.cpp,v 1.57 2002/05/21 10:09:47 pstrand Exp $ */
 
-#include "hw/compat.h"
 
 #include <vector>
 #include <map>
@@ -9,7 +8,6 @@
 #include <queue>
 
 #include "misc/smartptr.h"
-#include "misc/free.h"
 #include "hw/debug.h"
 #include "hw/snd.h"
 #include "snd/sound_system.h"
@@ -21,10 +19,6 @@
 
 namespace reaper
 {
-namespace misc {
-	template <>
-	UniquePtr<sound::Manager>::I UniquePtr<sound::Manager>::inst = {};
-}
 namespace sound
 {
 
@@ -197,13 +191,14 @@ void Manager::play(const string& id, const Point& pos, float v)
 {
 	EffectPtr eff = load(id, pos, v);
 	eff->play();
-	snd_int->death_list.push(make_pair(snd_int->tick, eff.release()));
+	snd_int->death_list.emplace(
+		snd_int->tick, EffectSPtr(eff.release()));
 }
 
 
 
 Manager::Manager()
- : snd_int(new Internal())
+ : snd_int(std::make_unique<Internal>())
 {
 	set_camera(Point(0,0,0), Vector(0,0,1), Vector(0,0,0));
 }
@@ -211,7 +206,6 @@ Manager::Manager()
 Manager::~Manager()
 {
 	shutdown();
-	delete snd_int;
 //	SoundRef::force_death();
 }
 
@@ -263,6 +257,3 @@ void Manager::shutdown()
 
 }
 }
-
-
-

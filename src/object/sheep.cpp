@@ -1,5 +1,4 @@
 
-#include "hw/compat.h"
 
 #include "object/base.h"
 #include "object/factory.h"

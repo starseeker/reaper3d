@@ -1,4 +1,3 @@
-#include "hw/compat.h"
 
 #include "hw/gl.h"
 #include "hw/gl_info.h"
@@ -22,11 +21,6 @@
 
 //-----------------------------------------------------------------
 namespace reaper {
-namespace misc {
-	template <>
-	UniquePtr<gfx::Renderer>::I UniquePtr<gfx::Renderer>::inst = {};
-}
-
 namespace gfx {
 namespace {
 debug::DebugOutput dout("gfx::Renderer", 0);

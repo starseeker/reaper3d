@@ -1,6 +1,8 @@
 #ifndef REAPER_WORLD_WORLD_H
 #define REAPER_WORLD_WORLD_H
 
+#include <memory>
+
 #include "main/types_forward.h"
 #include "object/base.h"
 #include "misc/uniqueptr.h"
@@ -33,12 +35,15 @@ typedef quadtree::QuadTree<object::ShotPtr>::iterator shot_iterator;
 /// World class
 class World
 {
-	World_impl* impl;
+	std::unique_ptr<World_impl> impl;
 
 	World();
 
 	friend class misc::UniquePtr<World>;
 public:
+	World(const World&) = delete;
+	World& operator=(const World&) = delete;
+
 	/** Create world.  */
 	static WorldRef create();
 
@@ -56,7 +61,7 @@ public:
 
 	void update();
 
-	// blä, usch, urk, tvi... 
+	// blÃ¤, usch, urk, tvi...
 
 	tri_iterator begin_tri();
 	tri_iterator end_tri();
@@ -201,10 +206,10 @@ public:
  * obj.ptr
  *
  * Revision 1.90  2001/08/06 12:16:47  peter
- * MegaMerge (se strandy_test-grenen för diffar...)
+ * MegaMerge (se strandy_test-grenen fÃ¶r diffar...)
  *
  * Revision 1.89.2.3  2001/08/05 00:11:11  peter
- * döda...
+ * dÃ¶da...
  *
  * Revision 1.89.2.2  2001/08/03 13:44:17  peter
  * pragma once obsolete...
@@ -222,7 +227,7 @@ public:
  * gcc-3.0 fixar
  *
  * Revision 1.86  2001/07/06 01:47:39  macke
- * Refptrfix/headerfilsstäd/objekt-skapande/mm
+ * Refptrfix/headerfilsstÃ¤d/objekt-skapande/mm
  *
  * Revision 1.85  2001/05/12 22:06:09  peter
  * *** empty log message ***
@@ -232,4 +237,3 @@ public:
  *
  *
  */
-

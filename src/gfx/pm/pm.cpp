@@ -1,5 +1,4 @@
 
-#include "hw/compat.h"
 #include <iomanip>
 
 #include "pm.h"
@@ -17,6 +16,10 @@ namespace gfx
 {
 namespace pm
 {
+
+using std::cin;
+using std::cout;
+using std::endl;
 
 void operator+=(Matrix3d &a, const Matrix3d &b)
 {
@@ -754,7 +757,7 @@ bool Pmd::ficofac(Pairdat &pd, vint &affac, Casdat &cd, sint &colpar)
 	int other_one = -1;
 
 	// Setup cd.fn[]
-	if(cd.f_left != -1)
+	if(cd.f_left != -1) {
 		for(li = vdl[cd.v_left].fl.begin(); li != vdl[cd.v_left].fl.end(); ++li)
 			if(face_includes_pair(*li, cd.pos, cd.v_left, other_one) && (*li != cd.f_left)){
 				cd.fn[0] = *li;
@@ -763,8 +766,9 @@ bool Pmd::ficofac(Pairdat &pd, vint &affac, Casdat &cd, sint &colpar)
 				cd.fn[1] = *li;
 				cd.vn[1] = other_one;
 			}
+	}
 
-	if(cd.f_right != -1)
+	if(cd.f_right != -1) {
 		for(li = vdl[cd.v_right].fl.begin(); li != vdl[cd.v_right].fl.end(); ++li)
 			if(face_includes_pair(*li, cd.pos, cd.v_right, other_one) && (*li != cd.f_right)){
 				cd.fn[2] = *li;
@@ -773,31 +777,35 @@ bool Pmd::ficofac(Pairdat &pd, vint &affac, Casdat &cd, sint &colpar)
 				cd.fn[3] = *li;
 				cd.vn[3] = other_one;
 			}
+	}
 
 
 	// Stop non-trivial contractions
-	for(li = closev.begin(); li != closev.end(); ++li)
-		if(ficocov(pd, *li, -1) >= 0)return true;
+	for(li = closev.begin(); li != closev.end(); ++li) {
+		if(ficocov(pd, *li, -1) >= 0)
+			return true;
+	}
 
 	// Colpar
 	colpar.insert(thisone);
-	for(li = vdl[cd.pos].pairs.begin(); li != vdl[cd.pos].pairs.end(); ++li)
+	for(li = vdl[cd.pos].pairs.begin(); li != vdl[cd.pos].pairs.end(); ++li) {
 		if( (othervertex(*li, cd.pos) == cd.v_left) || (othervertex(*li, cd.pos) == cd.v_right) )
 			colpar.insert(*li);
+	}
 
-		vint::iterator vi;
+	vint::iterator vi;
 		
-		// Affac must be updated
+	// Affac must be updated
 		
-		for(li = vdl[pd.v[1]].fl.begin(); li != vdl[pd.v[1]].fl.end(); ++li)
-			if(std::find(tmpfac.begin(), tmpfac.end(), *li) == tmpfac.end()){
-				affac.push_back(*li);
-			}
+	for(li = vdl[pd.v[1]].fl.begin(); li != vdl[pd.v[1]].fl.end(); ++li)
+		if(std::find(tmpfac.begin(), tmpfac.end(), *li) == tmpfac.end()){
+			affac.push_back(*li);
+		}
 
-		for(vi = vdl[pd.v[1]].ofl.begin(); vi != vdl[pd.v[1]].ofl.end(); ++vi)
-			if(std::find(tmpfac.begin(), tmpfac.end(), *vi) == tmpfac.end()){
-				affac.push_back(*vi);
-			}
+	for(vi = vdl[pd.v[1]].ofl.begin(); vi != vdl[pd.v[1]].ofl.end(); ++vi)
+		if(std::find(tmpfac.begin(), tmpfac.end(), *vi) == tmpfac.end()){
+			affac.push_back(*vi);
+		}
 		
 	return false;
 }
@@ -924,7 +932,7 @@ void Pmd::quad(int id, Quadric &q)
 		r = crossp(kpk1, kpk2);
 
 
-		// ber‰knar d-kompnenten
+		// ber√§knar d-kompnenten
 		double d = r.e[0]*(-wscv.e[0]) + r.e[1]*(-wscv.e[1]) + r.e[2]*(-wscv.e[2]);
 
 		double abb = sqrt(r.e[0]*r.e[0] + r.e[1]*r.e[1] + r.e[2]*r.e[2]); //normalisera
@@ -934,12 +942,12 @@ void Pmd::quad(int id, Quadric &q)
 		r.e[2] = r.e[2]/abb;
 		d      = d/abb;
 		
-		// S‰tter upp A-matrisen
+		// S√§tter upp A-matrisen
 		q.a.e[0][0] += r.e[0]*r.e[0]; q.a.e[0][1] += r.e[0]*r.e[1]; q.a.e[0][2] += r.e[0]*r.e[2];
 		q.a.e[1][0] += r.e[1]*r.e[0]; q.a.e[1][1] += r.e[1]*r.e[1]; q.a.e[1][2] += r.e[1]*r.e[2];
 		q.a.e[2][0] += r.e[2]*r.e[0]; q.a.e[2][1] += r.e[2]*r.e[1]; q.a.e[2][2] += r.e[2]*r.e[2];
 
-		// Ber‰knar b-vektorn
+		// Ber√§knar b-vektorn
 		q.b.e[0] += r.e[0]*d; q.b.e[1] += r.e[1]*d; q.b.e[2] += r.e[2]*d;
 
 		q.c += (d*d);
@@ -948,22 +956,22 @@ void Pmd::quad(int id, Quadric &q)
 
 	q*=penalty;
 	
-	// Okej, kant-verticer ‰r kompenserade, forts‰tter med vanliga...
+	// Okej, kant-verticer √§r kompenserade, forts√§tter med vanliga...
 	for(i = cv.fl.begin();i!=cv.fl.end();++i){
 		// Tar fram aktuella verticer
 		v1 = vdl[fl[*i].v[0]].position.p;
 		v2 = vdl[fl[*i].v[1]].position.p;
 		v3 = vdl[fl[*i].v[2]].position.p;		
 
-		// Tar fram tvÂ polygon-vektorer
+		// Tar fram tv√• polygon-vektorer
 		kpk1 = v2 - v1;
 		kpk2 = v3 - v1;
 
-		// ber‰knar kryss-produkten
+		// ber√§knar kryss-produkten
 		r = crossp(kpk1, kpk2); 
 
 
-		// ber‰knar d-kompnenten
+		// ber√§knar d-kompnenten
 		double d = r.e[0]*(-wscv.e[0]) + r.e[1]*(-wscv.e[1]) + r.e[2]*(-wscv.e[2]);
 
 		//dout << "and the d:" << d << endl;
@@ -975,15 +983,15 @@ void Pmd::quad(int id, Quadric &q)
 		r.e[2] = r.e[2]/abb;
 		d      = d/abb;
 
-		// S‰tter upp A-matrisen
+		// S√§tter upp A-matrisen
 		q.a.e[0][0] += r.e[0]*r.e[0]; q.a.e[0][1] += r.e[0]*r.e[1]; q.a.e[0][2] += r.e[0]*r.e[2];
 		q.a.e[1][0] += r.e[1]*r.e[0]; q.a.e[1][1] += r.e[1]*r.e[1]; q.a.e[1][2] += r.e[1]*r.e[2];
 		q.a.e[2][0] += r.e[2]*r.e[0]; q.a.e[2][1] += r.e[2]*r.e[1]; q.a.e[2][2] += r.e[2]*r.e[2];
 
-		// Ber‰knar b-vektorn
+		// Ber√§knar b-vektorn
 		q.b.e[0] += r.e[0]*d; q.b.e[1] += r.e[1]*d; q.b.e[2] += r.e[2]*d;
 
-		// Sparar d-v‰rdet 
+		// Sparar d-v√§rdet
 		q.c += d*d;
 
 		//cin.get();
@@ -1145,7 +1153,7 @@ void Pmd::addf(int a, int b, int c)
 	
 	int nfi = fl.size() - 1;
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 
-	//Lagra fˆr vertex att den nya triangeln ‰r associerad med var och en
+	//Lagra f√∂r vertex att den nya triangeln √§r associerad med var och en
 	vdl[a].fl.push_back(nfi);
 	vdl[b].fl.push_back(nfi);
 	vdl[c].fl.push_back(nfi);

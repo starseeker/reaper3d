@@ -7,10 +7,9 @@
 namespace reaper {
 namespace misc {
 
-namespace {
 struct delete_it_t {
 	template<class T, class A>
-	void operator()(std::pair<A, T> p) const {
+	void operator()(const std::pair<A, T>& p) const {
 		delete p.second;
 	}
 
@@ -20,19 +19,14 @@ struct delete_it_t {
 	}
 };
 
-#ifdef MSVC
-static delete_it_t delete_it;
-#else
-delete_it_t delete_it;
-#endif
-}
+inline constexpr delete_it_t delete_it{};
 
 template<class T>
 inline void zero_delete(T& t)
 {
 	if (t) {
 		delete t;
-		t = 0;
+		t = nullptr;
 	}
 }
 
@@ -40,4 +34,3 @@ inline void zero_delete(T& t)
 }
 
 #endif
-

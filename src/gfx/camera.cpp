@@ -1,4 +1,3 @@
-#include "hw/compat.h"
 
 #include "main/types_ops.h"
 #include "gfx/camera.h"

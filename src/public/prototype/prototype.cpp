@@ -15,7 +15,6 @@
  * The old plugin architecture has been removed in favor of direct GLFW integration.
  */
 
-#include "hw/compat.h"
 #include "hw/gl.h"
 #include "hw/gfx.h"
 #include "hw/debug.h"
@@ -98,7 +97,6 @@ int test_main()
 	if (i != args.end())
 		res::add_datapath(i->second);
 
-	Args::iterator j = args.find("-p");
 	// -p option removed (plugin paths no longer supported)
 
 	Args::iterator ri = args.find("-r");

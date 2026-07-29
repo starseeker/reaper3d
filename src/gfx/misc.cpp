@@ -28,7 +28,6 @@
  *
  */
 
-#include "hw/compat.h"
 
 
 #include "gfx/misc.h"

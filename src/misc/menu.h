@@ -369,12 +369,11 @@ T Menuexec<It, T>::process_event()
 	return def;
 }
 
-using namespace hw::time;
-
 template<class It, class T>
 void Menuexec<It, T>::editing()
 {
-	using namespace hw::time;
+	using hw::time::get_time;
+	using hw::time::TimeSpan;
 
 	static TimeSpan time = get_time() - TimeSpan::from_ms(wait_time*2);
 
@@ -410,7 +409,8 @@ T Menuexec<It, T>::select_current()
 template<class It, class T>
 void Menuexec<It, T>::select_next()
 {
-	using namespace hw::time;
+	using hw::time::get_time;
+	using hw::time::TimeSpan;
 	static TimeSpan time = get_time() - TimeSpan::from_ms(wait_time*2);
 
 	if((get_time() - time).approx().to_ms() > wait_time) {
@@ -428,7 +428,8 @@ void Menuexec<It, T>::select_next()
 template<class It, class T>
 void Menuexec<It, T>::select_prev()
 {
-	using namespace hw::time;
+	using hw::time::get_time;
+	using hw::time::TimeSpan;
 	static TimeSpan time = get_time() - TimeSpan::from_ms(wait_time*2);
 
 	if((get_time() - time).approx().to_ms() > wait_time) {
@@ -533,4 +534,3 @@ void Menuexec<It, T>::clear_events()
  *
  *
  */
-

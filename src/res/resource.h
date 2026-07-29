@@ -183,7 +183,7 @@ typename tp<T>::ptr resource_ptr(const Ident& a)
 template<class T>
 void push_config(NodeConfig<T>* cr, IdentRef nm = "")
 {
-	ResNode<T>* n = inst<T>();
+	inst<T>();
 	if (!nm.empty()) {
 		reinit_ptr(typeid(T).name(), new ResNode<T>(nm));
 	}
@@ -214,4 +214,3 @@ void save(const Ident& path)
 }
 
 #endif
-

@@ -12,18 +12,18 @@ namespace object {
 	class PlayerBase;
 	class ShotBase;
 
-	typedef misc::SmartPtr<object::PlayerBase> PlayerPtr;
-	typedef misc::WeakPtr<object::PlayerBase> PlayerWPtr;
-	typedef misc::SmartPtr<object::SillyBase> SillyPtr;
-	typedef misc::WeakPtr<object::SillyBase> SillyWPtr;
-	typedef misc::SmartPtr<object::StaticBase> StaticPtr;
-	typedef misc::WeakPtr<object::StaticBase> StaticWPtr;
-	typedef misc::SmartPtr<object::DynamicBase> DynamicPtr;
-	typedef misc::WeakPtr<object::DynamicBase> DynamicWPtr;
-	typedef misc::SmartPtr<object::ShotBase> ShotPtr;
-	typedef misc::WeakPtr<object::ShotBase> ShotWPtr;
+	using PlayerPtr = misc::SmartPtr<object::PlayerBase>;
+	using PlayerWPtr = misc::WeakPtr<object::PlayerBase>;
+	using SillyPtr = misc::SmartPtr<object::SillyBase>;
+	using SillyWPtr = misc::WeakPtr<object::SillyBase>;
+	using StaticPtr = misc::SmartPtr<object::StaticBase>;
+	using StaticWPtr = misc::WeakPtr<object::StaticBase>;
+	using DynamicPtr = misc::SmartPtr<object::DynamicBase>;
+	using DynamicWPtr = misc::WeakPtr<object::DynamicBase>;
+	using ShotPtr = misc::SmartPtr<object::ShotBase>;
+	using ShotWPtr = misc::WeakPtr<object::ShotBase>;
 
-	typedef int ID;
+	using ID = int;
 }
 
 }

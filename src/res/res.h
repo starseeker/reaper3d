@@ -4,6 +4,7 @@
 #include <string>
 #include <iosfwd>
 #include <fstream>
+#include <memory>
 #include "main/exceptions.h"
 
 namespace reaper {
@@ -46,8 +47,7 @@ enum res_flags {
 
 class res_stream : public std_istream
 {
-	std::streambuf* sb;
-	std::streambuf* sb2;
+	std::unique_ptr<std::filebuf> buffer;
 
 	struct ResID {
 		ResourceClass rc;
@@ -59,8 +59,8 @@ class res_stream : public std_istream
 	void res_init(const ResID&);
 
 	// copy/assign not supported (expensive)! Use clone.
-	res_stream(const res_stream&);
-	res_stream& operator=(const res_stream&);
+	res_stream(const res_stream&) = delete;
+	res_stream& operator=(const res_stream&) = delete;
 public:
 	res_stream(const ResID&);
 
@@ -69,7 +69,7 @@ public:
 	 *  \param id Resource identifier
 	 */
 	res_stream(ResourceClass rc, const std::string& id, res_flags = normal);
-	~res_stream();
+	~res_stream() = default;
 	const std::string id() const;
 
 	ResID clone() const;
@@ -80,10 +80,10 @@ public:
 
 class res_out_stream : public std_ostream
 {
-	std::streambuf* sb;
+	std::unique_ptr<std::filebuf> buffer;
 public:
 	res_out_stream(ResourceClass, const std::string& id, bool text_mode = false);
-	~res_out_stream();
+	~res_out_stream() = default;
 };
 
 class resource_not_found
@@ -109,4 +109,3 @@ bool sanity_check();
 }
 
 #endif
-

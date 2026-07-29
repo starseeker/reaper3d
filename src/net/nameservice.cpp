@@ -1,163 +1,155 @@
-
-/*
- * $Author: peter $
- * $Date: 2001/04/16 22:08:17 $
- * $Log: nameservice.cpp,v $
- * Revision 1.12  2001/04/16 22:08:17  peter
- * ...
- *
- * Revision 1.11  2001/04/10 08:46:58  peter
- * kompilatorgnäll...
- *
- * Revision 1.10  2001/03/27 18:17:27  peter
- * no message
- *
- * Revision 1.9  2001/03/25 09:21:08  peter
- * Ska vara Runnable (hw/concurrent.h)...
- * visual dålig på att kompilera om?
- *
- * Revision 1.8  2001/03/24 18:23:11  niklas
- * Kompilerade inte...
- * ändrade Runnable till runnable
- *
- * Revision 1.7  2001/03/21 11:22:38  peter
- * *** empty log message ***
- *
- * Revision 1.6  2001/02/08 15:19:01  peter
- * except.
- *
- * Revision 1.5  2001/01/07 13:05:27  peter
- * *** empty log message ***
- *
- *
- */
-
-#include "hw/compat.h"
-
-#include <string>
-#include <cstdio>
-
-#include "hw/netcompat.h"
-
-#ifndef WIN32
-#include <netdb.h>
-#endif
-
-#include "hw/socket.h"
-#include "hw/concurrent.h"
 #include "net/nameservice.h"
 
-namespace reaper
-{
-namespace net
+#include <atomic>
+#include <cstdint>
+#include <cstring>
+#include <thread>
+#include <utility>
+
+#include "hw/concurrent.h"
+#include "hw/netcompat.h"
+
+namespace reaper::net
 {
 
-using namespace reaper::hw::net;
-using namespace reaper::hw::concurrent;
+namespace cc = hw::concurrent;
 
-class NSHelper : public Runnable {
-public:
-	Thread* thread;
-	NSHelper() {
-		thread = new Thread(this);
-		lq_mutex.lock();
-		thread->start();
-	}
-	~NSHelper() { }
-	Semaphore finished;
-	Semaphore lq_sem;
-	Mutex lq_mutex;
+class NSHelper {
+	std::thread thread;
+	cc::Semaphore finished;
+	cc::Semaphore lookup_requested;
+	cc::Mutex lookup_mutex;
+	std::atomic_bool stopping{false};
 
 	std::string host;
-	addr_t addr;
+	addr_t address = 0;
 	NameData result;
 
-	void run() {
+public:
+	NSHelper()
+		: thread(&NSHelper::run, this)
+	{
+	}
+
+	~NSHelper()
+	{
+		stopping.store(true);
+		lookup_requested.signal();
+		if (thread.joinable())
+			thread.join();
+	}
+
+	void run()
+	{
 		hw::net::Net_Init net_init;
-		struct hostent* hp;
-		std::string h;
-		addr_t a;
-		lq_mutex.unlock();
-		while (1) {
-			lq_sem.wait();
-			h = host;
-			a = addr;
-			lq_mutex.unlock();
 
-			result.aliases.clear();
-			result.addrs.clear();
+		for (;;) {
+			lookup_requested.wait();
+			if (stopping.load())
+				return;
 
-			if (a == 0) {
-				hp = gethostbyname(h.c_str());
-			} else {
-				hp = gethostbyaddr((char*)&a, 4, AF_INET);
+			std::string lookup_host;
+			addr_t lookup_address;
+			{
+				cc::ScopeLock lock(lookup_mutex);
+				lookup_host = host;
+				lookup_address = address;
 			}
-			if (!hp) {
-				result.err = true;
-				result.name = dnsstrerror();
+
+			hostent* entry = nullptr;
+			if (lookup_address == 0) {
+				entry = gethostbyname(lookup_host.c_str());
 			} else {
-				result.err = false;
-				result.name = hp->h_name;
-				char **p = hp->h_aliases;
-				while (*p) {
-					result.aliases.push_back(*p);
-					p++;
-				}
-				p = hp->h_addr_list;
-				while (*p) {
-					result.addrs.push_back(*((long*)*p));
-					p++;
+				const auto ipv4 = static_cast<std::uint32_t>(lookup_address);
+				entry = gethostbyaddr(
+					reinterpret_cast<const char*>(&ipv4),
+					sizeof(ipv4),
+					AF_INET);
+			}
+
+			NameData lookup_result;
+			if (entry == nullptr) {
+				lookup_result.err = true;
+				lookup_result.name = hw::net::dnsstrerror();
+			} else {
+				lookup_result.name = entry->h_name;
+
+				for (char** alias = entry->h_aliases; *alias != nullptr; ++alias)
+					lookup_result.aliases.emplace_back(*alias);
+
+				for (char** raw = entry->h_addr_list; *raw != nullptr; ++raw) {
+					std::uint32_t ipv4 = 0;
+					std::memcpy(&ipv4, *raw, sizeof(ipv4));
+					lookup_result.addrs.push_back(static_cast<addr_t>(ipv4));
 				}
 			}
+
+			result = std::move(lookup_result);
 			finished.signal();
 		}
 	}
+
+	void lookup(addr_t value)
+	{
+		{
+			cc::ScopeLock lock(lookup_mutex);
+			host.clear();
+			address = value;
+		}
+		lookup_requested.signal();
+	}
+
+	void lookup(const std::string& value)
+	{
+		{
+			cc::ScopeLock lock(lookup_mutex);
+			host = value;
+			address = 0;
+		}
+		lookup_requested.signal();
+	}
+
+	bool take_result(bool wait, NameData& output)
+	{
+		if (wait)
+			finished.wait();
+		else if (!finished.try_wait())
+			return false;
+
+		if (result.err)
+			throw network_error(result.name);
+
+		output = result;
+		return true;
+	}
 };
 
-NameService::NameService() {
-	helper = new NSHelper();
+NameService::NameService()
+	: helper(std::make_unique<NSHelper>())
+{
 }
 
+NameService::~NameService() = default;
 
-NameService* NameService::Instance() {
-	static NameService* ns = new NameService();
-	return ns;
+NameService* NameService::Instance()
+{
+	static NameService service;
+	return &service;
 }
 
-
-bool NameService::Result(bool wait, NameData& nd) {
-	if (wait) {
-		helper->finished.wait();
-		if (helper->result.err)
-			throw network_error(helper->result.name);
-		nd = helper->result;
-		return true;
-	} else {
-		if (helper->finished.try_wait()) {
-			if (helper->result.err)
-				throw network_error(helper->result.name);
-			nd = helper->result;
-			return true;
-		}
-		return false;
-	}
+bool NameService::Result(bool wait, NameData& result)
+{
+	return helper->take_result(wait, result);
 }
 
-void NameService::Lookup(addr_t a) {
-	helper->lq_mutex.lock();
-	helper->host = "";
-	helper->addr = a;
-	helper->lq_sem.signal();
+void NameService::Lookup(addr_t address)
+{
+	helper->lookup(address);
 }
 
-
-void NameService::Lookup(const std::string& s) {
-	helper->lq_mutex.lock();
-	helper->host = s;
-	helper->addr = 0;
-	helper->lq_sem.signal();
+void NameService::Lookup(const std::string& host)
+{
+	helper->lookup(host);
 }
 
-
-}
 }

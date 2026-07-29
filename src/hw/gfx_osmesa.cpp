@@ -3,7 +3,6 @@
  * Based on Mesa's Off-Screen rendering capabilities
  */
 
-#include "hw/compat.h"
 
 #include <string>
 #include <iostream>
@@ -34,14 +33,14 @@ namespace { debug::DebugOutput derr("hw::gfx::osmesa"); }
 
 class Gfx_osmesa : public Gfx_driver
 {
-#ifdef HAVE_OSMESA
-    OSMesaContext ctx;
-    void* buffer;
-    int width, height;
-#endif
     Gfx_driver_data data;
     ifs::Gfx* main;
     bool initialized;
+#ifdef HAVE_OSMESA
+    OSMesaContext ctx;
+    std::vector<unsigned char> buffer;
+    int width, height;
+#endif
     
 public:
     Gfx_osmesa(ifs::Gfx* m);
@@ -63,7 +62,7 @@ private:
 Gfx_osmesa::Gfx_osmesa(ifs::Gfx* m)
     : main(m), initialized(false)
 #ifdef HAVE_OSMESA
-    , ctx(nullptr), buffer(nullptr), width(800), height(600)
+    , ctx(nullptr), width(800), height(600)
 #endif
 {
     derr << "Initializing OSMesa graphics driver\n";
@@ -112,24 +111,18 @@ bool Gfx_osmesa::initialize_osmesa()
     }
     
     // Allocate image buffer
-    buffer = new char[width * height * 4]; // RGBA
-    if (!buffer) {
-        derr << "Failed to allocate image buffer\n";
-        OSMesaDestroyContext(ctx);
-        ctx = nullptr;
-        return false;
-    }
+    buffer.resize(static_cast<std::size_t>(width) * height * 4); // RGBA
     
     // Make context current
-    if (!OSMesaMakeCurrent(ctx, buffer, GL_UNSIGNED_BYTE, width, height)) {
+    if (!OSMesaMakeCurrent(ctx, buffer.data(), GL_UNSIGNED_BYTE, width, height)) {
         derr << "Failed to make OSMesa context current\n";
-        delete[] (char*)buffer;
-        buffer = nullptr;
+        buffer.clear();
         OSMesaDestroyContext(ctx);
         ctx = nullptr;
         return false;
     }
     
+    initialized = true;
     derr << "OSMesa context created: " << width << "x" << height << "\n";
     return true;
 #else
@@ -144,10 +137,8 @@ void Gfx_osmesa::shutdown_osmesa()
         OSMesaDestroyContext(ctx);
         ctx = nullptr;
     }
-    if (buffer) {
-        delete[] (char*)buffer;
-        buffer = nullptr;
-    }
+    buffer.clear();
+    buffer.shrink_to_fit();
 #endif
     initialized = false;
 }
@@ -201,7 +192,7 @@ void Gfx_osmesa::restore_mode()
 bool Gfx_osmesa::save_screenshot(const char* filename)
 {
 #ifdef HAVE_OSMESA
-    if (!initialized || !buffer) {
+    if (!initialized || buffer.empty()) {
         return false;
     }
     

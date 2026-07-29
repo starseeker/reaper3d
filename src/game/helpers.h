@@ -2,6 +2,7 @@
 #define REAPER_GAME_HELPERS_H
 
 #include <map>
+#include <memory>
 
 #include "game/scenario_mgr.h"
 #include "game/state.h"
@@ -101,7 +102,7 @@ struct Game : public state::Persistent
 
 	gfx::FPSMeterVP fps;
 
-	ProgressBar* loading;
+	std::unique_ptr<ProgressBar> loading;
 
 	state::StateHolder sh;
 
@@ -146,4 +147,3 @@ struct Game : public state::Persistent
 }
 
 #endif
-

@@ -8,9 +8,7 @@
 #include "hw/debug.h"
 
 
-#include <stdlib.h>
-
-using namespace reaper;
+#include <cstdlib>
 namespace reaper {
 namespace {
         typedef std::map<std::string, std::string> Args;
@@ -28,45 +26,42 @@ int test_main();
 
 bool exit_now()
 {
-	return is_testing
-	    && (hw::time::get_time() - test_start).approx() > 10e6;
+	return reaper::is_testing
+	    && (reaper::hw::time::get_time() - reaper::test_start).approx() > 10e6;
 }
 
 int main(int argc, char *av[])
 {
 	int i = 0;
 	while (i < argc) {
-		args[av[i]] = (i < argc - 1) ? av[i+1] : "";
-		argv.push_back(av[i]);
+		reaper::args[av[i]] = (i < argc - 1) ? av[i+1] : "";
+		reaper::argv.push_back(av[i]);
 		i++;
 	}
-	if (args.count("-g"))
-		debug::debug_priority(20);
+	if (reaper::args.count("-g"))
+		reaper::debug::debug_priority(20);
 	try {
-		char* p = getenv("TESTING"); 
-		is_testing = p && (*p != '0');
-		test_start = hw::time::get_time();
+		char* p = std::getenv("TESTING");
+		reaper::is_testing = p && (*p != '0');
+		reaper::test_start = reaper::hw::time::get_time();
 		return test_main();
 	}
-        catch (const fatal_error_base& e) {
-                derr << "Fatal: " << typeid(e).name() << ' ' << e.what() << '\n';
+        catch (const reaper::fatal_error_base& e) {
+                reaper::derr << "Fatal: " << typeid(e).name() << ' ' << e.what() << '\n';
                 return -2;
         } 
-        catch (const error_base& e) {
-                derr << "Error: " << typeid(e).name() << ' ' << e.what() << '\n';
+        catch (const reaper::error_base& e) {
+                reaper::derr << "Error: " << typeid(e).name() << ' ' << e.what() << '\n';
                 return -1;
         }
         catch (const std::exception& e) {
-                derr << "Std exception: " << typeid(e).name() << ' ' << e.what() << '\n';
+                reaper::derr << "Std exception: " << typeid(e).name() << ' ' << e.what() << '\n';
                 return -3;
         }
-#ifndef WIN32
-	// Don't catch unknown exceptions. VC++ debugger uses one to signal access violations!
 	catch (...) {
-		derr << "Unknown exception\n";
+		reaper::derr << "Unknown exception\n";
 		return -4;
 	}
-#endif
 }
 
 /*
@@ -92,7 +87,7 @@ int main(int argc, char *av[])
  * resourceimprovements, and minor fixing..
  *
  * Revision 1.18  2002/01/17 05:04:03  peter
- * mp3 i meny (inte igång men funkar), pluginfix..
+ * mp3 i meny (inte igÃ¥ng men funkar), pluginfix..
  *
  * Revision 1.17  2002/01/07 14:00:31  peter
  * resurs och ljudmeck
@@ -107,15 +102,15 @@ int main(int argc, char *av[])
  * Slimmad grafikhantering samt lite namnbyten
  *
  * Revision 1.13  2001/07/19 00:50:06  peter
- * småfixar..
+ * smÃ¥fixar..
  *
  * Revision 1.12  2001/07/15 21:43:31  peter
- * småfixar
+ * smÃ¥fixar
  *
  * Revision 1.11  2001/07/11 10:54:22  peter
  * time.h uppdateringar...
  *
  * Revision 1.10  2001/07/06 01:47:27  macke
- * Refptrfix/headerfilsstäd/objekt-skapande/mm
+ * Refptrfix/headerfilsstÃ¤d/objekt-skapande/mm
  *
  */

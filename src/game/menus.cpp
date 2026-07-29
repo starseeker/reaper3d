@@ -1,8 +1,8 @@
 
-#include "hw/compat.h"
 
 #include <iostream>
 #include <deque>
+#include <memory>
 
 #include "hw/debug.h"
 #include "hw/snd.h"
@@ -111,7 +111,7 @@ typedef MenuItemMultiChoice<RetAction, IntCont::iterator, int> IntChoice;
 
 //////////////////////////////////////////////////////////////////////////////
 
-typedef deque<Texture*> Textures;
+using Textures = deque<std::shared_ptr<Texture>>;
 
 class Menu {
 public:
@@ -148,8 +148,8 @@ public:
 	NotImplMenu(MenuSystem& ms, Textures backs)
 	 : MenuImpl(ms, backs)
 	{
-		menu.push_back(new Header(Box(0.1, 0.45, 0.9, 0.55), "Not Implemented"));
-		menu.push_back(new Item(lr_box, "Back", Back));
+		menu.push_back(std::make_shared<Header>(Box(0.1, 0.45, 0.9, 0.55), "Not Implemented"));
+		menu.push_back(std::make_shared<Item>(lr_box, "Back", Back));
 	}
 	RetAction run() {
 		MenuE m(ms, Invalid, Back, menu.begin(), menu.end(), *backs[3]);
@@ -197,8 +197,10 @@ struct Levels {
 			pair<string,string> p;
 			try {
 				p = make_strp(data[2*i], data[2*i+1]);
-				const res::ConfigEnv& env = res::resource<res::ConfigEnv>("levels/"+p.second+".rl");
-				if (env.defined("Scenario"))
+				const auto env =
+					res::resource_ptr<res::ConfigEnv>(
+						"levels/" + p.second + ".rl");
+				if (env->defined("Scenario"))
 					levels.push_back(p);
 			} catch (...) { }
 		}
@@ -236,16 +238,16 @@ public:
 		if (!levels.empty())
 			level = levels.front().second;
 		misc::push_back(menu)
-		 << (new Header(title_box, "Single Player"))
-		 << (new Label(box, "Player Name"))
-		 << (new Label(box, "Player Ship"))
-		 << (new Label(box, "Level"))
-		 << (new StringBox(box, &player_name))
-		 << (new StringChoice(box, ships.begin(), ships.end(), &player_ship))
-		 << (new StringChoice(box, levels.begin(), levels.end(), &level))
-		 << (new Item(Box(0.35, 0.6, 0.65, 0.65), "Start", Start))
-		 << (new MeshView(Box(0.35, 0.65, 0.65, 0.95), player_ship, object_to_mesh))
-		 << (new Item(lr_box, "Back", Back));
+		 << std::make_shared<Header>(title_box, "Single Player")
+		 << std::make_shared<Label>(box, "Player Name")
+		 << std::make_shared<Label>(box, "Player Ship")
+		 << std::make_shared<Label>(box, "Level")
+		 << std::make_shared<StringBox>(box, &player_name)
+		 << std::make_shared<StringChoice>(box, ships.begin(), ships.end(), &player_ship)
+		 << std::make_shared<StringChoice>(box, levels.begin(), levels.end(), &level)
+		 << std::make_shared<Item>(Box(0.35, 0.6, 0.65, 0.65), "Start", Start)
+		 << std::make_shared<MeshView>(Box(0.35, 0.65, 0.65, 0.95), player_ship, object_to_mesh)
+		 << std::make_shared<Item>(lr_box, "Back", Back);
 		vertical_layout(left_box, menu.begin()+1, 3);
 		vertical_layout(right_box, menu.begin()+4, 3);
 	}
@@ -282,19 +284,21 @@ public:
 		}
 
 		misc::push_back(menu)
-		 << (new Header(title_box, "Two Player Game"))
-		 << (new Label(Box(0.25, 0.25, 0.45, 0.30), "Player 1 Ship"))
-		 << (new StringChoice(Box(0.55, 0.25, 0.8, 0.30), ships.begin(), ships.end(), &player_ship_1))
-		 << (new Label(Box(0.25, 0.35, 0.45, 0.40), "Player 2 Ship"))
-		 << (new StringChoice(Box(0.55, 0.35, 0.8, 0.40), ships.begin(), ships.end(), &player_ship_2))
-		 << (new Item(Box(0.35, 0.45, 0.65, 0.50), "Start", Start));
+		 << std::make_shared<Header>(title_box, "Two Player Game")
+		 << std::make_shared<Label>(Box(0.25, 0.25, 0.45, 0.30), "Player 1 Ship")
+		 << std::make_shared<StringChoice>(Box(0.55, 0.25, 0.8, 0.30), ships.begin(), ships.end(), &player_ship_1)
+		 << std::make_shared<Label>(Box(0.25, 0.35, 0.45, 0.40), "Player 2 Ship")
+		 << std::make_shared<StringChoice>(Box(0.55, 0.35, 0.8, 0.40), ships.begin(), ships.end(), &player_ship_2)
+		 << std::make_shared<Item>(Box(0.35, 0.45, 0.65, 0.50), "Start", Start);
 
-		misc::SmartPtr<BaseItem> i1(new MeshView(Box(0.15, 0.55, 0.45, 0.85), player_ship_1, object_to_mesh));
+		auto i1 = std::make_shared<MeshView>(
+			Box(0.15, 0.55, 0.45, 0.85), player_ship_1, object_to_mesh);
 		menu.push_back(i1);
-		misc::SmartPtr<BaseItem> i2(new MeshView(Box(0.55, 0.55, 0.85, 0.85), player_ship_2, object_to_mesh));
+		auto i2 = std::make_shared<MeshView>(
+			Box(0.55, 0.55, 0.85, 0.85), player_ship_2, object_to_mesh);
 		menu.push_back(i2);
 
-		menu.push_back(new Item(lr_box, "Back", Back));
+		menu.push_back(std::make_shared<Item>(lr_box, "Back", Back));
 	}
 	RetAction run() {
 		MenuE m(ms, Invalid, Back, menu.begin(), menu.end(), *backs[1]);
@@ -332,19 +336,19 @@ public:
 			level = levels.front().second;
 
 		misc::push_back(menu)
-		 << (new Header(title_box, "Network Game"))
-		 << (new Label(box, "Player Name"))
-//		 << (new Label(box, "Player Ship"))
-		 << (new Label(box, "Level"))
-		 << (new Label(box, "Server:port"))
-		 << (new StringBox(box, &player_name))
-//		 << (new StringChoice(box, ships.begin(), ships.end(), &player_ship))
-		 << (new StringChoice(box, levels.begin(), levels.end(), &level))
-		 << (new StringBox(box, &server))
-		 << (new Item(Box(0.35, 0.65, 0.65, 0.70), "Start", Start));
+		 << std::make_shared<Header>(title_box, "Network Game")
+		 << std::make_shared<Label>(box, "Player Name")
+//		 << std::make_shared<Label>(box, "Player Ship")
+		 << std::make_shared<Label>(box, "Level")
+		 << std::make_shared<Label>(box, "Server:port")
+		 << std::make_shared<StringBox>(box, &player_name)
+//		 << std::make_shared<StringChoice>(box, ships.begin(), ships.end(), &player_ship)
+		 << std::make_shared<StringChoice>(box, levels.begin(), levels.end(), &level)
+		 << std::make_shared<StringBox>(box, &server)
+		 << std::make_shared<Item>(Box(0.35, 0.65, 0.65, 0.70), "Start", Start);
 		vertical_layout(left_box, menu.begin()+1, 3);
 		vertical_layout(right_box, menu.begin()+4, 3);
-		menu.push_back(new Item(lr_box, "Back", Back));
+		menu.push_back(std::make_shared<Item>(lr_box, "Back", Back));
 	}
 	RetAction run() {
 		MenuE m(ms, Invalid, Back, menu.begin(), menu.end(), *backs[1]);
@@ -387,19 +391,19 @@ public:
 			level = levels.front().second;
 
 		misc::push_back(menu)
-		 << (new Header(title_box, "Network Game"))
-		 << (new Label(box, "Player Name"))
-//		 << (new Label(box, "Player Ship"))
-		 << (new Label(box, "Level"))
-		 << (new Label(box, "Server"))
-		 << (new StringBox(box, &player_name))
-//		 << (new StringChoice(box, ships.begin(), ships.end(), &player_ship))
-		 << (new StringChoice(box, levels.begin(), levels.end(), &level))
-		 << (new StringBox(box, &server))
-		 << (new Item(Box(0.35, 0.65, 0.65, 0.70), "Start", Start));
+		 << std::make_shared<Header>(title_box, "Network Game")
+		 << std::make_shared<Label>(box, "Player Name")
+//		 << std::make_shared<Label>(box, "Player Ship")
+		 << std::make_shared<Label>(box, "Level")
+		 << std::make_shared<Label>(box, "Server")
+		 << std::make_shared<StringBox>(box, &player_name)
+//		 << std::make_shared<StringChoice>(box, ships.begin(), ships.end(), &player_ship)
+		 << std::make_shared<StringChoice>(box, levels.begin(), levels.end(), &level)
+		 << std::make_shared<StringBox>(box, &server)
+		 << std::make_shared<Item>(Box(0.35, 0.65, 0.65, 0.70), "Start", Start);
 		vertical_layout(left_box, menu.begin()+1, 3);
 		vertical_layout(right_box, menu.begin()+4, 3);
-		menu.push_back(new Item(lr_box, "Back", Back));
+		menu.push_back(std::make_shared<Item>(lr_box, "Back", Back));
 	}
 	RetAction run() {
 		MenuE m(ms, Invalid, Back, menu.begin(), menu.end(), *backs[1]);
@@ -476,48 +480,48 @@ public:
 		 << make_pair(string("Object-textures off"), 1)
 		 << make_pair(string("Texturing off"), 0);
 
-	        // Setup resolution stuff
-	        for(deque<Resolution>::const_iterator i = resolutions.begin(); i != resolutions.end(); ++i) {
+		// Setup resolution stuff
+		for(deque<Resolution>::const_iterator i = resolutions.begin(); i != resolutions.end(); ++i) {
 			add_resolution(*i);
-	        }
-	        ConfigEnv hw_gfx("hw_gfx");
-	        resolution.w = res::withdefault(hw_gfx, "width", 640);
-	        resolution.h = res::withdefault(hw_gfx, "height", 480);
-	        fullscreen   = res::withdefault(hw_gfx, "fullscreen", true);
+		}
+		ConfigEnv hw_gfx("hw_gfx");
+		resolution.w = res::withdefault(hw_gfx, "width", 640);
+		resolution.h = res::withdefault(hw_gfx, "height", 480);
+		fullscreen   = res::withdefault(hw_gfx, "fullscreen", true);
 
-	        // If a special resolution is entered manually into hw_gfx settings file,
-	        // add it to the list of possible choices
-	        ResolutionCont::iterator i;
-	        for(i = res_choices.begin(); i != res_choices.end(); ++i) {
-	       	 if(i->second == resolution) {
-	       		 break;
-	       	 }
-	        }
-	        if(i == res_choices.end()) {
-	       	 add_resolution(resolution);
-	        }
-	        misc::push_back(menu)
-	       	 << (new IntChoice(box, texture_level.begin(), texture_level.end(), &gfx_sets.texture_level))
-	       	 << (new Choice(box, &gfx_sets.use_lighting, "Lighting on", "Lighting off"))
-	       	 << (new Choice(box, &gfx_sets.use_fog, "Fog on", "Fog off"))
-	       	 << (new Choice(box, &gfx_sets.draw_shadows, "Shadows on", "Shadows off"))
-	       	 << (new Choice(box, &gfx_sets.draw_lights, "Lights on", "Lights off"))
-	       	 << (new ResChoice(box, res_choices.begin(), res_choices.end(), &resolution))
-	       	 << (new Choice(box, &fullscreen, "Fullscreen", "Windowed"))
-	       	 << (new Choice(box, &gfx_sets.draw_terrain, "Terrain on", "Terrain off"))
-	       	 << (new Choice(box, &gfx_sets.draw_effects, "Effects on", "Effects off"))
-	       	 << (new Choice(box, &gfx_sets.draw_sky, "Sky on", "Sky off"))
-		 << (new Choice(box, &gfx_sets.draw_water, "Water on", "Water off"))
-		 << (new Choice(box, &gfx_sets.test_for_errors, "Trap GL errors", "No debug"))
-		 << (new IntChoice(box, texture_detail.begin(), texture_detail.end(), &gfx_sets.texture_scaling))
-		 << (new Choice(box, &gfx_sets.use_arb_texture_compression, "TexCompr On", "TexCompr Off"))
-		 << (new IntChoice(box, shadow_type.begin(), shadow_type.end(), &gfx_sets.shadow_type));
-	       vertical_layout(center_box, menu.begin(), menu.size());
+		// If a special resolution is entered manually into hw_gfx settings file,
+		// add it to the list of possible choices
+		ResolutionCont::iterator i;
+		for(i = res_choices.begin(); i != res_choices.end(); ++i) {
+			if(i->second == resolution) {
+				break;
+			}
+		}
+		if(i == res_choices.end()) {
+			add_resolution(resolution);
+		}
+		misc::push_back(menu)
+		 << std::make_shared<IntChoice>(box, texture_level.begin(), texture_level.end(), &gfx_sets.texture_level)
+		 << std::make_shared<Choice>(box, &gfx_sets.use_lighting, "Lighting on", "Lighting off")
+		 << std::make_shared<Choice>(box, &gfx_sets.use_fog, "Fog on", "Fog off")
+		 << std::make_shared<Choice>(box, &gfx_sets.draw_shadows, "Shadows on", "Shadows off")
+		 << std::make_shared<Choice>(box, &gfx_sets.draw_lights, "Lights on", "Lights off")
+		 << std::make_shared<ResChoice>(box, res_choices.begin(), res_choices.end(), &resolution)
+		 << std::make_shared<Choice>(box, &fullscreen, "Fullscreen", "Windowed")
+		 << std::make_shared<Choice>(box, &gfx_sets.draw_terrain, "Terrain on", "Terrain off")
+		 << std::make_shared<Choice>(box, &gfx_sets.draw_effects, "Effects on", "Effects off")
+		 << std::make_shared<Choice>(box, &gfx_sets.draw_sky, "Sky on", "Sky off")
+		 << std::make_shared<Choice>(box, &gfx_sets.draw_water, "Water on", "Water off")
+		 << std::make_shared<Choice>(box, &gfx_sets.test_for_errors, "Trap GL errors", "No debug")
+		 << std::make_shared<IntChoice>(box, texture_detail.begin(), texture_detail.end(), &gfx_sets.texture_scaling)
+		 << std::make_shared<Choice>(box, &gfx_sets.use_arb_texture_compression, "TexCompr On", "TexCompr Off")
+		 << std::make_shared<IntChoice>(box, shadow_type.begin(), shadow_type.end(), &gfx_sets.shadow_type);
+		vertical_layout(center_box, menu.begin(), menu.size());
 
 		misc::push_back(menu)
-		 << (new Header(title_box, "Video Options"))
-		 << (new Item(lolr_box, "Apply", Apply))
-		 << (new Item(lr_box, "Cancel", Back));
+		 << std::make_shared<Header>(title_box, "Video Options")
+		 << std::make_shared<Item>(lolr_box, "Apply", Apply)
+		 << std::make_shared<Item>(lr_box, "Cancel", Back);
 	}
 	RetAction run() {
 		MenuE m(ms, Invalid, Back, menu.begin(), menu.end(), *backs[3]);
@@ -575,15 +579,15 @@ public:
 		 << make_strp("DSound3D", "DirectSound3D");
 
 		misc::push_back(menu)
-		 << (new Label(box, "SFX Device"))
-		 << (new Label(box, "Music Device"))
-		 << (new Label(box, "OpenAL Context"))
-		 << (new StringChoice(box, audio_devs_game.begin(), audio_devs_game.end(), &sound_dev))
-		 << (new StringChoice(box, audio_devs_stream.begin(), audio_devs_stream.end(), &music_dev))
-		 << (new StringChoice(box, openal_context.begin(), openal_context.end(), &openal))
-		 << (new Header(title_box, "Audio Options"))
-		 << (new Item(lolr_box, "Apply", Apply))
-		 << (new Item(lr_box, "Cancel", Back));
+		 << std::make_shared<Label>(box, "SFX Device")
+		 << std::make_shared<Label>(box, "Music Device")
+		 << std::make_shared<Label>(box, "OpenAL Context")
+		 << std::make_shared<StringChoice>(box, audio_devs_game.begin(), audio_devs_game.end(), &sound_dev)
+		 << std::make_shared<StringChoice>(box, audio_devs_stream.begin(), audio_devs_stream.end(), &music_dev)
+		 << std::make_shared<StringChoice>(box, openal_context.begin(), openal_context.end(), &openal)
+		 << std::make_shared<Header>(title_box, "Audio Options")
+		 << std::make_shared<Item>(lolr_box, "Apply", Apply)
+		 << std::make_shared<Item>(lr_box, "Cancel", Back);
 		vertical_layout(Box(0.1, 0.3, 0.4, 0.8), menu.begin(), 3);
 		vertical_layout(Box(0.4, 0.3, 0.9, 0.8), menu.begin()+3, 3);
 	}
@@ -624,13 +628,13 @@ public:
 		joystick     = res::withdefault(hw_input, "joystick", "hw_joystick_standard");
 		joystick_debug = res::withdefault(hw_input, "joystick_debug", false);
 		misc::push_back(menu)
-		 << (new Choice(box, &use_joystick, "Joystick on", "Joystick off"))
-		 << (new Choice(box, &joystick_debug, "Debug Joystick", "Normal Joy"))
-		 << (new Label(box, "Joystick cfg"))
-		 << (new StringBox(box, &joystick))
-		 << (new Header(title_box, "Control Options"))
-		 << (new Item(lolr_box, "Apply", Apply))
-		 << (new Item(lr_box, "Cancel", Back));
+		 << std::make_shared<Choice>(box, &use_joystick, "Joystick on", "Joystick off")
+		 << std::make_shared<Choice>(box, &joystick_debug, "Debug Joystick", "Normal Joy")
+		 << std::make_shared<Label>(box, "Joystick cfg")
+		 << std::make_shared<StringBox>(box, &joystick)
+		 << std::make_shared<Header>(title_box, "Control Options")
+		 << std::make_shared<Item>(lolr_box, "Apply", Apply)
+		 << std::make_shared<Item>(lr_box, "Cancel", Back);
 		vertical_layout(center_box, menu.begin(), menu.size()-3);
 	}
 	RetAction run() {
@@ -655,30 +659,23 @@ public:
 
 class OptionsMenu : public Menu, private MenuImpl
 {
-	MenuPtr video;
-	MenuPtr audio;
-	MenuPtr control;
+	std::unique_ptr<Menu> video;
+	std::unique_ptr<Menu> audio;
+	std::unique_ptr<Menu> control;
 public:
 	OptionsMenu(MenuSystem& ms, Textures backs)
 	 : MenuImpl(ms, backs),
-	   video(new VideoOptMenu(ms, backs)),
-	   audio(new AudioOptMenu(ms, backs)),
-	   control(new ControlOptMenu(ms, backs))
+	   video(std::make_unique<VideoOptMenu>(ms, backs)),
+	   audio(std::make_unique<AudioOptMenu>(ms, backs)),
+	   control(std::make_unique<ControlOptMenu>(ms, backs))
 	{
 		misc::push_back(menu)
-		 << (new Header(title_box, "Options"))
-		 << (new Callback(Box(), "Video", video, &Menu::run))
-		 << (new Callback(Box(), "Audio", audio, &Menu::run))
-		 << (new Callback(Box(), "Controls", control, &Menu::run))
-		 << (new Item(lr_box, "Back", Back));
+		 << std::make_shared<Header>(title_box, "Options")
+		 << std::make_shared<Callback>(Box(), "Video", video.get(), &Menu::run)
+		 << std::make_shared<Callback>(Box(), "Audio", audio.get(), &Menu::run)
+		 << std::make_shared<Callback>(Box(), "Controls", control.get(), &Menu::run)
+		 << std::make_shared<Item>(lr_box, "Back", Back);
 		vertical_layout(center_box, menu.begin()+1, 3);
-	}
-
-	~OptionsMenu()
-	{
-		delete video;
-		delete audio;
-		delete control;
 	}
 
 	RetAction run() {
@@ -691,40 +688,31 @@ public:
 
 class MainMenu : public Menu, private MenuImpl
 {
-	MenuPtr not_impl;
-	MenuPtr single;
-	MenuPtr two_player;
-	MenuPtr options;
-	MenuPtr net_host, net_client;
+	std::unique_ptr<Menu> not_impl;
+	std::unique_ptr<Menu> single;
+	std::unique_ptr<Menu> two_player;
+	std::unique_ptr<Menu> options;
+	std::unique_ptr<Menu> net_host;
+	std::unique_ptr<Menu> net_client;
 public:
 	MainMenu(MenuSystem& ms, Textures backs) 
 	 : MenuImpl(ms, backs),
-	   not_impl(new NotImplMenu(ms, backs)),
-	   single(new SingleMenu(ms, backs)),
-	   two_player(new TwoPlayerMenu(ms, backs)),
-	   options(new OptionsMenu(ms, backs)),
-	   net_host(new NetworkHostMenu(ms, backs)),
-	   net_client(new NetworkClientMenu(ms, backs))
+	   not_impl(std::make_unique<NotImplMenu>(ms, backs)),
+	   single(std::make_unique<SingleMenu>(ms, backs)),
+	   two_player(std::make_unique<TwoPlayerMenu>(ms, backs)),
+	   options(std::make_unique<OptionsMenu>(ms, backs)),
+	   net_host(std::make_unique<NetworkHostMenu>(ms, backs)),
+	   net_client(std::make_unique<NetworkClientMenu>(ms, backs))
 	{
 		misc::push_back(menu)
-			<< (new Callback(box, "Single player", single, &Menu::run))
-			<< (new Callback(box, "Two player", two_player, &Menu::run))
-//			<< (new Callback(box, "Network Host", net_host, &Menu::run))
-//			<< (new Callback(box, "Network Client", net_client, &Menu::run))
-			<< (new Callback(box, "Options", options, &Menu::run))
-			<< (new Header(title_box, "Main Menu"))
-			<< (new Item(lr_box, "Quit", Quit));
+			<< std::make_shared<Callback>(box, "Single player", single.get(), &Menu::run)
+			<< std::make_shared<Callback>(box, "Two player", two_player.get(), &Menu::run)
+//			<< std::make_shared<Callback>(box, "Network Host", net_host, &Menu::run)
+//			<< std::make_shared<Callback>(box, "Network Client", net_client, &Menu::run)
+			<< std::make_shared<Callback>(box, "Options", options.get(), &Menu::run)
+			<< std::make_shared<Header>(title_box, "Main Menu")
+			<< std::make_shared<Item>(lr_box, "Quit", Quit);
 		vertical_layout(center_box, menu.begin(), menu.size() - 2);
-	}
-
-	~MainMenu()
-	{
-		delete not_impl;
-		delete single;
-		delete two_player;
-		delete options;
-		delete net_host;
-		delete net_client;
 	}
 
 	RetAction run() {
@@ -746,10 +734,9 @@ class ReaperMenu  {
 	// Blah...
 	Textures backs;
 
-	MenuPtr main;
+	std::unique_ptr<Menu> main;
 public:
 	ReaperMenu();
-	~ReaperMenu();
 
 	bool run_main();
 };
@@ -758,19 +745,11 @@ ReaperMenu::ReaperMenu()
 {
 	gfx::init_gl_settings(gfx::Settings::current);
 	misc::push_back(backs)
-		<< (new Texture("menu_bkg_1"))
-		<< (new Texture("menu_bkg_2"))
-		<< (new Texture("menu_bkg_3"))
-		<< (new Texture("menu_bkg_4"));
-	main = MenuPtr(new MainMenu(ms, backs));
-}
-
-ReaperMenu::~ReaperMenu()
-{
-	using namespace reaper::misc;
-
-	delete main;
-	for_each(seq(backs), delete_it);
+		<< std::make_shared<Texture>("menu_bkg_1")
+		<< std::make_shared<Texture>("menu_bkg_2")
+		<< std::make_shared<Texture>("menu_bkg_3")
+		<< std::make_shared<Texture>("menu_bkg_4");
+	main = std::make_unique<MainMenu>(ms, backs);
 }
 
 bool ReaperMenu::run_main()
@@ -858,5 +837,3 @@ bool run_menu() {
 }
 
 } // end reaper namespace
-
-

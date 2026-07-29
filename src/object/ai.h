@@ -12,9 +12,6 @@
 #include <cmath>
 #include <memory>
 
-using namespace reaper::ai;
-using namespace reaper::ai::fsm;
-
 namespace reaper {
 namespace res { class ConfigEnv; }
 namespace object {
@@ -41,6 +38,10 @@ void add_waypoints(DynamicBase* o, const res::ConfigEnv& info);
 
 namespace ai {
 
+namespace fsm = reaper::ai::fsm;
+using reaper::ai::Message;
+using reaper::ai::MsgQueue;
+
 class Turret
 {
 	MsgQueue messages;
@@ -48,8 +49,8 @@ class Turret
 	enum TurretEvent{EVENT_OBJECT_DETECTED, EVENT_TARGET_LOST};
 	enum TurretState{IDLE=1, ATTACKING};
 
-	FSM* fsm;
-	State* state[2];
+	std::unique_ptr<fsm::FSM> fsm;
+	fsm::State* state[2];
 
 	const object::SillyData &data;
 	controls::Turret &tc;
@@ -87,8 +88,8 @@ protected:
 		       EVENT_NEW_ATTACK, EVENT_IN_POSITION, EVENT_RETURN};
 	enum ShipState{PATROLING=1, ATTACKING, EVADING};
 
-	FSM* fsm;
-	State* state[3];
+	std::unique_ptr<fsm::FSM> fsm;
+	fsm::State* state[3];
 
 	const SillyData &data;
 	Point pos;
@@ -202,8 +203,8 @@ class GVTurret : public GVBase
 {
 	enum GVTurretEvent{EVENT_OBJECT_DETECTED, EVENT_TARGET_LOST};
 	enum GVTurretState{PATROLING=1, ATTACKING};
-	FSM* fsm;
-	State* state[2];
+	std::unique_ptr<fsm::FSM> fsm;
+	fsm::State* state[2];
 
 	controls::Turret &tc;
 	const current_data::Turret &current;
@@ -291,4 +292,3 @@ public:
  * l�sning p� "ringdansproblemet" m.m.
  *
  */
-

@@ -1,5 +1,4 @@
 
-#include "hw/compat.h"
 #include "hw/debug.h"
 #include "main/types_io.h"
 

@@ -1,5 +1,4 @@
 
-#include "hw/compat.h"
 
 #include "main/types_param.h"
 #include "object/base.h"
@@ -35,7 +34,7 @@ protected:
 	current_data::Turret current;
 	controls::Turret ctrl;
 	gfx::RenderInfo ri;
-	weapon::Weapon* weap;
+	std::unique_ptr<weapon::Weapon> weap;
 
 	ai::Turret ai;
 	phys::Turret phys;	        
@@ -55,13 +54,11 @@ public:
 	   ai(data, ctrl, current, gfx::MeshMgr::get_ref()->get_matrix(ri, "turret_ball").pos()), 
 	   phys(ctrl, ps, current, phys_data, sim_time)
 	{
-		ctrl.fire.set(misc::mk_cmd(weap, &weapon::Weapon::fire, trk));
+		ctrl.fire.set(misc::mk_cmd(
+			weap.get(),
+			&weapon::Weapon::fire,
+			trk));
 //		printf("created turret %x\n", this);
-	}
-	~Turret()
-	{
-//		printf("delete turret %x\n", this);
-		delete weap;
 	}
 
 	void collide(const CollisionInfo & ci)
@@ -72,7 +69,7 @@ public:
 	void receive(const reaper::ai::Message& msg)   {}
 	const gfx::RenderInfo* render(bool effects) const { return &ri; }
 	void simulate(double dt)                       { phys.simulate(dt); }
-	void gen_sound(reaper::sound::Interface& si)   { }
+	void gen_sound() override                      { }
 };
 
 

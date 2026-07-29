@@ -15,7 +15,7 @@
  * object/base.h-meck...
  *
  * Revision 1.10  2001/11/27 00:54:51  peter
- * worlditeratorer lämnar inte ifrån sig döda objekt längre..
+ * worlditeratorer lÃ¤mnar inte ifrÃ¥n sig dÃ¶da objekt lÃ¤ngre..
  *
  * Revision 1.9  2001/11/11 01:23:09  peter
  * minnesfixar..
@@ -27,25 +27,26 @@
  * obj.ptr.
  *
  * Revision 1.6  2001/08/06 12:16:02  peter
- * MegaMerge (se strandy_test-grenen för diffar...)
+ * MegaMerge (se strandy_test-grenen fÃ¶r diffar...)
  *
  * Revision 1.5.2.1  2001/08/05 14:01:24  peter
  * objektmeck...
  *
  * Revision 1.5  2001/07/30 23:43:12  macke
- * Häpp, då var det kört.
+ * HÃ¤pp, dÃ¥ var det kÃ¶rt.
  *
  *
 */
 
-#include "hw/compat.h"
+#include <algorithm>
+#include <cfloat>
+#include <cstdlib>
+
 #include "object/base.h"
 #include "object/base_data.h"
 #include "object/ai.h"
 #include "object/controls.h"
 #include "world/world.h"
-#include <cstdlib>
-#include <cfloat>
  
 namespace reaper
 {
@@ -190,8 +191,7 @@ namespace ai
 				float dist = length(Vector((*dyn_it)->get_pos() - pos));
 				if(dist < min_dist){
 					min_dist = dist;
-					target_ptr = (*dyn_it).get_weak_ptr();
-					// cannot assign directly due to smartptr problems, will fix - peter
+					target_ptr = *dyn_it;
 					target_found = true;
 				}
 			}
@@ -203,14 +203,15 @@ namespace ai
 
 	void ShipFighter::attack(void)
 	{		
+		const auto target = target_ptr.lock();
 		// Check if target has been killed
-		if(target_ptr->is_dead()){
+		if(!target || target->is_dead()){
 			fsm->state_transition(EVENT_ENEMY_KILLED);	
 			sc.fire = false;
 			return;					
 		}
 
-		Vector dir_t = target_ptr->get_pos() - pos; // Direction to target
+		Vector dir_t = target->get_pos() - pos; // Direction to target
 		float dist = length(dir_t);
 
 		// Check if target is out of sight
@@ -231,7 +232,10 @@ namespace ai
 			// calculate point to evade to
 			// TODO: make sure it's not outside the terrain
 			ep = pos + norm(Vector(vel.x,0,vel.z))*DIST_NEW_ATTACK;
-			ep = Point(ep.x, max(ep.y, wr->get_altitude(Point2D(ep.x, ep.z))), ep.z);
+			ep = Point(
+				ep.x,
+				std::max(ep.y, wr->get_altitude(Point2D(ep.x, ep.z))),
+				ep.z);
 			fsm->state_transition(EVENT_NEW_ATTACK);	
 			new_attack = true;
 			sc.fire = false;
@@ -245,7 +249,10 @@ namespace ai
 		if(fabs(sc.yaw) == 1.0){
 			if(count++ > FUTDOR){
 				ep = pos + norm(Vector(vel.x,0,vel.z))*600;
-				ep = Point(ep.x, max(ep.y, wr->get_altitude(Point2D(ep.x, ep.z))), ep.z);
+				ep = Point(
+					ep.x,
+					std::max(ep.y, wr->get_altitude(Point2D(ep.x, ep.z))),
+					ep.z);
 				fsm->state_transition(EVENT_NEW_ATTACK);
 				new_attack = true;
 				sc.fire = false;

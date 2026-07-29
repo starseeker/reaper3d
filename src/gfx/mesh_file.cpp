@@ -1,4 +1,3 @@
-#include "hw/compat.h"
 #include <sstream>
 #include "hw/gl.h"
 #include "hw/debug.h"

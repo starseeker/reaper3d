@@ -1,7 +1,6 @@
 #ifndef REAPER_GFX_PM_BADHEAP_H
 #define REAPER_GFX_PM_BADHEAP_H
 
-#include "hw/compat.h"
 #include "pm_types.h"
 
 namespace reaper 
@@ -33,7 +32,7 @@ private:
 	Pair_node_ptr first, last;
 public:
 
-	Slowheap(void):first(NULL), last(NULL) {}
+	Slowheap(void):first(nullptr), last(nullptr) {}
 
 	Pair_node_ptr insert(Pairdat pd);
 	bool remove(Pair_node_ptr);

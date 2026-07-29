@@ -66,7 +66,7 @@ inline VertexArray<T>::VertexArray(size_t n) : ptr(0)
 template<class T>
 inline VertexArray<T>::~VertexArray()
 {
-	if(ptr != NULL) ref->free(ptr);
+	if(ptr != nullptr) ref->free(ptr);
 	if (ref.count() == 1)
 		VertexRef::destroy();
 }

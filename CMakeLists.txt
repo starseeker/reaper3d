@@ -1,13 +1,12 @@
 cmake_minimum_required(VERSION 3.16)
-project(reaper3d)
+project(reaper3d LANGUAGES CXX)
 
 include(CTest)
 
 # Set C++ standard to C++17
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-
-# Build with standard C++17 diagnostics
+set(CMAKE_CXX_EXTENSIONS OFF)
 
 # Enable monolithic build - plugin architecture removed, using GLFW directly
 add_compile_definitions(MONOLITHIC)
@@ -79,6 +78,11 @@ target_link_libraries(reaper3d
     PNG::PNG
     Threads::Threads
 )
+
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux" AND
+   CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+    target_link_options(reaper3d PRIVATE -rdynamic)
+endif()
 
 # Link OpenAL Soft into the Linux runtime.
 if(OPENAL_FOUND)

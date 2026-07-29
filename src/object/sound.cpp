@@ -74,7 +74,6 @@
  *
  */
 
-#include "hw/compat.h"
 
 #include <utility>
 #include "hw/debug.h"

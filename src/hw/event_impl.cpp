@@ -7,7 +7,6 @@
  *
  */
 
-#include "hw/compat.h"
 
 #include <vector>
 #include <queue>
@@ -21,7 +20,6 @@
 #include "hw/reltime.h"
 #include "hw/abstime.h"
 #include "misc/stlhelper.h"
-#include "misc/free.h"
 #include "misc/parse.h"
 #include "res/config.h"
 
@@ -129,13 +127,12 @@ public:
 void EventDispatcher::rescan()
 {
 	if (filters.empty())
-		filters.push_back(new InputReader(gx));
+		filters.push_back(std::make_unique<InputReader>(gx));
 	else {
-		delete filters[0];
-		filters[0] = new InputReader(gx);
+		filters[0] = std::make_unique<InputReader>(gx);
 	}
 	if (filters.size() > 1)
-		filters[1]->set_source(filters[0]);
+		filters[1]->set_source(filters[0].get());
 }
 
 
@@ -150,13 +147,7 @@ EventDispatcher::EventDispatcher(gfx::Gfx& g)
 	}
 }
 
-EventDispatcher::~EventDispatcher()
-{
-	misc::for_each(misc::seq(filters), misc::delete_it);
-	filters.clear();
-	misc::for_each(misc::seq(players), misc::delete_it);
-	players.clear();
-}
+EventDispatcher::~EventDispatcher() = default;
 
 EventTimeQueue::EventTimeQueue()
  : missed(0), missed_avg(0)
@@ -205,12 +196,12 @@ void EventDispatcher::poll_inputs()
 		derr << "no inputreaders installed...\n";
 		return;
 	}
-	EventSource* src = filters.back();
+	EventSource* src = filters.back().get();
 
 	Event e;
 	while (src->poll(e)) {
 		if (players.find(e.recv) == players.end())
-			players[e.recv] = new EventTimeQueue();
+			players[e.recv] = std::make_unique<EventTimeQueue>();
 		if (enable || e.recv == System)
 			players[e.recv]->send(e);
 	}
@@ -234,7 +225,7 @@ bool EventDispatcher::get_event(Event& e, PlayerID id, bool block)
 	if (players.find(id) == players.end()) {
 		return false;
 	}
-	EventSource* my_queue = players[id];
+	EventSource* my_queue = players[id].get();
 	if (! my_queue->poll(e)) {
 		if (block) {
 			poll_inputs();
@@ -252,8 +243,8 @@ bool EventDispatcher::get_event(Event& e, PlayerID id, bool block)
 
 void EventDispatcher::add_filter(EventFilter* f)
 {
-	f->set_source(filters.back());
-	filters.push_back(f);
+	f->set_source(filters.back().get());
+	filters.emplace_back(f);
 }
 
 }

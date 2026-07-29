@@ -2,7 +2,6 @@
 # Based on build/ac/phys/Makefile.am
 
 add_library(phys STATIC
-    collisionQueue.cpp
     engine.cpp
     pairs.cpp
 )

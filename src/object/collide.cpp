@@ -1,7 +1,6 @@
 
 /* $id: $ */
 
-#include "hw/compat.h"
 
 #include "main/types_ops.h"
 #include "gfx/gfx.h"

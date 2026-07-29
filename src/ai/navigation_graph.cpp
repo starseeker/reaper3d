@@ -1,4 +1,3 @@
-#include "hw/compat.h"
 
 #include <iostream>
 #include <string>
@@ -10,11 +9,6 @@
 #include "ai/navigation_graph.h"
 // #include "world/world.h"
 
-using namespace std;
-using namespace reaper;
-using namespace reaper::ai;
-
-
 namespace reaper{
 namespace ai{
 namespace navigation_graph{
@@ -22,24 +16,18 @@ namespace navigation_graph{
 namespace { debug::DebugOutput dout("ai::navigation_graph"); }
 
 
-Graph::Graph(void)
+Graph::Graph()
 // : wr(world::World::get_ref()) 
 {
-	id_table.resize(1000);
-
+	id_table.resize(1000, nullptr);
 }
 
-Graph::~Graph(void)
-{
-	clear_graph();
-}
-
-NodePtr Graph::load_node(std::istream& is)
+std::unique_ptr<Node> Graph::load_node(std::istream& is)
 {
 	res::ConfigEnv env(is, true);
 
 	if(env.defined("node") && env.defined("point") && env.defined("link1")){
-		NodePtr node = new Node;
+		auto node = std::make_unique<Node>();
 
 		node->id = read<unsigned int>(env["node"]);	
 		node->pos = read<Point>(env["point"]);
@@ -52,12 +40,14 @@ NodePtr Graph::load_node(std::istream& is)
 		dout << "node loaded\n";
 		return node;
 	} else {
-		return 0;
+		return {};
 	}
 }
 
-void Graph::build_graph(std::string filename)
+void Graph::build_graph(const std::string& filename)
 {
+	clear_graph();
+
 	try {
 		res::res_stream is(res::AI, filename, res::throw_on_error);
 
@@ -66,16 +56,20 @@ void Graph::build_graph(std::string filename)
 		id_table.resize(nr_of_nodes);
 
 		do {
-			NodePtr n = load_node(is);
-			if(n == 0){ 
+			auto node = load_node(is);
+			if(!node) {
 				break;
-			} else {
-				graph.push_back(n);
-				id_table[n->id] = n;
 			}
+
+			if (node->id >= id_table.size())
+				id_table.resize(node->id + 1, nullptr);
+
+			Node* observer = node.get();
+			id_table[node->id] = observer;
+			graph.push_back(std::move(node));
 		} while(true);
 
-	} catch(res::resource_not_found e) {
+	} catch(const res::resource_not_found& e) {
 		dout << e.what() << '\n';
 		dout << "Building graph from terrain data...";
 		dout.flush();
@@ -88,27 +82,31 @@ void Graph::build_graph(std::string filename)
 	}
 }
 
-void Graph::clear_graph(void)
+void Graph::clear_graph()
 {
-	for(list<NodePtr>::iterator it = graph.begin(); it != graph.end(); it++){
-		NodePtr node = (*it);
-		delete node;
-		dout << "node deleted\n";
-	}
 	graph.clear();
 	id_table.clear();
 }
 
-void Graph::find_onoff_ramps(Point& start, Point& dest, NodePtr &on, NodePtr &off)
+NodePtr Graph::find_node(unsigned int id) const
+{
+	return id < id_table.size() ? id_table[id] : nullptr;
+}
+
+void Graph::find_onoff_ramps(
+	const Point&,
+	const Point&,
+	NodePtr& on,
+	NodePtr& off)
 {
 	if(!graph.empty()){
 		
 		// TODO: implement algorithm
 		
-		on = graph.front();
-		off = graph.back();
+		on = graph.front().get();
+		off = graph.back().get();
 	} else {
-		on = off = 0;
+		on = off = nullptr;
 	}
 }
 
@@ -137,13 +135,13 @@ void Graph::find_onoff_ramps(Point& start, Point& dest, NodePtr &on, NodePtr &of
  * Matrox fix, plus some misc stuff..
  *
  * Revision 1.6  2002/01/24 21:33:16  peter
- * använd hellre misc::ltos&stol istf atoi&itoa...
+ * anvÃ¤nd hellre misc::ltos&stol istf atoi&itoa...
  *
  * Revision 1.5  2002/01/24 20:24:45  niklas
  * *** empty log message ***
  *
  * Revision 1.4  2002/01/24 17:49:03  niklas
- * Inläsning av grafdata från fil
+ * InlÃ¤sning av grafdata frÃ¥n fil
  *
  * Revision 1.3  2002/01/23 17:24:32  niklas
  * *** empty log message ***
@@ -155,4 +153,3 @@ void Graph::find_onoff_ramps(Point& start, Point& dest, NodePtr &on, NodePtr &of
  * no message
  *
 */
-

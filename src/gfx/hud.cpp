@@ -1,4 +1,3 @@
-#include "hw/compat.h"
 
 #include <sstream>
 
@@ -98,7 +97,7 @@ class HUDImpl
 
 	world::WorldRef wr;
 	TextureRef tr;
-	object::PlayerWPtr lp;
+	object::PlayerPtr lp;
 
 	inline void draw_radar();
 	inline void draw_speedometer();
@@ -300,7 +299,7 @@ void HUDImpl::render(const HudData& h)
 HUDImpl::HUDImpl() 
 : wr(world::World::get_ref()),
   tr(TextureMgr::get_ref()),
-  lp(wr->get_local_player().get_weak_ptr())
+  lp(wr->get_local_player())
 {
 	crosshair.begin();
 	glColor3f(1,1,1);

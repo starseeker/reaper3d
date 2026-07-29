@@ -43,7 +43,6 @@
  *
 */
 
-#include "hw/compat.h"
 #include "object/ai.h"
 #include "world/world.h"
 #include "object/base_data.h"

@@ -5,7 +5,6 @@
 #ifndef REAPER_WORLD_EXCEPTIONS_H
 #define REAPER_WORLD_EXCEPTIONS_H 
 
-#include "hw/compat.h"
 #include "main/exceptions.h"
 
 namespace reaper

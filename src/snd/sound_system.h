@@ -5,6 +5,8 @@
 #ifndef SND_SOUND_SYSTEM_H
 #define SND_SOUND_SYSTEM_H
 
+#include <memory>
+
 #include "hw/snd.h"
 #include "misc/uniqueptr.h"
 #include "misc/smartptr.h"
@@ -35,7 +37,7 @@ typedef misc::UniquePtr<Manager> SoundRef;
 
 class Manager
 {
-	Internal* snd_int;
+	std::unique_ptr<Internal> snd_int;
 	Manager();
 	friend class misc::UniquePtr<Manager>;
 public:
@@ -64,4 +66,3 @@ public:
 }
 
 #endif
-

@@ -43,9 +43,10 @@
  *
  */
 
-#include "hw/compat.h"
 #include "main/types.h"
 
+#include <functional>
+#include <memory>
 #include <vector>
 
 #include "gfx/managers.h"
@@ -55,13 +56,8 @@
 #include "hw/debug.h"
 #include "res/res.h"
 #include "misc/map.h"
-#include "misc/creator.h"
 
 namespace reaper {
-namespace misc { 
-	template <>
-	UniquePtr<gfx::MeshMgr>::I UniquePtr<gfx::MeshMgr>::inst = {}; 
-}
 namespace gfx {
 namespace {
 debug::DebugOutput dout("gfx::object::Manager",0);
@@ -74,7 +70,6 @@ inline std::string get_base(const std::string &s)
 
 namespace lowlevel {
 
-using reaper::misc::Creator;
 using namespace reaper::gfx::mesh;
 
 class MeshMgrImpl
@@ -87,9 +82,10 @@ class MeshMgrImpl
 		Coded
 	};
 
-	typedef reaper::misc::Map<Unique,MeshBase>       MeshManager;
-	typedef reaper::misc::Map<Unique,ParametricMesh> ParMeshManager;
-	typedef std::map<Unique, reaper::misc::CreateBase<MeshBase>*> MeshCreators;
+	using MeshManager = reaper::misc::Map<Unique, MeshBase>;
+	using ParMeshManager = reaper::misc::Map<Unique, ParametricMesh>;
+	using MeshFactory = std::function<std::unique_ptr<MeshBase>()>;
+	using MeshCreators = std::map<Unique, MeshFactory>;
 
 	MeshManager    mesh_manager;
 	ParMeshManager parmesh_manager;
@@ -134,14 +130,13 @@ MeshMgrImpl::MeshMgrImpl() :
 	vertices(0),
 	triangles(0)
 {
-	procedural_meshes["sheep"] = new Creator<MeshBase,Sheep>();
+	procedural_meshes["sheep"] = [] {
+		return std::make_unique<Sheep>();
+	};
 }
 
 MeshMgrImpl::~MeshMgrImpl()
 {
-	for(MeshCreators::iterator i = procedural_meshes.begin(); i != procedural_meshes.end(); ++i)
-		delete i->second;
-
 	throw_on_gl_error("object::MeshMgrImpl::~MeshMgrImpl()");
 }
 
@@ -152,7 +147,8 @@ inline const MeshBase& MeshMgrImpl::get_obj(Unique id)
 	if(mesh_manager.is_loaded(id)) {
 		return *mesh_manager.get_if(id);
 	} else if(is_code_object(id)) {
-		return mesh_manager.insert(procedural_meshes[id.get_text()]->create(),id);
+		auto mesh = procedural_meshes.at(id.get_text())();
+		return mesh_manager.insert(mesh.release(), id);
 	} else {
 		return mesh_manager.insert(new PlainMesh(id.get_text()),id);
 	}		

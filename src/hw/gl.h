@@ -8,17 +8,10 @@
 #ifndef REAPER_HW_GL_H
 #define REAPER_HW_GL_H
 
-#ifdef WIN32
-
-#pragma comment(lib, "opengl32.lib")
-#pragma comment(lib, "glu32.lib")
+#ifdef _WIN32
 
 #include "hw/windows.h"
 
-#endif
-
-#ifdef SOLARIS
-#define GL_SUN_triangle_list 1
 #endif
 
 #include <GL/gl.h>
@@ -26,7 +19,7 @@
 #include "hw/gl_state.h"
 
 
-#ifdef WIN32
+#ifdef _WIN32
 inline
 GLvoid* glAllocateMemoryNV(GLsizei size, GLfloat readfreq, GLfloat writefreq, GLfloat priority)
 {
@@ -51,14 +44,6 @@ void glFreeMemoryNV(void *pointer)
 }
 #endif
 
-
-#ifdef SOLARIS
-#undef GL_ARB_multitexture
-
-//void glClientActiveTextureARB(GLenum);
-//void glActiveTextureARB(GLenum);
-//void glMultiTexCoord2fARB(unsigned,int,int);
-#endif
 
 #include "hw/gl_helper.h"
 

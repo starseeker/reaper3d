@@ -6,7 +6,7 @@
  * Yet Another Vector Implementation, this time SimpleYetFlexible(tm)  ;)
  *
  * Revision 1.33  2001/08/06 12:16:17  peter
- * MegaMerge (se strandy_test-grenen fˆr diffar...)
+ * MegaMerge (se strandy_test-grenen f√∂r diffar...)
  *
  * Revision 1.32.2.2  2001/08/03 13:43:55  peter
  * pragma once obsolete...
@@ -15,13 +15,13 @@
  * testgren...
  *
  * Revision 1.32  2001/07/30 23:43:20  macke
- * H‰pp, dÂ var det kˆrt.
+ * H√§pp, d√• var det k√∂rt.
  *
  * Revision 1.31  2001/07/09 13:33:07  peter
  * gcc-3.0 fixar
  *
  * Revision 1.30  2001/07/06 01:47:16  macke
- * Refptrfix/headerfilsst‰d/objekt-skapande/mm
+ * Refptrfix/headerfilsst√§d/objekt-skapande/mm
  *
  * Revision 1.29  2001/05/15 01:28:09  truls
  * terrain->render does it all...
@@ -51,7 +51,7 @@
  * Completely New Makeprog Function. Treap improved. 35 - 80 % Faster treap.update(). Correct Quadric Calculation. Penalties Correct. Etc.
  *
  * Revision 1.20  2001/04/20 08:02:50  macke
- * Camera -> OldCamera (endast namnbyte h‰r och d‰r) samt la till lite headerfiler som inte fÂs automagiskt l‰ngre..
+ * Camera -> OldCamera (endast namnbyte h√§r och d√§r) samt la till lite headerfiler som inte f√•s automagiskt l√§ngre..
  *
  * Revision 1.19  2001/04/20 07:27:41  macke
  * Headerfiler...
@@ -63,7 +63,7 @@
  * Building ficofac anti-naiv
  *
  * Revision 1.16  2001/04/18 05:07:30  macke
- * Tokst‰dning
+ * Tokst√§dning
  *
  * Revision 1.15  2001/04/17 22:56:44  truls
  * still hunting bugs
@@ -87,13 +87,13 @@
  * new update again
  *
  * Revision 1.8  2001/04/06 18:43:48  truls
- * pm-update fˆr‰ndringar. tunnlar pm-pekare genom gfx-grˆten. mm.
+ * pm-update f√∂r√§ndringar. tunnlar pm-pekare genom gfx-gr√∂ten. mm.
  *
  * Revision 1.7  2001/03/20 17:09:11  peter
- * ‰ndrade till lite konsekventare namngivning... (main/3d_types.h)
+ * √§ndrade till lite konsekventare namngivning... (main/3d_types.h)
  *
  * Revision 1.6  2001/03/02 17:34:20  peter
- * gcc gn‰ller pÂ n‰stlade kommentarer...
+ * gcc gn√§ller p√• n√§stlade kommentarer...
  *
  * Revision 1.5  2001/02/25 12:24:29  peter
  * rotade runt i main/types.h ...
@@ -102,13 +102,13 @@
  * inlining av v_num_pos()
  *
  * Revision 1.3  2001/02/21 00:01:16  macke
- * GL_EXT_COMPILED_VERTEX_ARRAY samt uppst‰dning vad g‰ller inkluderande av headerfiler
+ * GL_EXT_COMPILED_VERTEX_ARRAY samt uppst√§dning vad g√§ller inkluderande av headerfiler
  *
  * Revision 1.2  2001/02/19 07:58:55  peter
  * Ska ju bli Vertex av det...
  *
  * Revision 1.1  2001/02/19 02:53:54  macke
- * PM fˆr terr‰ngen, riktig dimma, multitexture fix och lite mer
+ * PM f√∂r terr√§ngen, riktig dimma, multitexture fix och lite mer
  *
  */
 
@@ -128,14 +128,14 @@
 #include "pm_types.h"
 #include "badheap.h"
 
-using namespace std;
-
 namespace reaper 
 {
 namespace gfx
 {
 namespace pm
 {
+
+using std::ostream;
 
 /*************************************************************************
 * typedefs: Oh, I'm saving space now!                                    *

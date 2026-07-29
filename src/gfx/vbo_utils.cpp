@@ -2,7 +2,6 @@
  * OpenGL 2.0+ VBO utilities implementation
  */
 
-#include "hw/compat.h"
 #include "gfx/vbo_utils.h"
 #include "hw/debug.h"
 #include "hw/gl.h"

@@ -1,5 +1,4 @@
 
-#include "hw/compat.h"
 
 #include <vector>
 
@@ -33,7 +32,7 @@ public:
 					p->objs.push_back(mk);
 			}
 			return p;
-		} catch (resource_not_found) {
+		} catch (const resource_not_found&) {
 			return 0;
 		}
 	}
@@ -50,5 +49,4 @@ void init_loader(IdentRef d)
 
 }
 }
-
 

@@ -1,5 +1,4 @@
 
-#include "hw/compat.h"
 
 #include <iostream>
 #include <iomanip>

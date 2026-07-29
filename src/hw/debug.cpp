@@ -1,6 +1,5 @@
 /* $Id: debug.cpp,v 1.44 2002/04/06 20:16:25 pstrand Exp $ */
 
-#include "hw/compat.h"
 
 #include "hw/debug.h"
 #include <iostream>

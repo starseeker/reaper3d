@@ -9,30 +9,29 @@
  * obj.ptr.
  *
  * Revision 1.5  2001/07/30 23:43:12  macke
- * H‰pp, dÂ var det kˆrt.
+ * H√§pp, d√• var det k√∂rt.
  *
  * Revision 1.4  2001/07/09 13:33:04  peter
  * gcc-3.0 fixar
  *
  * Revision 1.3  2001/07/06 01:47:05  macke
- * Refptrfix/headerfilsst‰d/objekt-skapande/mm
+ * Refptrfix/headerfilsst√§d/objekt-skapande/mm
  *
  * Revision 1.2  2001/05/13 17:22:24  niklas
- * st‰d
+ * st√§d
  *
  * Revision 1.1  2001/05/10 02:02:24  niklas
- * TvÂ olika skepp-ai
+ * Tv√• olika skepp-ai
  *
  * Revision 1.29  2001/05/09 19:53:58  niklas
- * max altitude, slipper bli h‰ngande i luften
+ * max altitude, slipper bli h√§ngande i luften
  *
  * Revision 1.28  2001/05/09 00:29:35  niklas
- * Betydligt b‰ttre skepp-AI. Hastighetsanpassning, b‰ttre terr‰ng-undvikning,
- * lˆsning pÂ "ringdansproblemet" m.m.
+ * Betydligt b√§ttre skepp-AI. Hastighetsanpassning, b√§ttre terr√§ng-undvikning,
+ * l√∂sning p√• "ringdansproblemet" m.m.
  *
  */
 
-#include "hw/compat.h"
 #include "object/ai.h"
 #include "object/base_data.h"
 #include "world/world.h"
@@ -48,33 +47,25 @@ namespace ai
 	ShipBase::ShipBase(const SillyData &d, const Vector &v, controls::Ship &sctrl)
 	 : wr(world::World::get_ref()), data(d), vel(v), sc(sctrl)
 	{
-		state[0] = new fsm::State(PATROLING, 1);
+		fsm = std::make_unique<fsm::FSM>(PATROLING);
+		state[0] = fsm->add_state(std::make_unique<fsm::State>(PATROLING, 1));
 		state[0]->add_transition(EVENT_ENEMY_DETECTED, ATTACKING);
 		
-		state[1] = new fsm::State(ATTACKING, 3);
+		state[1] = fsm->add_state(std::make_unique<fsm::State>(ATTACKING, 3));
 		state[1]->add_transition(EVENT_TARGET_LOST, PATROLING);
 		state[1]->add_transition(EVENT_ENEMY_KILLED, PATROLING);
 		state[1]->add_transition(EVENT_NEW_ATTACK, EVADING);
 		
-		state[2] = new fsm::State(EVADING, 2);
+		state[2] = fsm->add_state(std::make_unique<fsm::State>(EVADING, 2));
 		state[2]->add_transition(EVENT_RETURN, PATROLING);
 		state[2]->add_transition(EVENT_IN_POSITION, ATTACKING);
 		
-		fsm = new fsm::FSM(PATROLING); // start at patroling
-		
-		for(int i=0; i<3; i++)
-			fsm->add_state(state[i]);
-		
 		wp_it = waypoints.end(); // no waypoints yet
-		target_ptr = 0;       // no target yet
+		target_ptr.reset();   // no target yet
 		new_attack = false;
 	}
 
-	ShipBase::~ShipBase()
-	{	
-		// FSM destructor also deallocates all states inside
-		delete fsm;
-	}
+	ShipBase::~ShipBase() = default;
 
 	void ShipBase::think()
 	{
@@ -85,7 +76,7 @@ namespace ai
 			case PATROLING : patrol(); break;
 			case ATTACKING : attack(); break;
 			case EVADING   : evade();  break;
-			default        : cout << "AI error, unknown state" << endl;
+			default        : std::cerr << "AI error, unknown state\n";
 		}
 	}
 		

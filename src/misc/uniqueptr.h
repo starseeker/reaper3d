@@ -1,50 +1,64 @@
 #ifndef REAPER_MISC_UNIQUEPTR_H
 #define REAPER_MISC_UNIQUEPTR_H
 
-#include <stdio.h>
+#include <memory>
+#include <utility>
 
 namespace reaper {
 namespace misc {
 
-
+// Shared handle to a process-wide service instance. The historical name is
+// retained for source compatibility, but ownership is now explicit and safe:
+// the registry owns one shared reference and every handle owns another.
 template<class T>
 class UniquePtr
 {
-	struct I {
-		T* ptr;
-		int count;
-		I() : ptr(0), count(0) { }
-	};
-	static I inst;
+	std::shared_ptr<T> ptr;
+	inline static std::shared_ptr<T> instance;
+
+	explicit UniquePtr(std::shared_ptr<T> service)
+		: ptr(std::move(service))
+	{
+	}
+
 public:
-	template<class A>
-	static UniquePtr create(A a) {
-		inst.ptr = new T(a);
-		return UniquePtr();
+	UniquePtr()
+		: ptr(instance)
+	{
 	}
-	static UniquePtr create() {
-		inst.ptr = new T();
-		return UniquePtr();
+
+	template<class... Args>
+	static UniquePtr create(Args&&... args)
+	{
+		instance = std::shared_ptr<T>(
+			new T(std::forward<Args>(args)...));
+		return UniquePtr(instance);
 	}
-	static void destroy() {
-		delete inst.ptr;
-		inst.ptr = 0;
+
+	static void destroy()
+	{
+		instance.reset();
 	}
-	UniquePtr() { UniquePtr<T>::inst.count++;  }
 
-	~UniquePtr() { inst.count--; }
+	T& operator*() { return *ptr; }
+	T* operator->() { return ptr.get(); }
+	const T& operator*() const { return *ptr; }
+	const T* operator->() const { return ptr.get(); }
 
-	T& operator*() { return *inst.ptr; }
-	T* operator->() { return inst.ptr; }
-	const T& operator*() const { return *inst.ptr; }
-	const T* operator->() const { return inst.ptr; }
+	int count() const
+	{
+		if (!ptr)
+			return 0;
+		const bool registry_owns_same_instance = instance == ptr;
+		return static_cast<int>(ptr.use_count()) -
+		       (registry_owns_same_instance ? 1 : 0);
+	}
 
-	int count() const { return inst.count; }
-	bool valid() const { return inst.ptr != 0; }
+	bool valid() const { return static_cast<bool>(ptr); }
+	explicit operator bool() const { return valid(); }
 };
 
-
-}
-}
+} // namespace misc
+} // namespace reaper
 
 #endif

@@ -1,85 +1,84 @@
-
-/* $Id: time_types.h,v 1.2 2002/08/11 10:46:17 pstrand Exp $ */
-
 #ifndef REAPER_HW_TIME_TYPES_H
 #define REAPER_HW_TIME_TYPES_H
 
-namespace reaper
-{
-namespace hw
-{
-namespace time
+#include <cstdint>
+
+namespace reaper::hw::time
 {
 
-const long low_mod_us = 1000000000;
-const long low_mod_ms = low_mod_us / 1000;
+using TimeRep = std::int64_t;
 
+inline constexpr TimeRep low_mod_us = 1'000'000'000;
+inline constexpr TimeRep low_mod_ms = low_mod_us / 1'000;
 
 class TimeApprox {
-	long high, low;
+	TimeRep microseconds;
+
 public:
-	TimeApprox(long h, long l) : high(h), low(l) { }
-	operator double() const {
-		return static_cast<double>(high) * low_mod_us + low;
-	}
-
-	long to_us() const { return high * low_mod_us + low; }
-	long to_ms() const { return high * low_mod_ms + low / 1000; }
-
-	double to_s() const { return *this * 1e-6; }
-
-	long upper() const { return high; }
-	long lower() const { return low; }
-};
-
-/** Time difference.
-    Resolution in microseconds, relative to something unspecified.
- */
-
-class TimeSpan {
-	long high, low;
-	void fixup() 
+	explicit TimeApprox(TimeRep value)
+		: microseconds(value)
 	{
-		if (low > low_mod_us) {
-			high += low / low_mod_us;
-			low %= low_mod_us;
-		} else if (low < 0) {
-			high--;
-			low += low_mod_us;
-		}
 	}
-public:
-	TimeSpan(long h, long l) : high(h), low(l) { fixup(); }
 
-	static TimeSpan from_us(long us);
-	static TimeSpan from_ms(long ms);
+	operator double() const { return static_cast<double>(microseconds); }
 
-	TimeSpan() : high(0), low(0) { }
+	TimeRep to_us() const { return microseconds; }
+	TimeRep to_ms() const { return microseconds / 1'000; }
+	double to_s() const { return static_cast<double>(microseconds) / 1'000'000.0; }
 
-	TimeApprox approx() const { return TimeApprox(high, low); }
-
-	TimeSpan& operator+=(const TimeSpan& t);
-	TimeSpan& operator-=(const TimeSpan& t);
-	TimeSpan& operator*=(double m);
-
-	bool operator==(const TimeSpan& t) const { return high == t.high && low == t.low; }
-	bool operator!=(const TimeSpan& t) const { return !(*this == t); }
-	bool operator<(const TimeSpan& t)  const { return high < t.high || (high == t.high && low < t.low); }
-	bool operator>(const TimeSpan& t)  const { return high > t.high || (high == t.high && low > t.low); }
-
+	TimeRep upper() const { return microseconds / low_mod_us; }
+	TimeRep lower() const { return microseconds % low_mod_us; }
 };
 
+/** A microsecond-resolution time difference relative to an unspecified epoch. */
+class TimeSpan {
+	TimeRep microseconds = 0;
 
-TimeSpan operator+(const TimeSpan& t1, const TimeSpan& t2);
-TimeSpan operator-(const TimeSpan& t1, const TimeSpan& t2);
+	explicit TimeSpan(TimeRep value)
+		: microseconds(value)
+	{
+	}
 
+public:
+	TimeSpan() = default;
+	TimeSpan(TimeRep high, TimeRep low)
+		: microseconds(high * low_mod_us + low)
+	{
+	}
 
-/// Relative time, in milliseconds (approximately)
-typedef long RelTime;
+	static TimeSpan from_us(TimeRep us);
+	static TimeSpan from_ms(TimeRep ms);
 
+	TimeApprox approx() const { return TimeApprox(microseconds); }
+
+	TimeSpan& operator+=(const TimeSpan& other);
+	TimeSpan& operator-=(const TimeSpan& other);
+	TimeSpan& operator*=(double multiplier);
+
+	bool operator==(const TimeSpan& other) const
+	{
+		return microseconds == other.microseconds;
+	}
+	bool operator!=(const TimeSpan& other) const { return !(*this == other); }
+	bool operator<(const TimeSpan& other) const
+	{
+		return microseconds < other.microseconds;
+	}
+	bool operator>(const TimeSpan& other) const
+	{
+		return microseconds > other.microseconds;
+	}
+
+	friend TimeSpan operator+(TimeSpan lhs, const TimeSpan& rhs);
+	friend TimeSpan operator-(TimeSpan lhs, const TimeSpan& rhs);
+};
+
+TimeSpan operator+(TimeSpan lhs, const TimeSpan& rhs);
+TimeSpan operator-(TimeSpan lhs, const TimeSpan& rhs);
+
+/// Relative time in milliseconds.
+using RelTime = long;
 
 }
-}
-}
+
 #endif
-

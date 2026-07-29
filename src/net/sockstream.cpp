@@ -1,199 +1,184 @@
-/*
- * Author: Peter Strand <d98peter@dtek.chalmers.se>
- *
- * iostream for network communication, uses hw/socket.cpp
- */
-
-#include "hw/compat.h"
-#include "hw/debug.h"
 #include "net/sockstream.h"
+
+#include <algorithm>
+#include <cstring>
+#include <stdexcept>
+
 #include "net/nameservice.h"
 
-#include <iostream>
-#include <cstring>  // for memmove, memcpy
-
-#include <errno.h>
-
-namespace reaper
+namespace reaper::net
 {
-namespace net
-{
-
-namespace { reaper::debug::DebugOutput derr("sockstream", 5); }
-
-typedef std::char_traits<char> ct;
-
-
 
 sock_streambuf::sock_streambuf(const std::string& host, int port)
- : sock_is_mine(true)
+	: owned_socket(std::make_unique<Socket>()),
+	  socket(owned_socket.get())
 {
-	init();
-	NameData nd;
-	NameService* ns = NameService::Instance();
-	ns->Lookup(host);
-	ns->Result(true, nd);
-	sock = new Socket();
-	sock->connect(nd.addrs.front(), port);
+	init_buffers();
+
+	NameData name_data;
+	NameService* name_service = NameService::Instance();
+	name_service->Lookup(host);
+	name_service->Result(true, name_data);
+	if (name_data.addrs.empty())
+		throw network_error("Name lookup returned no addresses for " + host);
+	socket->connect(name_data.addrs.front(), port);
 }
 
-sock_streambuf::sock_streambuf(Socket* s)
- : sock_is_mine(false)
+sock_streambuf::sock_streambuf(Socket* external_socket)
+	: socket(external_socket)
 {
-	init();
-	sock = s;
+	if (socket == nullptr)
+		throw std::invalid_argument("sock_stream requires a socket");
+	init_buffers();
 }
 
-sock_streambuf::~sock_streambuf()
+void sock_streambuf::init_buffers()
 {
-	if (sock_is_mine)
-		delete sock;
-}
-
-void sock_streambuf::init()
-{
-	setg(ibuf + 4, ibuf + 4, ibuf + 4);
-	setp(obuf, obuf + sizeof(obuf));
+	setg(input_buffer + 4, input_buffer + 4, input_buffer + 4);
+	setp(output_buffer, output_buffer + sizeof(output_buffer));
 }
 
 int sock_streambuf::read_some()
 {
-//	derr << "read_some:" << (void*)ibuf << ' ';
-//	derr << (void*)gptr() << ' ' << (void*)egptr() << '\n';
-	int num_pb = std::min(int(gptr() - eback()), 4);
+	const int putback_count =
+		std::min(static_cast<int>(gptr() - eback()), 4);
+	std::memmove(
+		input_buffer + (4 - putback_count),
+		gptr() - putback_count,
+		putback_count);
 
-	memmove(ibuf + (4-num_pb), gptr() - num_pb, num_pb);
-
-	int n = sock->recv(ibuf + 4, 512 - 4);
-//	derr << "read |" << std::string(ibuf + 4, n) << "|\n";
-
-	if (n <= 0) {
-		setg(0,0,0);
+	const int count =
+		socket->recv(input_buffer + 4, sizeof(input_buffer) - 4);
+	if (count <= 0) {
+		setg(nullptr, nullptr, nullptr);
 		return -1;
-	} else {
-		setg(ibuf + 4-num_pb, ibuf + 4, ibuf + 4 + n);
-//		derr << "read end: " << n << ' ' << (void*)gptr() << ' ' << (void*)egptr() << '\n';
-		return n;
 	}
+
+	setg(
+		input_buffer + 4 - putback_count,
+		input_buffer + 4,
+		input_buffer + 4 + count);
+	return count;
 }
 
-
-
-ct::int_type sock_streambuf::underflow()
+sock_streambuf::traits_type::int_type sock_streambuf::underflow()
 {
-//	derr << "underflow: " << (void*)ibuf << ' ' << (void*)gptr() << ' ' << (void*)egptr() << '\n';
 	if (gptr() < egptr())
-		return ct::to_int_type(*gptr());
-	
+		return traits_type::to_int_type(*gptr());
+
 	if (read_some() < 0)
-		return ct::eof();
-	else
-		return ct::to_int_type(*gptr());
+		return traits_type::eof();
+	return traits_type::to_int_type(*gptr());
 }
 
-ct::int_type sock_streambuf::uflow()
+sock_streambuf::traits_type::int_type sock_streambuf::uflow()
 {
-	ct::int_type c = underflow();
-	if (!ct::eq_int_type(c, ct::eof()))
+	const traits_type::int_type character = underflow();
+	if (!traits_type::eq_int_type(character, traits_type::eof()))
 		gbump(1);
-	return c;
+	return character;
 }
 
-ct::int_type sock_streambuf::pbackfail(ct::int_type c)
+sock_streambuf::traits_type::int_type sock_streambuf::pbackfail(
+	traits_type::int_type character)
 {
-	if (gptr() != eback()) {
-		gbump(-1);
-		if (ct::eq_int_type(c, ct::eof()))
-			*(gptr()) = ct::to_char_type(c);
-		return ct::not_eof(c);
-	} else
-		return ct::eof();		
+	if (gptr() == eback())
+		return traits_type::eof();
+
+	gbump(-1);
+	if (!traits_type::eq_int_type(character, traits_type::eof()))
+		*gptr() = traits_type::to_char_type(character);
+	return traits_type::not_eof(character);
 }
 
 bool sock_streambuf::more() const
 {
-//	derr << "more " << (gptr() < egptr()) << '\n';
 	return gptr() < egptr();
 }
 
 int sock_streambuf::write_some()
 {
-//	derr << "write_some\n";
+	const int total = static_cast<int>(pptr() - pbase());
+	int sent = 0;
+	while (sent < total) {
+		const int count =
+			socket->send(pbase() + sent, static_cast<std::size_t>(total - sent));
+		if (count <= 0) {
+			const int remaining = total - sent;
+			std::memmove(pbase(), pbase() + sent, remaining);
+			setp(output_buffer, output_buffer + sizeof(output_buffer));
+			pbump(remaining);
+			return -1;
+		}
+		sent += count;
+	}
 
-	int cnt = pptr() - pbase();
-	int n = sock->send(pbase(), cnt);
-//	derr << "write |" << std::string(obuf, cnt) << "|" << n << "\n";
-	pbump(-cnt);
-	return n;
+	setp(output_buffer, output_buffer + sizeof(output_buffer));
+	return sent;
 }
 
-ct::int_type sock_streambuf::overflow(ct::int_type c)
+sock_streambuf::traits_type::int_type sock_streambuf::overflow(
+	traits_type::int_type character)
 {
-//	derr << "overflow\n";
-
 	if (write_some() < 0)
-		return ct::eof();
-	else {
-		if (!ct::eq_int_type(c, ct::eof()))
-			return sputc(c);
-		else
-			return ct::not_eof(c);
-	}
+		return traits_type::eof();
+	if (!traits_type::eq_int_type(character, traits_type::eof()))
+		return sputc(traits_type::to_char_type(character));
+	return traits_type::not_eof(character);
 }
 
 int sock_streambuf::sync()
 {
-//	derr << "sync\n";
-	return !write_some();
+	return write_some() < 0 ? -1 : 0;
 }
 
-std::streamsize sock_streambuf::xsgetn(ct::char_type* s, std::streamsize n)
+std::streamsize sock_streambuf::xsgetn(
+	traits_type::char_type* destination,
+	std::streamsize count)
 {
-	std::streamsize i = 0;
-	while (i < n) {
-		ct::int_type c = uflow();
-		if (ct::eq_int_type(c, ct::eof()))
-			return i;
-		*s = ct::to_char_type(c);
-		++i;
+	std::streamsize read = 0;
+	while (read < count) {
+		const traits_type::int_type character = uflow();
+		if (traits_type::eq_int_type(character, traits_type::eof()))
+			break;
+		*destination++ = traits_type::to_char_type(character);
+		++read;
 	}
-	return i;
+	return read;
 }
 
-
-std::streamsize sock_streambuf::xsputn(const ct::char_type *s, std::streamsize n)
+std::streamsize sock_streambuf::xsputn(
+	const traits_type::char_type* source,
+	std::streamsize count)
 {
-//	derr << "xsputn\n";
-	if (n < epptr() - pptr()) {
-		memcpy(pptr(), s, n);
-		pbump(n);
-		return n;
-	} else {
-		for (std::streamsize i = 0; i < n; i++) {
-			if (ct::eq_int_type(sputc(s[i]), ct::eof()))
-				return i;
-		}
-		return n;
-	}
-}
+	std::streamsize written = 0;
+	while (written < count) {
+		const auto available = epptr() - pptr();
+		if (available == 0 && write_some() < 0)
+			break;
 
-typedef std::iostream std_iostream;
+		const auto chunk = std::min<std::streamsize>(
+			count - written,
+			epptr() - pptr());
+		std::memcpy(pptr(), source + written, static_cast<std::size_t>(chunk));
+		pbump(static_cast<int>(chunk));
+		written += chunk;
+	}
+	return written;
+}
 
 sock_stream::sock_stream(const std::string& host, int port)
- : std_iostream(0)
- , sock_buf(host, port)
+	: std::iostream(nullptr),
+	  socket_buffer(host, port)
 {
-	init(&sock_buf);
+	init(&socket_buffer);
 }
 
-sock_stream::sock_stream(Socket* sock)
- : std_iostream(0)
- , sock_buf(sock)
+sock_stream::sock_stream(Socket* socket)
+	: std::iostream(nullptr),
+	  socket_buffer(socket)
 {
-	init(&sock_buf);
+	init(&socket_buffer);
 }
 
-
 }
-}
-

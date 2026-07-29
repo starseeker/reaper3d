@@ -1,8 +1,8 @@
 
-#include "hw/compat.h"
 
 #include <string>
 #include <sstream>
+#include <set>
 
 #include "game/helpers.h"
 
@@ -304,7 +304,7 @@ Game::Game(hw::gfx::Gfx& g, const Args& args)
    game(gx),
    sys_ep(hw::event::EventSystem::get_ref(hw::event::System)),
    cam(2), frames(0), sim_dt(0), timescale(1000), pause(false), draw_fps(false),
-   loading(new ProgressBar(gx, "Loading: ", 10)),
+   loading(std::make_unique<ProgressBar>(gx, "Loading: ", 10)),
    sh("game", this)
 {
 	rr = gfx::RendererRef::create();
@@ -470,7 +470,7 @@ gfx::Camera Game::mk_cam(object::PlayerPtr ship, double tdiff)
 		c_at = ship_pos;
 		c_pos = c_at + Vector(sin(angle)*30,20,cos(angle)*30);
 		float alt = wr->get_altitude(Point2D(c_pos.x, c_pos.z));
-		c_pos.y = min(c_pos.y, alt+2);
+		c_pos.y = std::min(c_pos.y, alt+2);
 	}
 
 	return gfx::Camera(c_pos, c_at, c_up, 100, 75);
@@ -499,7 +499,7 @@ class ObjGrpOverride : public NodeConfig<object::ObjectGroup>
 public:
 	ObjGrpOverride(const strvec& v) : ships(v), found(false) { }
 
-	typedef tp<ObjectGroup>::ptr Ptr;
+	typedef tp<object::ObjectGroup>::ptr Ptr;
 	Ptr create(IdentRef id) {
 		Ptr p = parent()->create(id);
 		if (!found) {
@@ -577,11 +577,11 @@ void Game::game_init()
 	  gfx::MeshRef mr;
 	  gfx::TextureRef tr;
 
-	  set<string> obj_names;
+	  std::set<string> obj_names;
 	  sr->get_objectnames(obj_names);
 
-	  set<string>::iterator c, e = obj_names.end();
-	  set<string> meshes, textures;
+	  std::set<string>::iterator c, e = obj_names.end();
+	  std::set<string> meshes, textures;
 	  for (c = obj_names.begin(); c != e; ++c) {
 		string mesh = withdefault(object::factory::inst().info(*c), string("mesh"), *c);
 		misc::Unique tex = mr->get_texture(gfx::RenderInfo(mesh, Matrix::id(), false));
@@ -611,7 +611,8 @@ bool Game::game_start()
 	ply = wr->get_local_player();
 
 	if (conf.split_screen)
-		ply2.dynamic_assign(wr->lookup_dyn(game.alloc_id(false)));
+		ply2 = std::dynamic_pointer_cast<object::PlayerBase>(
+			wr->lookup_dyn(game.alloc_id(false)));
 
 
 	loading->tick("done");
@@ -655,7 +656,7 @@ bool Game::game_start()
 		if (plys.find(i) == plys.end()) {
 			pr->remove(i);
 			object::DynamicPtr d = wr->lookup_dyn(i);
-			if (d.valid())
+			if (d)
 				wr->erase(d->get_id());
 		} else {
 			game.add_sync(wr->lookup_dyn(i));
@@ -679,8 +680,7 @@ bool Game::game_start()
 
 	sim_dt = 0;
 //	derr << "Start: " << game.ticker.last().approx().to_s() << '\n';
-	delete loading;
-	loading = 0;
+	loading.reset();
 	return true;
 }
 
@@ -762,8 +762,9 @@ bool Game::process_events()
 				++r &= 7;
 			}
 			break;
-		case 'S': rr->settings().terrain_detail -= 0.02;
-		case 'X': rr->settings().terrain_detail += 0.01;
+		case 'S':
+		case 'X':
+			  rr->settings().terrain_detail += (e.id == 'S') ? -0.01 : 0.01;
 			  set_in_range(rr->settings().terrain_detail, 0.05, 1);
 			  derr << "detail: " << rr->settings().terrain_detail << '\n';
 			  break;
@@ -890,7 +891,7 @@ bool Game::loop_once()
 	sr->draw_info();
 
 	if (timescale != 1000.0) {
-		stringstream ss;
+		std::stringstream ss;
 		ss << "Time scaled by: " << std::fixed << std::setw(5)
 		   << std::setprecision(3) << timescale / 1000.0 << " - " << (now_ms/1000.0);
 		
@@ -910,7 +911,13 @@ bool Game::loop_once()
 	return false;
 }
 
-void render_viewport(gfx::Camera cm, int x, int y, int w, int h, PlayerPtr ply)
+void render_viewport(
+	gfx::Camera cm,
+	int x,
+	int y,
+	int w,
+	int h,
+	object::PlayerPtr ply)
 {
 	cm.horiz_fov /= 2;
 	glViewport(0, 0, w, h);
@@ -955,8 +962,8 @@ void Game::shutdown()
 	if (pr.valid())
 		pr->shutdown();
 	wr->shutdown();
-	ply.invalidate();
-	ply2.invalidate();
+	ply.reset();
+	ply2.reset();
 }
 
 void Game::dump(state::Env& env) const
@@ -981,4 +988,3 @@ void Game::simulate(RelTime time_ms, RelTime dt_ms)
 
 }
 }
-

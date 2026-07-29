@@ -12,30 +12,9 @@ namespace reaper {
 namespace misc {
 
 template<class T>
-class Ping {
-	T val;
-public:
-	Ping(const T& v) : val(v) { }
-#ifdef MSVC
-	void operator()(ick<1, T>::VCommand<void>& cmd) {
-		cmd(val);
-	}
-#else
-	void operator()(Command<void, 1, T>& cmd) {
-		cmd(val);
-	}
-#endif
-};
-
-
-template<class T>
 class Monitored
 {
-#ifdef MSVC
-	typedef ick<1, T>::VCommand<void> Cmd;
-#else
 	typedef Command<void, 1, T> Cmd;
-#endif
 	T val;
 	std::deque<Cmd> listeners;
 	Monitored(const Monitored<T>&);
@@ -51,7 +30,8 @@ public:
 	{
 		if (val != v) {
 			val = v;
-			for_each(seq(listeners), Ping<T>(val));
+			for (auto& listener : listeners)
+				listener(val);
 		}
 		return *this;
 	}
@@ -62,11 +42,7 @@ public:
 class Switch
 {
 	bool status;
-#ifdef MSVC
-	typedef ick<0>::VCommand<bool> Cmd;
-#else
 	typedef Command<bool, 0> Cmd;
-#endif
 	Cmd cmd;
 	Switch(const Switch&);
 public:
@@ -102,6 +78,4 @@ public:
 }
 
 #endif
-
-
 

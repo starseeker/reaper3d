@@ -2,7 +2,6 @@
 /* $Id: ptrstats.cpp,v 1.2 2001/12/13 17:03:30 peter Exp $ */
 
 
-#include "hw/compat.h"
 
 #include <map>
 #include <typeinfo>

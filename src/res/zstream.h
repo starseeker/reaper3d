@@ -1,7 +1,9 @@
 #ifndef REAPER_RES_ZSTREAM_H
 #define REAPER_RES_ZSTREAM_H
 
+#include <array>
 #include <iostream>
+#include <memory>
 
 namespace reaper
 {
@@ -14,17 +16,16 @@ class izstreambuf
  : public std::basic_streambuf<char>
 {
 	std::streambuf& is;
-	GZip* gzip;
-	char ibuf[512];
-	void init();
+	std::unique_ptr<GZip> gzip;
+	std::array<char, 512> ibuf;
 	int read_some();
 public:
 	izstreambuf(std::streambuf&);
-	~izstreambuf();
+	~izstreambuf() override;
 
 	typedef std::char_traits<char> ct;
 
-	virtual ct::int_type underflow();
+	ct::int_type underflow() override;
 };
 
 
@@ -53,24 +54,23 @@ public:
  * *** empty log message ***
  *
  * Revision 1.5  2001/08/06 12:16:43  peter
- * MegaMerge (se strandy_test-grenen för diffar...)
+ * MegaMerge (se strandy_test-grenen fÃ¶r diffar...)
  *
  * Revision 1.4.4.1  2001/08/03 13:44:15  peter
  * pragma once obsolete...
  *
  * Revision 1.4  2001/07/06 01:47:37  macke
- * Refptrfix/headerfilsstäd/objekt-skapande/mm
+ * Refptrfix/headerfilsstÃ¤d/objekt-skapande/mm
  *
  * Revision 1.3  2001/04/19 01:13:05  peter
  * *** empty log message ***
  *
  * Revision 1.2  2001/04/18 23:55:54  peter
- * zstream... (möjligt det inte funkar helt..)
+ * zstream... (mÃ¶jligt det inte funkar helt..)
  *
  * Revision 1.1  2001/04/17 22:54:40  peter
  * zstream
  *
  *
  */
-
 

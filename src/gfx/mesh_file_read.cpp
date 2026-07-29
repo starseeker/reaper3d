@@ -1,4 +1,3 @@
-#include "hw/compat.h"
 
 #include "res/res.h"
 #include "gfx/mesh.h"
@@ -64,10 +63,12 @@ void read_texture_id(istream &is, string &texture)
         skip_label(is);
 	string tex_name;
 	getline(is, tex_name);
-	int ws_count = tex_name.find_first_not_of(" \r\n");
+	const string::size_type ws_count =
+		tex_name.find_first_not_of(" \r\n");
 	if (ws_count != string::npos) {
 		tex_name.erase(0, ws_count);
-		int tex_end = tex_name.find_first_of(" \r\n");
+		const string::size_type tex_end =
+			tex_name.find_first_of(" \r\n");
 		if (tex_end != string::npos)
 			tex_name.erase(tex_end);
 		texture = tex_name;
@@ -277,4 +278,3 @@ void ParametricMesh::read(Matrix parent_mtx)
  * rendering reorg and silhouette shadows!
  *
  */
-

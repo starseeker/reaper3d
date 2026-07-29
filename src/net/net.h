@@ -39,7 +39,7 @@ struct ObjState
 	Vector rot_vel;
 	bool dead;
 
-	ObjState() : id(0), sync(0) { }
+	ObjState() : id(0), sync(0), dead(false) { }
 	ObjState(int i, hw::time::RelTime rt,
 		 const Matrix& m, const Vector& v, const Vector& rv, bool d = false)
 	 : id(i), sync(rt), mat(m), vel(v), rot_vel(rv), dead(d)
@@ -103,16 +103,16 @@ const int running = 4;
  * obj.ptr
  *
  * Revision 1.23  2001/08/06 12:16:34  peter
- * MegaMerge (se strandy_test-grenen för diffar...)
+ * MegaMerge (se strandy_test-grenen fÃ¶r diffar...)
  *
  * Revision 1.22.2.1  2001/08/03 13:44:09  peter
  * pragma once obsolete...
  *
  * Revision 1.22  2001/07/30 23:43:24  macke
- * Häpp, då var det kört.
+ * HÃ¤pp, dÃ¥ var det kÃ¶rt.
  *
  * Revision 1.21  2001/07/06 01:47:29  macke
- * Refptrfix/headerfilsstäd/objekt-skapande/mm
+ * Refptrfix/headerfilsstÃ¤d/objekt-skapande/mm
  *
  * Revision 1.20  2001/05/14 23:43:41  peter
  * *** empty log message ***
@@ -124,4 +124,3 @@ const int running = 4;
  * *** empty log message ***
  *
  */
-

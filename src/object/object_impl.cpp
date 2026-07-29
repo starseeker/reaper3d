@@ -1,5 +1,4 @@
 
-#include "hw/compat.h"
 
 #include "object/object_impl.h"
 #include "gfx/gfx_types.h"
@@ -22,9 +21,12 @@ namespace reaper {
 namespace object {
 
 template<class B, class C>
-void set_weapon(misc::Switch* sw, B& b, C c)
+void set_weapon(misc::Switch* sw, B* weapon, C tracker)
 {
-	sw->set(misc::mk_cmd(b, &weapon::Weapon::fire, c));
+	sw->set(misc::mk_cmd(
+		weapon,
+		&reaper::object::weapon::Weapon::fire,
+		tracker));
 }
 
 class notify_death
@@ -51,19 +53,17 @@ GenShip::GenShip(MkInfo mk) :
 	missiles(weapon::mk_missiles(mk)),
 	phys_access(data, dyn_data, phys_data, get_radius())
 {
-	set_weapon(&ctrl.fire, laser, trk);
-	set_weapon(&ctrl.missile_fire, missiles, trk);
-	ctrl.current_missile.onchange(misc::mk_cmd(missiles, &weapon::Missiles::select));
-	current.eng.thrust.onchange(misc::mk_cmd(snd, &sound::Ship::engine_pitch));
-	events().death.add_listener(misc::mk_cmd<void, notify_death>(notify_death(rd, snd)));
+	set_weapon(&ctrl.fire, laser.get(), trk);
+	set_weapon(&ctrl.missile_fire, missiles.get(), trk);
+	ctrl.current_missile.onchange(
+		misc::mk_cmd(missiles.get(), &weapon::Missiles::select));
+	current.eng.thrust.onchange(
+		misc::mk_cmd(snd.get(), &sound::Ship::engine_pitch));
+	events().death.add_listener(
+		misc::mk_cmd<void, notify_death>(notify_death(rd, snd.get())));
 }
 
-GenShip::~GenShip()
-{
-	delete laser;
-	delete missiles;
-	delete snd;
-}
+GenShip::~GenShip() = default;
 
 void GenShip::gen_sound()
 {
@@ -77,7 +77,13 @@ void GenShip::render_hud(HUD h)
 {
 	if (snd)
 		snd->inside_view(h == Internal);
-	rd.render_hud(h, hull, phys, phys_data, ctrl.current_missile, missiles);
+	rd.render_hud(
+		h,
+		hull,
+		phys,
+		phys_data,
+		ctrl.current_missile,
+		missiles.get());
 }
 
 
@@ -123,4 +129,3 @@ void SillyImpl::int_dump(std::ostream& os) const
 
 }
 }
-

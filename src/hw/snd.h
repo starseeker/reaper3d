@@ -51,10 +51,13 @@ struct SoundSystem_impl;
 /** SoundSystem. Initializes sound system and loads sound/music files. */
 class SoundSystem
 {
-	SoundSystem_impl* impl;
+	std::unique_ptr<SoundSystem_impl> impl;
 public:
 	SoundSystem();
 	~SoundSystem();
+
+	SoundSystem(const SoundSystem&) = delete;
+	SoundSystem& operator=(const SoundSystem&) = delete;
 
 	bool init();
 
@@ -136,5 +139,4 @@ public:
  * *** empty log message ***
  *
  */
-
 

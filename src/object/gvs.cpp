@@ -1,6 +1,5 @@
 
 
-#include "hw/compat.h"
 
 #include <string>
 
@@ -42,7 +41,7 @@ public:
 	GroundShip(MkInfo);
 
 	void collide(const CollisionInfo & cI);
-        void gen_sound(reaper::sound::Interface& si)	{ }//snd.render(si); }
+        void gen_sound() override                         { }//snd.render(si);
 
               phys::ObjectAccessor& get_physics()       { return phys_access; }
 	const phys::ObjectAccessor& get_physics() const { return phys_access; }
@@ -85,7 +84,7 @@ public:
 class GroundTurret
  : public GroundShip
 {
-	const TurretInfo& phys_turret_data;
+	TurretInfo phys_turret_data;
 public:
 	ObjTracker trk;
 	MtxParams ps;
@@ -106,7 +105,7 @@ public:
 
 	void simulate(double dt);
 	const gfx::RenderInfo* render(bool effects) const { return &ri; }
-	void gen_sound(reaper::sound::Interface& si)  { } //snd_turret.render(si); }
+	void gen_sound() override { } //snd_turret.render(si);
 	void think()				      { ai.think(); }
 	void add_waypoint(const Point& p)             { ai.add_waypoint(p); }
 	void erase_waypoints(void)	              { ai.erase_waypoints(); }
@@ -206,4 +205,3 @@ void gvs() { }
 
 }
 }
-

@@ -84,6 +84,19 @@ Player 2 uses the arrow keys to steer, `Page Up`/`Page Down` for thrust, `End` f
 ## Current status
 
 - The project builds with CMake and C++17 on Linux.
+- Runtime ownership uses standard smart pointers, factories use callable objects,
+  and worker/network resources have explicit RAII lifetimes.
+- Threading, synchronization, clocks, sleeps, and filesystem access use the
+  C++17 standard library. Platform branches remain only at genuine OS/API
+  boundaries such as sockets, stack traces, and OpenGL context integration.
+- The pre-standard compiler compatibility layer and dormant platform,
+  editor, physics experiment, Voronoi, GLUI, and exporter sources have been
+  removed.
+- The build uses the system OpenGL headers discovered by CMake; the bundled
+  legacy GL/WGL/Mesa header snapshot has been removed.
+- Runtime collections in navigation, scenarios, world state, resource
+  managers, shadows, worker jobs, and collision handling now express
+  ownership with standard smart pointers.
 - GLFW is the default windowing and input backend.
 - The legacy fixed-function OpenGL renderer runs in a GLFW window with configurable windowed/fullscreen modes.
 - The original resource data, menu system, level loading, scenario system, physics, AI, HUD and gameplay loop are included.
@@ -175,19 +188,23 @@ The source is organized into static-library components:
 | `src/phys` | Physics and collision handling |
 | `src/res` | Resource and configuration management |
 | `src/world` | World and level data |
-| `src/ext` | Bundled third-party and compatibility code |
+| `src/ext` | Bundled third-party libraries |
 
 ## Remaining work
 
-The supported Linux game build is C++17-clean and uses modern ownership and STL facilities. Remaining work is concentrated in rendering, tooling, coverage, and optional legacy code:
+The supported Linux game build now uses C++17 ownership, concurrency,
+filesystem, timing, and callable facilities throughout its runtime
+architecture. Remaining work is concentrated in rendering, tooling, and
+coverage:
 
 - **Complete the rendering modernization.** The game still relies primarily on OpenGL 1.x fixed-function/immediate-mode rendering. The VBO and GLSL code is currently framework/test infrastructure, not the main renderer.
 - **Expand headless coverage.** The full game starts with `REAPER_HEADLESS=1`; automated frame-loop and input assertions are still needed.
 - **Finish the Linux audio path.** OpenAL Soft provides effects and buffered WAV/MP3 playback; true streaming music and Windows audio support remain.
-- **Improve portability and dependency boundaries.** GLFW and OpenAL Soft are the Linux runtime backends; Windows audio and other platform builds remain future work.
+- **Improve portability and dependency boundaries.** GLFW and OpenAL Soft are
+  the supported runtime backends. Other operating systems still need build and
+  runtime validation at the small number of remaining platform boundaries.
 - **Add broader automated regression coverage.** CTest now covers headless rendering, VBO conversion, and shader fallback; startup, input, resource loading, and audio assertions remain.
 - **Finish editor interaction.** The GLFW/ImGui editors have camera/grid controls, editable level metadata, and navigation-resource loading; object placement, renderer integration, and graph-node editing remain.
-- **Retire remaining dormant legacy code.** Old physics/Voronoi helpers and bundled GLH/GLUI sources remain in the tree only where they are still referenced or useful for migration.
 
 ## License
 

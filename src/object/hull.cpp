@@ -1,7 +1,6 @@
 
 /* $Id: hull.cpp,v 1.8 2001/12/03 18:06:17 peter Exp $ */
 
-#include "hw/compat.h"
 
 #include "object/base_data.h"
 #include "object/hull.h"

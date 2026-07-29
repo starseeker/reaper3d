@@ -2,7 +2,6 @@
 #ifndef REAPER_WORLD_QUADTREE_H
 #define REAPER_WORLD_QUADTREE_H
 
-#include "hw/compat.h"
 #include "hw/debug.h"
 
 #include <list>
@@ -11,6 +10,7 @@
 #include <deque>
 #include <iostream>
 #include <algorithm>
+#include <utility>
 
 #include "misc/free.h"
 #include "world/query_obj.h"
@@ -96,25 +96,24 @@ template<class Elem>
 struct Box
 {
 	world::Sphere sp;
-	Elem elem;
-	int count;
-	bool deleted;
-	int visitors[4];
+	Elem elem{};
+	int count = 0;
+	bool deleted = true;
+	int visitors[4]{};
 private:
-	Box(const Box& b);
+	Box(const Box&) = delete;
 public:
-	Box(float x, float y) {
-		sp.p.x = x;
-		sp.p.z = y;
-	}
+	Box(float x, float y)
+	 : sp(Point(x, 0, y), 0)
+	{ }
 
 	Box(const world::Sphere& s)
-	 : sp(s), count(0), deleted(true)
+	 : sp(s)
 	{ }
 
 	Box(const world::Sphere& s, Elem e)
-	 : sp(s), elem(e), count(0), deleted(false)
-	{ visitors[0] = visitors[1] = visitors[2] = visitors[3] = 0; }
+	 : sp(s), elem(std::move(e)), deleted(false)
+	{ }
 
 	void update(const world::Sphere& s)
 	{
@@ -124,7 +123,7 @@ public:
 	void clear()
 	{
 		deleted = true;
-		elem = 0;
+		elem = Elem{};
 		count = 0;
 	}
 
@@ -163,11 +162,11 @@ struct Vector {
 	typedef std::vector<Box<T>*> t;
 	typedef typename t::iterator iterator;
 
-	static iterator lower_bound(t& s, const Box<T>* v) {
+	static iterator lower_bound(t& s, const Box<T>*) {
 		return s.begin();
 //		return std::lower_bound(s.begin(), s.end(), v, BoxComp());
 	}
-	static iterator upper_bound(t& s, const Box<T>* v) {
+	static iterator upper_bound(t& s, const Box<T>*) {
 		return s.end();
 //		return std::upper_bound(s.begin(), s.end(), v, BoxComp());
 	}
@@ -434,7 +433,7 @@ public:
 		return (**current).unbox();
 	}
 
-	const pointer operator->() const {
+	pointer operator->() const {
 		return &(**current).unbox();
 	}
 
@@ -521,4 +520,3 @@ public:
 }
 
 #endif
-

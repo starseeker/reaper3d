@@ -27,21 +27,22 @@
  * ljudfixar (smartptr), andra mindre fixar..
  *
  * Revision 1.23  2001/08/06 12:16:15  peter
- * MegaMerge (se strandy_test-grenen för diffar...)
+ * MegaMerge (se strandy_test-grenen fÃ¶r diffar...)
  *
  * Revision 1.22.4.1  2001/07/31 17:34:04  peter
  * testgren...
  *
  * Revision 1.22  2001/05/10 11:40:15  macke
- * häpp
+ * hÃ¤pp
  *
  */
 
-#include "hw/compat.h"
 
-#include <stdlib.h>
-#include <string>
+#include <cstdlib>
 #include <iostream>
+#include <memory>
+#include <string>
+#include <vector>
 
 #include "gfx/exceptions.h"
 #include "res/res.h"
@@ -71,25 +72,46 @@ void flush_data_fn(png_structp png)
 	os->flush();
 }
 
-void error(std::string id, std::string msg)
+void error(const std::string& id, const std::string& msg)
 {
 	throw gfx_fatal_error(string("PngLoadImage: While reading ") + id + ": " + msg + "\n");
 }
 
+struct PngReadState
+{
+	png_structp png = nullptr;
+	png_infop info = nullptr;
+
+	~PngReadState()
+	{
+		if (png != nullptr)
+			png_destroy_read_struct(&png, info != nullptr ? &info : nullptr, nullptr);
+	}
+};
+
+struct PngWriteState
+{
+	png_structp png = nullptr;
+	png_infop info = nullptr;
+
+	~PngWriteState()
+	{
+		if (png != nullptr)
+			png_destroy_write_struct(&png, info != nullptr ? &info : nullptr);
+	}
+};
+
 // PNG image handler functions
 void PngLoadImage (const std::string& id, png_byte **data,
-        png_uint_32 *width, png_uint_32 *height, png_byte *channels, png_color *bkgcolor)
+        png_uint_32 *width, png_uint_32 *height, png_byte *channels)
 {
-	png_byte sig[8];
-	int i, bit_depth, color_type;
+	png_byte sig[8]{};
+	int bit_depth;
+	int color_type;
 	double gamma;
-	png_color_16 *background;
-	png_uint_32 row_bytes;
-	png_byte **row_pointers = 0;
-	png_structp png_ptr = 0;
-	png_infop info_ptr = 0;
+	png_color_16* background;
 
-	*data = 0;
+	*data = nullptr;
 
 	reaper::res::res_stream png_file(reaper::res::Texture, id);
 
@@ -100,124 +122,109 @@ void PngLoadImage (const std::string& id, png_byte **data,
 		error(id, "png signature error");
 	}
 
-	png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, 0, 0, 0);
-	if (!png_ptr) {
+	PngReadState state;
+	state.png = png_create_read_struct(
+		PNG_LIBPNG_VER_STRING,
+		nullptr,
+		nullptr,
+		nullptr);
+	if (state.png == nullptr) {
 		error(id, "png read error");
 	}
 
-	info_ptr = png_create_info_struct(png_ptr);
-	if (!info_ptr) {
-		png_destroy_read_struct(&png_ptr, 0, 0);
+	state.info = png_create_info_struct(state.png);
+	if (state.info == nullptr) {
 		error(id, "png read error");
 	}
 
-	png_set_read_fn(png_ptr, &png_file, read_data_fn);
+	png_set_read_fn(state.png, &png_file, read_data_fn);
 
-	png_set_sig_bytes(png_ptr, 8);
-	png_read_info(png_ptr, info_ptr);
-	png_get_IHDR(png_ptr, info_ptr, width, height,
+	png_set_sig_bytes(state.png, 8);
+	png_read_info(state.png, state.info);
+	png_get_IHDR(state.png, state.info, width, height,
 		     &bit_depth, &color_type, 0, 0, 0);
 
 	if (bit_depth == 16)
-		png_set_strip_16(png_ptr);
+		png_set_strip_16(state.png);
 	if (color_type == PNG_COLOR_TYPE_PALETTE || bit_depth < 8)
-		png_set_expand(png_ptr);
-	if (png_get_valid(png_ptr, info_ptr, PNG_INFO_tRNS))
-		png_set_expand(png_ptr);
+		png_set_expand(state.png);
+	if (png_get_valid(state.png, state.info, PNG_INFO_tRNS))
+		png_set_expand(state.png);
 	if (color_type == PNG_COLOR_TYPE_GRAY || color_type == PNG_COLOR_TYPE_GRAY_ALPHA)
-		png_set_gray_to_rgb(png_ptr);
-	if (png_get_bKGD(png_ptr, info_ptr, &background))
-		png_set_background(png_ptr, background, PNG_BACKGROUND_GAMMA_FILE, 1, 1.0);
-	if (png_get_gAMA(png_ptr, info_ptr, &gamma))
-		png_set_gamma(png_ptr, 2.2, gamma);
+		png_set_gray_to_rgb(state.png);
+	if (png_get_bKGD(state.png, state.info, &background))
+		png_set_background(state.png, background, PNG_BACKGROUND_GAMMA_FILE, 1, 1.0);
+	if (png_get_gAMA(state.png, state.info, &gamma))
+		png_set_gamma(state.png, 2.2, gamma);
 
-	png_read_update_info(png_ptr, info_ptr);
+	png_read_update_info(state.png, state.info);
 
-	png_get_IHDR(png_ptr, info_ptr, width, height,
+	png_get_IHDR(state.png, state.info, width, height,
 		     &bit_depth, &color_type, 0, 0, 0);
 
-	row_bytes = png_get_rowbytes(png_ptr, info_ptr);
-	*channels = png_get_channels(png_ptr, info_ptr);
+	const png_uint_32 row_bytes =
+		png_get_rowbytes(state.png, state.info);
+	*channels = png_get_channels(state.png, state.info);
 
-	if ((*data = (png_byte*) malloc(row_bytes * *height * sizeof(png_byte))) == 0) {
+	using PixelData = std::unique_ptr<png_byte, decltype(&std::free)>;
+	PixelData pixels(
+		static_cast<png_byte*>(std::malloc(row_bytes * *height)),
+		&std::free);
+	if (!pixels) {
 		error(id, "png malloc error");
 	}
 
-	if ((row_pointers = (png_bytepp) malloc((*height) * sizeof(png_bytep))) == 0) {
-		error(id, "png malloc error\n");
-	}
+	std::vector<png_bytep> row_pointers(*height);
+	for (png_uint_32 row = 0; row < *height; ++row)
+		row_pointers[row] = pixels.get() + row * row_bytes;
 
-	for (i = 0; i < *height; i++)
-		row_pointers[i] = *data + i * row_bytes;
-
-	png_read_image(png_ptr, row_pointers);
-	png_read_end(png_ptr, NULL);
-	free(row_pointers);
+	png_read_image(state.png, row_pointers.data());
+	png_read_end(state.png, nullptr);
+	*data = pixels.release();
 }
 
 
-void PngSaveImage (const std::string &id, png_byte *pDiData,
-                   int iWidth, int iHeight, png_color bkgColor)
+void PngSaveImage(
+	const std::string& id,
+	png_byte* data,
+	int width,
+	int height)
 {
-	const int           ciBitDepth = 8;
-	const int           ciChannels = 3;
-	
-	static FILE        *pfFile;
-	png_uint_32         ulRowBytes;
-	static png_byte   **ppbRowPointers = NULL;
-	int                 i;
-
-        png_structp png_ptr = NULL;
-        png_infop info_ptr = NULL;
+	constexpr int bit_depth = 8;
+	constexpr int channels = 3;
 
 	reaper::res::res_out_stream ro(reaper::res::Screenshot, id);
 
-	// prepare the standard PNG structures
-
-	png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL,
-					  0, (png_error_ptr)NULL);
-	if (!png_ptr) {
+	PngWriteState state;
+	state.png = png_create_write_struct(
+		PNG_LIBPNG_VER_STRING,
+		nullptr,
+		nullptr,
+		nullptr);
+	if (state.png == nullptr) {
 		throw gfx_fatal_error(string("PngSaveIMage: Unable to create write structure: ") + id);
 	}
 
-	info_ptr = png_create_info_struct(png_ptr);
-	if (!info_ptr) {
-		png_destroy_write_struct(&png_ptr, (png_infopp) NULL);
+	state.info = png_create_info_struct(state.png);
+	if (state.info == nullptr) {
 		throw gfx_fatal_error(string("PngSaveIMage: Unable to create info structure: ") + id);
 	}
 
-	png_set_write_fn(png_ptr, &ro, write_data_fn, flush_data_fn);
+	png_set_write_fn(state.png, &ro, write_data_fn, flush_data_fn);
 
-	// we're going to write a very simple 3x8 bit RGB image
-
-	png_set_IHDR(png_ptr, info_ptr, iWidth, iHeight, ciBitDepth,
+	png_set_IHDR(state.png, state.info, width, height, bit_depth,
 		PNG_COLOR_TYPE_RGB, PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_BASE,
 		PNG_FILTER_TYPE_BASE);
 
-	// write the file header information
+	png_write_info(state.png, state.info);
+	const auto row_bytes =
+		static_cast<std::size_t>(width) * channels;
+	std::vector<png_bytep> rows(height);
+	for (int row = 0; row < height; ++row)
+		rows[row] = data + row * row_bytes;
 
-	png_write_info(png_ptr, info_ptr);
-	ulRowBytes = iWidth * ciChannels;
-
-	// we can allocate memory for an array of row-pointers
-	if ((ppbRowPointers = (png_bytepp) malloc(iHeight * sizeof(png_bytep))) == NULL)
-		error(id, "Out of memory");
-
-	// set the individual row-pointers to point at the correct offsets
-
-	for (i = 0; i < iHeight; i++)
-		ppbRowPointers[i] = pDiData + i * (((ulRowBytes + 3) >> 2) << 2);
-
-	// write out the entire image data in one call
-	png_write_image (png_ptr, ppbRowPointers);
-	// write the additional chunks to the PNG file (not really needed)
-	png_write_end(png_ptr, info_ptr);
-
-	free (ppbRowPointers);
-	ppbRowPointers = NULL;
-
-	// clean up after the write, and free any memory allocated
-	png_destroy_write_struct(&png_ptr, (png_infopp) NULL);
+	png_write_image(state.png, rows.data());
+	png_write_end(state.png, state.info);
 }
 
 } // end anonymous namespace
@@ -229,9 +236,8 @@ int load_png(const string &file,char *&data,int &w,int &h,bool check_dim)
 {
         png_byte channels;
 	png_uint_32 width, height;
-        png_color bkg_color;
-
-        PngLoadImage(file, (png_byte**)&data, &width, &height, &channels, &bkg_color);
+        PngLoadImage(file, reinterpret_cast<png_byte**>(&data),
+		     &width, &height, &channels);
 
 	w = width; h = height;
 	
@@ -251,8 +257,8 @@ int load_png(const string &file,char *&data,int &w,int &h,bool check_dim)
         }
 
         if(!(w_ok && h_ok)) {
-                delete data;
-                data = 0;
+                std::free(data);
+                data = nullptr;
                 throw gfx_fatal_error(string("Texture: Illegal dimensions for texture ") + file);
         }              
 
@@ -261,11 +267,7 @@ int load_png(const string &file,char *&data,int &w,int &h,bool check_dim)
 
 void save_png(const string &file, char *data, int w, int h)
 {
-	png_color bkg_color;
-	bkg_color.red   = 0;
-	bkg_color.green = 0;
-	bkg_color.blue  = 0;
-	PngSaveImage(file, (unsigned char*)data, w, h, bkg_color);
+	PngSaveImage(file, reinterpret_cast<unsigned char*>(data), w, h);
 
 }
 

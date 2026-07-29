@@ -58,7 +58,6 @@
  *
  */
 
-#include "hw/compat.h"
 
 #include <string>
 
@@ -163,7 +162,7 @@ public:
 }
 
 extern "C" {
-DLL_EXPORT void* create_snd_dummy(reaper::hw::ifs::Snd* main)
+void* create_snd_dummy(reaper::hw::ifs::Snd* main)
 {
 	return new reaper::hw::snd::dummy::Subsystem(main);
 }

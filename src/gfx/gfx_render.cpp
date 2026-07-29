@@ -1,4 +1,3 @@
-#include "hw/compat.h"
 
 #include <algorithm>
 #include <iterator>
@@ -191,19 +190,6 @@ public:
 	}
 };
 
-// std::equal_to<> takes only one type
-template <typename A, typename B>
-struct Compare {
-	typedef A first_argument_type;
-	typedef B second_argument_type;
-	typedef bool result_type;
-	bool operator()(const A &a, const B &b) const {
-		return a == b;
-	}
-};
-
-typedef Compare<object::DynamicPtr, object::PlayerPtr> ComparePtr;
-
 template<typename C, typename R>
 inline void render_meshes(C &meshes, C &blend_meshes, const R &rend)
 {
@@ -240,8 +226,9 @@ void Renderer::render_objects()
 	stats[Statics] = gather_meshes(mi, bmi, wseq(wr->find_st(frustum)));
 
 	if(env_map) {
+		const auto local_player = wr->get_local_player();
 		stats[Dynamics] = gather_meshes(mi, bmi, skip_seq(wseq(wr->find_dyn(frustum)),
-			reaper::misc::bind2nd(ComparePtr(), wr->get_local_player())));
+			[local_player](const auto& dynamic) { return dynamic == local_player; }));
 	} else {
 		stats[Dynamics] = gather_meshes(mi, bmi, wseq(wr->find_dyn(frustum)));
 	}

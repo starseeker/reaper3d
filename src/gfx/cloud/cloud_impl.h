@@ -82,7 +82,7 @@ public:
 
 	const world::Sphere& get_sphere();
 	void setup() const;
-	void render(std::pair<float,float> z_range);
+	void render_range(std::pair<float,float> z_range);
 	void restore() const;
 
 	virtual void update(const Camera& cam, const Matrix& mtx);
@@ -100,4 +100,3 @@ public:
 }
 
 #endif
-

@@ -1,4 +1,3 @@
-#include "hw/compat.h"
 
 #include "world/world.h"
 #include "world/level.h"

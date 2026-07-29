@@ -1,15 +1,16 @@
 #ifndef REAPER_NET_SERVER_H
 #define REAPER_NET_SERVER_H
 
+#include <memory>
 
-namespace reaper {
-namespace net {
+namespace reaper::net
+{
 
 
 class Server;
 struct GameServer
 {
-	Server* server;
+	std::unique_ptr<Server> server;
 public:
 	GameServer();
 	~GameServer();
@@ -17,7 +18,6 @@ public:
 };
 
 
-}
 }
 
 #endif
@@ -27,13 +27,13 @@ public:
  * $Date: 2001/08/06 12:16:34 $
  * $Log: server.h,v $
  * Revision 1.7  2001/08/06 12:16:34  peter
- * MegaMerge (se strandy_test-grenen för diffar...)
+ * MegaMerge (se strandy_test-grenen fÃ¶r diffar...)
  *
  * Revision 1.6.4.1  2001/08/03 13:44:09  peter
  * pragma once obsolete...
  *
  * Revision 1.6  2001/07/06 01:47:29  macke
- * Refptrfix/headerfilsstäd/objekt-skapande/mm
+ * Refptrfix/headerfilsstÃ¤d/objekt-skapande/mm
  *
  * Revision 1.5  2001/05/12 19:48:36  peter
  * sync..
@@ -53,4 +53,3 @@ public:
  *
  *
  */
-

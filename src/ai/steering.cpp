@@ -1,4 +1,3 @@
-#include "hw/compat.h"
 #include "ai/steering.h"
 #include "main/types_ops.h"
 #include "main/types_io.h"

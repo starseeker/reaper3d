@@ -14,17 +14,17 @@ namespace misc
 template<class strstream>
 class clear_strstream
 {
-	strstream *ss;
+	strstream ss;
 public:
-	clear_strstream() : ss(new strstream) { ss->setf(std::ios::fixed); ss->precision(0); }
-	~clear_strstream() { delete ss; }
+	clear_strstream() { ss.setf(std::ios::fixed); ss.precision(0); }
 
-	operator strstream& () { return *ss; }
-	const std::string str() { return ss->str(); }
-	void clear() { delete ss; ss = new strstream; }
+	operator strstream& () { return ss; }
+	operator const strstream& () const { return ss; }
+	std::string str() const { return ss.str(); }
+	void clear() { ss.str({}); ss.clear(); }
 
 	template<class T>
-	clear_strstream& operator<<(const T& t) { *ss << t; return *this; }
+	clear_strstream& operator<<(const T& t) { ss << t; return *this; }
 };
 
 typedef clear_strstream<std::istringstream> clear_istringstream;
@@ -109,10 +109,10 @@ inline void write_binary(stream &s, const T &t)
  * "deterministic random" ;)
  *
  * Revision 1.6  2001/08/06 12:16:33  peter
- * MegaMerge (se strandy_test-grenen för diffar...)
+ * MegaMerge (se strandy_test-grenen fÃ¶r diffar...)
  *
  * Revision 1.5.4.2  2001/08/04 20:37:06  peter
- * flyttad hud, vapenknôk..
+ * flyttad hud, vapenknÃ´k..
  *
  * Revision 1.5.4.1  2001/08/03 13:44:08  peter
  * pragma once obsolete...
@@ -121,6 +121,6 @@ inline void write_binary(stream &s, const T &t)
  * intel fix..
  *
  * Revision 1.4  2001/07/06 01:47:28  macke
- * Refptrfix/headerfilsstäd/objekt-skapande/mm
+ * Refptrfix/headerfilsstÃ¤d/objekt-skapande/mm
  *
  */

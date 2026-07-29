@@ -1,6 +1,5 @@
 /* $Id: snd_openal.cpp,v 1.78 2002/06/06 07:57:56 pstrand Exp $ */
 
-#include "hw/compat.h"
 
 #include <string>
 
@@ -386,15 +385,10 @@ bool Subsystem::init()
 {
 	if (is_init)
 		return true;
-#ifdef WIN32
-	std::string cfg = snd->config("openal_context");
-	if (cfg.empty())
-		cfg = "DirectSound";
-	const char* p = cfg.c_str();
-#else
-	const char* p = nullptr;
-#endif
-	dev = alcOpenDevice(p);
+	const std::string configured_device = snd->config("openal_context");
+	const char* device_name =
+		configured_device.empty() ? nullptr : configured_device.c_str();
+	dev = alcOpenDevice(device_name);
 	if (!dev)
 		return false;
 	cxt = alcCreateContext(dev, 0);
@@ -510,7 +504,7 @@ void Subsystem::set_volume(float v)
 
 
 extern "C" {
-DLL_EXPORT void* create_snd_openal(reaper::hw::ifs::Snd* d)
+void* create_snd_openal(reaper::hw::ifs::Snd* d)
 {
 	return new reaper::hw::snd::openal::Subsystem(d);
 }

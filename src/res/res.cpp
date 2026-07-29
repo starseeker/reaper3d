@@ -1,18 +1,16 @@
 
 
-#include "hw/compat.h"
 
-#include <string>
-#include <iostream>
+#include <cstdlib>
+#include <filesystem>
 #include <fstream>
-#include <sstream>
+#include <iostream>
 #include <map>
-// Modern C++ time handling headers
-#include <chrono>    // Modern C++11 time handling
-#include <iomanip>   // For std::put_time
+#include <string>
+#include <system_error>
 
+#include "hw/abstime.h"
 #include "hw/debug.h"
-#include "hw/osinfo.h"
 #include "res/res.h"
 #include "res/config.h"
 #include "res/resource.h"
@@ -20,33 +18,33 @@
 #include "misc/free.h"
 #include "misc/parse.h"
 
-#include "hw/stat.h"
-
 namespace reaper
 {
 namespace res
 {
 
 using std::string;
+namespace fs = std::filesystem;
 
 
 bool is_dir(const string& path)
 {
-	stat_t st;
-	return stat(path.c_str(), &st) == 0 && S_ISDIR(st.st_mode);
+	std::error_code error;
+	return fs::is_directory(path, error);
 }
 
 bool is_file(const string& path)
 {
-	stat_t st;
-	return stat(path.c_str(), &st) == 0 && S_ISREG(st.st_mode);
+	std::error_code error;
+	return fs::is_regular_file(path, error);
 }
 
 bool is_entry(const string& path)
 {
-	stat_t st;
-	return stat(path.c_str(), &st) == 0
-	    && (S_ISREG(st.st_mode) || S_ISDIR(st.st_mode));
+	std::error_code error;
+	const fs::file_status status = fs::status(path, error);
+	return !error &&
+	       (fs::is_regular_file(status) || fs::is_directory(status));
 }
 
 string addslash(string p)
@@ -85,32 +83,7 @@ string to_string(ResourceClass rc)
 
 string gen_name()
 {
-	// Modernized: Using C++17 std::chrono with improved error handling
-	// Get current time using std::chrono::system_clock
-	auto now = std::chrono::system_clock::now();
-	auto time_t_now = std::chrono::system_clock::to_time_t(now);
-	
-	// Use modern C++ approach with safer time conversion
-	std::tm local_tm = {};
-	
-	#ifdef WIN32
-		// Windows has localtime_s which is thread-safe
-		if (localtime_s(&local_tm, &time_t_now) == 0) {
-			std::stringstream ss;
-			ss << std::put_time(&local_tm, "save_%Y-%m-%d_%H-%M");
-			return ss.str();
-		}
-	#else
-		// Use localtime_r for thread-safe operation on POSIX systems
-		if (localtime_r(&time_t_now, &local_tm) != nullptr) {
-			std::stringstream ss;
-			ss << std::put_time(&local_tm, "save_%Y-%m-%d_%H-%M");
-			return ss.str();
-		}
-	#endif
-	
-	// Fallback: create a simple name if time conversion fails
-	return "save_error";
+	return hw::time::strtime("save_%Y-%m-%d_%H-%M");
 }
 
 string path_cat(string a, string b, string c = "")
@@ -139,12 +112,10 @@ struct res_file {
 
 string find_root_path()
 {
-	stat_t st;
-
 	string dir("");
 	for (int j = 0; j < 10; ++j) {
 		string path = dir + "data/config";
-		if (stat(path.c_str(), &st) == 0 && S_ISDIR(st.st_mode))
+		if (is_dir(path))
 			return dir;
 		dir += "../";
 	}
@@ -154,8 +125,9 @@ string find_root_path()
 
 bool makedir(string dir)
 {
-	int r = ::mkdir(dir.c_str(), S_IRWXU|S_IRWXG|S_IRWXO);
-	return r == 0 || errno == EEXIST;
+	std::error_code error;
+	return fs::create_directories(dir, error) ||
+	       (!error && fs::is_directory(dir));
 }
 
 class Paths
@@ -294,18 +266,18 @@ res_stream::ResID::ResID(ResourceClass r, const string& i, res_flags flg)
 
 void res_stream::close()
 {
-	misc::zero_delete(sb);
-	misc::zero_delete(sb2);
+	rdbuf(nullptr);
+	buffer.reset();
 }
 
 res_stream::res_stream(ResourceClass rc, const string& id, res_flags flg)
- : std_istream(0), sb(0), sb2(0), res(rc, id, flg)
+ : std_istream(nullptr), res(rc, id, flg)
 {
 	res_init(res);
 }
 
 res_stream::res_stream(const ResID& rc)
- : std_istream(0), sb(0), sb2(0), res(rc)
+ : std_istream(nullptr), res(rc)
 {
 	res_init(res);
 }
@@ -316,22 +288,14 @@ void res_stream::res_init(const ResID& r)
 
 	std::ios::openmode flags = std::ios::in | std::ios::binary;
 
-	std::filebuf *fb = new std::filebuf;
-	if (fb->open(path.to_str().c_str(), flags)) {
-		sb = fb;
-		init(sb);
+	auto file = std::make_unique<std::filebuf>();
+	if (file->open(path.to_str().c_str(), flags)) {
+		init(file.get());
+		buffer = std::move(file);
 		return;
-	} else {
-		delete fb;
-		if (r.flags & throw_on_error)
-			throw resource_not_found(path.to_str());
 	}
-}
-
-res_stream::~res_stream()
-{
-	misc::zero_delete(sb);
-	misc::zero_delete(sb2);
+	if (r.flags & throw_on_error)
+		throw resource_not_found(path.to_str());
 }
 
 const string res_stream::id() const {
@@ -343,47 +307,32 @@ res_stream::ResID res_stream::clone() const
 	return res;
 }
 
-bool try_mkdir(string h, string p)
-{
-	int i = p.find('/');
-	while (i < p.size()) {
-		if (!makedir((h + p.substr(0, i))))
-			return false;
-		i = p.find('/', i+1);
-	}
-	return true;
-}
-
-
 res_out_stream::res_out_stream(ResourceClass rc, const string& id, bool text_mode)
- : std_ostream(0), sb(0)
+ : std_ostream(nullptr)
 {
 	res_file fp = res_resolver(rc, id, true);
 	string fn = fp.to_str();
 
-	std::filebuf* fb = new std::filebuf;
+	auto file = std::make_unique<std::filebuf>();
 	std::ios::openmode flags =  std::ios::out | std::ios::trunc;
 
 	if (! text_mode)
 		flags |= std::ios::binary;
-	if (fb->open(fn.c_str(), flags)) {
-		init(fb);
-		sb = fb;
+	if (file->open(fn.c_str(), flags)) {
+		init(file.get());
+		buffer = std::move(file);
 		return;
 	}
-	string base = fp.data;
-	if (try_mkdir(base, fn.substr(base.size())) &&
-	    fb->open(fn.c_str(), flags)) {
-		init(fb);
-		sb = fb;
-		return;
-	}
-	delete fb;
-}
+	std::error_code error;
+	const fs::path parent = fs::path(fn).parent_path();
+	if (!parent.empty())
+		fs::create_directories(parent, error);
 
-res_out_stream::~res_out_stream()
-{
-	delete sb;
+	if (!error && file->open(fn.c_str(), flags)) {
+		init(file.get());
+		buffer = std::move(file);
+		return;
+	}
 }
 
 resource_not_found::resource_not_found(const string& s)
@@ -406,11 +355,12 @@ bool is_newer(ResourceClass rc1, const string& id1,
 {
 	res_file rf1 = res_resolver(rc1, id1);
 	res_file rf2 = res_resolver(rc2, id2);
-	stat_t st1, st2;
-	stat(rf1.to_str().c_str(), &st1);
-	stat(rf2.to_str().c_str(), &st2);
+	std::error_code first_error;
+	std::error_code second_error;
+	const auto first_time = fs::last_write_time(rf1.to_str(), first_error);
+	const auto second_time = fs::last_write_time(rf2.to_str(), second_error);
 
-	return st1.st_mtime > st2.st_mtime;
+	return !first_error && !second_error && first_time > second_time;
 }
 
 namespace {
@@ -460,7 +410,7 @@ bool sanity_check()
 			ok = ok && check(p.second[0], p.first);
 		}
 		return ok;
-	} catch (resource_not_found) {
+	} catch (const resource_not_found&) {
 		return false;
 	}
 }
@@ -469,4 +419,3 @@ bool sanity_check()
 
 }
 }
-

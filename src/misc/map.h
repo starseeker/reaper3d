@@ -2,12 +2,11 @@
 #define REAPER_MISC_MAP_H
 
 #include "hw/debug.h"
-#include <string>
 #include <map>
+#include <memory>
+#include <string>
 #include <typeinfo>
 #include "main/exceptions.h"
-#include "misc/sequence.h"
-#include "misc/free.h"
 
 namespace reaper
 {
@@ -19,7 +18,7 @@ namespace misc
 TEMPLATE_MISC_MAP
 class Map
 {
-	typedef std::map<ID,T*> C;		///< container type
+	typedef std::map<ID, std::unique_ptr<T>> C;	///< container type
 	C resources;				///< container
 
 	std::string type;	///< typename of stored objects
@@ -27,11 +26,13 @@ class Map
 
 	template<class It>
 	class iterator_base {
+	public:
 		typedef std::forward_iterator_tag iterator_category;
 		typedef T value_type;
 		typedef std::ptrdiff_t difference_type;
 		typedef T* pointer;
 		typedef T& reference;
+
 	protected:
 		It iter;
 	public:
@@ -65,7 +66,7 @@ public:
 		const_iterator(const const_iterator &i) : iter_base(i.iter) {}
 
 		const T& operator*() const { return *this->iter->second; }
-		const T* operator->() const { return this->iter->second; }
+		const T* operator->() const { return this->iter->second.get(); }
 
 		bool operator!=(const const_iterator& i) const {
 			return this->iter != i.iter;
@@ -83,7 +84,7 @@ public:
 		iterator(const iterator &i) : iter_base(i.iter) {}
 
 		T& operator*() const { return *this->iter->second; }
-		T* operator->() const { return this->iter->second; }
+		T* operator->() const { return this->iter->second.get(); }
 
 		bool operator!=(const iterator& i) const {
 			return this->iter != i.iter;
@@ -101,7 +102,7 @@ public:
 		key_iterator(const key_iterator &i) : iter_base(i.iter) {}
 
 		const ID & operator*() { return this->iter->first; }
-		const ID * operator->() { return this->iter->first; }
+		const ID* operator->() { return &this->iter->first; }
 
 		bool operator!=(const key_iterator& i) const {
 			return this->iter != i.iter;
@@ -112,7 +113,10 @@ public:
 	};
 
 	Map(const std::string &type);
-	~Map();
+	~Map() = default;
+
+	Map(const Map&) = delete;
+	Map& operator=(const Map&) = delete;
 
 	/// Returns reference to resource, constructs if not available
 	T& get(const ID& id);
@@ -120,7 +124,7 @@ public:
 	/// Returns reference, will probably die if not available!!!
 	T& operator[](const ID& id);
 
-	/// Returns pointer to resource or NULL if not loaded
+	/// Returns pointer to resource or nullptr if not loaded
 	T* get_if(const ID &id);
 
 	/// Inserts an object (overwrites existing object with same id)
@@ -160,21 +164,13 @@ Map<ID,T>::Map(const std::string &t) : type(t), dout(t + " map")
 }
 
 TEMPLATE_MISC_MAP
-Map<ID,T>::~Map()
-{
-	//dout << "destroyed\n";
-	purge();
-}
-
-TEMPLATE_MISC_MAP
 T& Map<ID,T>::get(const ID& id)
 {
 	typename C::iterator i = resources.find(id);
 
 	if(i == resources.end()) {
-		T* t = new T(id);
-//		dout << "Constructing: " << id << " count: " << size()+1 << " ptr: " << t << '\n';
-		return *(resources[id] = t); // new T(id));
+		auto result = resources.try_emplace(id, std::make_unique<T>(id));
+		return *result.first->second;
 	} else {
 		return *i->second;
 	}
@@ -199,9 +195,9 @@ T* Map<ID,T>::get_if(const ID &id)
 	typename C::iterator i = resources.find(id);
 
 	if(i == resources.end()) {
-		return 0;
+		return nullptr;
 	} else {
-		return i->second;
+		return i->second.get();
 	}
 }
 
@@ -210,7 +206,9 @@ TEMPLATE_MISC_MAP
 T& Map<ID,T>::insert(T* t, const ID &id)
 {
 //	dout << "Inserting: " << id << " count: " << size()+1 << '\n';
-	return *(resources[id] = t);
+	auto owned = std::unique_ptr<T>(t);
+	auto result = resources.insert_or_assign(id, std::move(owned));
+	return *result.first->second;
 }
 
 
@@ -223,7 +221,6 @@ bool Map<ID,T>::remove(const ID &id)
 		return false;
 	} else {
 //		dout << "Removing:  " << id << " count: " << size()-1 << '\n';
-		delete i->second;
 		resources.erase(i);
 		return true;
 	}
@@ -244,14 +241,6 @@ bool Map<ID,T>::empty() const
 TEMPLATE_MISC_MAP
 void Map<ID,T>::purge()
 {
-//	dout << "Purging " << size() << '\n';
-
-//	for(typename C::iterator i = resources.begin(); i != resources.end(); ++i) {
-//		dout << "delete: " << i->second << '\n';
-//		delete i->second;
-//	}
-	misc::for_each(seq(resources), misc::delete_it);
-
 	resources.clear();
 }
 }
@@ -300,4 +289,3 @@ void Map<ID,T>::purge()
  * gcc blev f�rvirrad, vet inte varf�r (delvis)...
  *
  */
-

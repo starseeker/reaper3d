@@ -1,6 +1,8 @@
 #ifndef REAPER_HW_BITS_H
 #define REAPER_HW_BITS_H
 
+#include <cstdint>
+
 namespace reaper
 {
 namespace hw
@@ -8,18 +10,18 @@ namespace hw
 namespace lowlevel
 {
 
-typedef unsigned int uint32;
-typedef unsigned short uint16;
-typedef unsigned char uint8;
+using uint32 = std::uint32_t;
+using uint16 = std::uint16_t;
+using uint8 = std::uint8_t;
 
-typedef signed int int32;
-typedef signed short int16;
-typedef signed char int8;
+using int32 = std::int32_t;
+using int16 = std::int16_t;
+using int8 = std::int8_t;
 
 
 // convert to little endian
 
-#ifdef IS_BIG_ENDIAN
+#if defined(__BYTE_ORDER__) && __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
 
 inline uint32 to_le(uint32& i)
 {

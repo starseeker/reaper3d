@@ -1,4 +1,3 @@
-#include "hw/compat.h"
 
 #include "gfx/renderer.h"
 #include "gfx/interfaces.h"

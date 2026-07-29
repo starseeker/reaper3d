@@ -1,10 +1,8 @@
-#include "hw/compat.h"
 
 #include <iterator>
 
 #include "gfx/shadow/main.h"
 #include "gfx/shadow/utility.h"
-#include "misc/sequence.h"
 
 namespace reaper {
 namespace gfx {
@@ -15,14 +13,10 @@ const int SilhouetteShadowDynamic::max_shadows = 10;
 SilhouetteShadowDynamic::SilhouetteShadowDynamic() 
 {
 	for(int i=0; i<max_shadows; i++) {
-		shadows.push_back(new DynamicShadow(SilhouetteShadow::texture_size, false));
+		shadows.push_back(std::make_unique<DynamicShadow>(
+			SilhouetteShadow::texture_size,
+			false));
 	}
-}
-
-SilhouetteShadowDynamic::~SilhouetteShadowDynamic() 
-{
-	using namespace reaper::misc;
-	for_each(seq(shadows), delete_it);
 }
 
 bool SilhouetteShadowDynamic::generate_shadow(const SillyBase &obj, DynamicShadow &s, const Frustum &f)
@@ -43,9 +37,9 @@ int SilhouetteShadowDynamic::gen_dyn_shadows(const Frustum &frustum)
 {
 	int n_shadows = 0;
 	ShadowVolumeType sv        = calc_shadow_volume(frustum);
-	const dyn_iterator dyn_end = wr->end_dyn();
+	const world::dyn_iterator dyn_end = wr->end_dyn();
 
-	for(dyn_iterator i = wr->find_dyn(sv); i != dyn_end; ++i) {
+	for(world::dyn_iterator i = wr->find_dyn(sv); i != dyn_end; ++i) {
 		if(generate_shadow(*(*i).get(), *shadows[n_shadows], frustum)) {
 			n_shadows++;
 			if(n_shadows >= max_shadows) 
@@ -80,4 +74,3 @@ int SilhouetteShadowDynamic::render(const Frustum &frustum)
 }
 }
 }
-

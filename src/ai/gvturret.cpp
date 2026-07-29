@@ -12,35 +12,34 @@
  * object/base.h-meck...
  *
  * Revision 1.8  2001/11/27 00:54:51  peter
- * worlditeratorer lämnar inte ifrån sig döda objekt längre..
+ * worlditeratorer lÃ¤mnar inte ifrÃ¥n sig dÃ¶da objekt lÃ¤ngre..
  *
  * Revision 1.7  2001/08/06 12:16:01  peter
- * MegaMerge (se strandy_test-grenen för diffar...)
+ * MegaMerge (se strandy_test-grenen fÃ¶r diffar...)
  *
  * Revision 1.6.2.1  2001/08/05 14:01:22  peter
  * objektmeck...
  *
  * Revision 1.6  2001/07/30 23:43:11  macke
- * Häpp, då var det kört.
+ * HÃ¤pp, dÃ¥ var det kÃ¶rt.
  *
  * Revision 1.5  2001/05/14 00:26:42  niklas
- * högre hastighet
+ * hÃ¶gre hastighet
  *
  * Revision 1.4  2001/05/13 17:22:23  niklas
- * städ
+ * stÃ¤d
  *
  * Revision 1.3  2001/05/12 10:00:14  niklas
- * småfix
+ * smÃ¥fix
  *
  * Revision 1.2  2001/05/10 10:14:31  niklas
  * egen ai till GroundTurret
  *
  * Revision 1.1  2001/05/06 14:18:57  niklas
- * gvs uppdelade på containers och turrets, gvturret är inte klar än...
+ * gvs uppdelade pÃ¥ containers och turrets, gvturret Ã¤r inte klar Ã¤n...
  *
 */
 
-#include "hw/compat.h"
 #include "object/ai.h"
 #include "object/controls.h"
 #include "object/base_data.h"
@@ -63,23 +62,17 @@ namespace ai{
 		controls::Turret &tctrl, const current_data::Turret &cctrl) 
 		: GVBase(d,v,sctrl), tc(tctrl), current(cctrl)
 	{
-		state[0] = new fsm::State(PATROLING, 1);
+		fsm = std::make_unique<fsm::FSM>(PATROLING);
+		state[0] = fsm->add_state(std::make_unique<fsm::State>(PATROLING, 1));
 		state[0]->add_transition(EVENT_OBJECT_DETECTED, ATTACKING);
 		
-		state[1] = new fsm::State(ATTACKING, 1);
+		state[1] = fsm->add_state(std::make_unique<fsm::State>(ATTACKING, 1));
 		state[1]->add_transition(EVENT_TARGET_LOST, PATROLING);
-		
-		fsm = new fsm::FSM(PATROLING); // start at patroling
-		fsm->add_state(state[0]);
-		fsm->add_state(state[1]);
 
 		wp_it = waypoints.end(); // no waypoints yet
 	}
 
-	GVTurret::~GVTurret()
-	{	
-		delete fsm;
-	}
+	GVTurret::~GVTurret() = default;
 
 	void GVTurret::think()
 	{
@@ -89,7 +82,7 @@ namespace ai{
 		{
 			case PATROLING : patrol(); break;
 			case ATTACKING : attack(); break;
-			default        : cout << "GVTurret, unknown state!" << endl;
+			default        : std::cerr << "GVTurret, unknown state!\n";
 		}
 	}
 

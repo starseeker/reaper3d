@@ -39,7 +39,7 @@ inline DisplayList::DisplayList() : owned(true), list(glGenLists(1))
 {
 }
 
-inline DisplayList::DisplayList(bool no_init) : owned(false), list(0) 
+inline DisplayList::DisplayList(bool) : owned(false), list(0)
 {
 }
 

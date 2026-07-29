@@ -1,4 +1,3 @@
-#include "hw/compat.h"
 #include "pm.h"
 #include "treap.h"
 #include "badheap.h"
@@ -14,7 +13,7 @@ namespace pm
 	Pair_node::Pair_node(Pairdat data)
 	{
 		pd = data;
-		next = prev = NULL;
+		next = prev = nullptr;
 	}
 
 	Pair_node_ptr Slowheap::insert(Pairdat pd)
@@ -25,24 +24,24 @@ namespace pm
 		Pair_node_ptr neue;
 
 		// Very First Element
-		if(first == NULL){
+		if(first == nullptr){
 			neue = new Pair_node(pd);
-			neue->next = NULL;
-			neue->prev = NULL;
+			neue->next = nullptr;
+			neue->prev = nullptr;
 			first = last = neue;
 			return neue;
 		}
 
 		while((pd.cost < cur->pd.cost) && (cur != last))cur = cur->next;
 		neue = new Pair_node(pd);
-		if(cur->pd.cost == pd.cost)return NULL; // Element already stored
+		if(cur->pd.cost == pd.cost)return nullptr; // Element already stored
 		if(cur == first){ // First Element
 			first->prev = neue;
 			neue->next = first;
 			first = neue;
 		} else if(pd.cost < cur->pd.cost){ // Last Element
 			cur->next = neue;
-			neue->next = NULL;
+			neue->next = nullptr;
 			neue->prev = cur;
 		} else {
 			cur->prev->next = neue;
@@ -56,15 +55,15 @@ namespace pm
 
 	bool Slowheap::remove(Pair_node_ptr node)
 	{
-		if(node == NULL) return true;
+		if(node == nullptr) return true;
 
 		if((node == last) && (node == first)){
-			last = first = NULL;
+			last = first = nullptr;
 		} else if(node == last){
-			last->prev->next = NULL;
+			last->prev->next = nullptr;
 			last = last->prev;
 		} else if(node == first){
-			first->next->prev = NULL;
+			first->next->prev = nullptr;
 			first = first->next;
 		} else {
 			node->prev->next = node->next;
@@ -104,7 +103,7 @@ namespace pm
 			last->next = node;
 			node->prev = last;
 			last = node;
-			node->next = NULL;
+			node->next = nullptr;
 		}
 
 
@@ -130,7 +129,7 @@ namespace pm
 			first->prev = node;			
 			node->next = first;
 			first = node;
-			node->prev = NULL;
+			node->prev = nullptr;
 		}
 
 		return false;

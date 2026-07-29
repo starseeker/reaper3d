@@ -19,7 +19,6 @@
  *
  */
 
-#include "hw/compat.h"
 
 #include "object/controls.h"
 #include "misc/utility.h"

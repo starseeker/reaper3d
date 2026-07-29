@@ -1,4 +1,3 @@
-#include "hw/compat.h"
 
 #include "gfx/gfx.h"
 #include "gfx/settings.h"
@@ -109,7 +108,9 @@ Settings Settings::read(bool use_extensions)
 
 void Settings::read(Settings &s)
 {
-	const res::ConfigEnv& env = res::resource<res::ConfigEnv>("gfx_renderer");
+	const auto env_owner =
+		res::resource_ptr<res::ConfigEnv>("gfx_renderer");
+	const res::ConfigEnv& env = *env_owner;
 
 	std::string pfx = "settings";
 	

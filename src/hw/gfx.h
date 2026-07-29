@@ -4,6 +4,7 @@
 #ifndef REAPER_HW_GFX_H
 #define REAPER_HW_GFX_H
 
+#include <memory>
 #include <set>
 
 namespace reaper {
@@ -40,8 +41,8 @@ struct Gfx_data;
 
 class Gfx
 {
-	Gfx_data* data;
-	lowlevel::Gfx_driver* driver;
+	std::unique_ptr<Gfx_data> data;
+	std::unique_ptr<lowlevel::Gfx_driver> driver;
 
 	friend class event::EventDispatcher;
 	void init();
@@ -49,6 +50,9 @@ public:
 	Gfx(const VideoMode& init_mode);
 	Gfx();
 	~Gfx();
+
+	Gfx(const Gfx&) = delete;
+	Gfx& operator=(const Gfx&) = delete;
 
 	bool change_mode(const VideoMode&);
 
@@ -72,5 +76,4 @@ public:
 }
 
 #endif
-
 

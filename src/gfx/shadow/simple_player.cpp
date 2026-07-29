@@ -1,4 +1,3 @@
-#include "hw/compat.h"
 
 #include <iterator>
 
@@ -10,7 +9,7 @@ namespace gfx {
 namespace shadow {
 
 SimpleShadow::SimpleShadow() :
-	wr(World::get_ref()),
+	wr(world::World::get_ref()),
 	tr(TextureMgr::get_ref())
 {}
 
@@ -59,4 +58,3 @@ void SimpleShadow::render_triangles()
 }
 }
 }
-

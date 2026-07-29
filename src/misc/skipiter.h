@@ -1,4 +1,9 @@
-#include <functional>
+#ifndef REAPER_MISC_SKIPITER_H
+#define REAPER_MISC_SKIPITER_H
+
+#include <iterator>
+#include <memory>
+
 #include "misc/sequence.h"
 
 namespace reaper {
@@ -6,7 +11,7 @@ namespace misc {
 
 
 template <typename Iter, typename Pr>
-class skip_iterator : public std::iterator_traits<Iter>
+class skip_iterator
 {
 	Iter i;
 	Iter end;
@@ -19,15 +24,20 @@ class skip_iterator : public std::iterator_traits<Iter>
 	}
 
 public:
-	typedef typename std::iterator_traits<Iter>::value_type value_type;
+	using traits_type = std::iterator_traits<Iter>;
+	using iterator_category = std::forward_iterator_tag;
+	using value_type = typename traits_type::value_type;
+	using difference_type = typename traits_type::difference_type;
+	using pointer = typename traits_type::pointer;
+	using reference = typename traits_type::reference;
 
 	skip_iterator(const skip_iterator &si)
 		: i(si.i), end(si.end), pr(si.pr) {}
 	skip_iterator(const Iter &i_, const Iter &end_, const Pr &p)
 		: i(i_), end(end_), pr(p) { skip(); }
 
-	value_type operator*() const { return *i; }
-	value_type* operator->() { return &*i; }
+	reference operator*() const { return *i; }
+	pointer operator->() const { return std::addressof(*i); }
 
 	skip_iterator& operator++() {
 		if(i != end) {
@@ -59,9 +69,13 @@ inline skip_iterator<Iter, Pr> skip(Iter i, Iter end, Pr pr)
 }
 
 template <typename Iter>
-inline auto skip_eq(Iter i, Iter end, const typename Iter::value_type &t)
+inline auto skip_eq(
+	Iter i,
+	Iter end,
+	const typename std::iterator_traits<Iter>::value_type& t)
 {
-	return skip(i, end, [t](const typename Iter::value_type& value) {
+	using value_type = typename std::iterator_traits<Iter>::value_type;
+	return skip(i, end, [t](const value_type& value) {
 		return value == t;
 	});
 }
@@ -83,14 +97,19 @@ inline Seq<skip_iterator<Iter, Pr> > skip_seq(const Seq<Iter> &s, Pr pr)
 }
 
 template <typename Iter>
-inline auto skip_seq_eq(Iter i, Iter end, const typename Iter::value_type &t)
+inline auto skip_seq_eq(
+	Iter i,
+	Iter end,
+	const typename std::iterator_traits<Iter>::value_type& t)
 {
 	return Seq<decltype(skip_eq(i, end, t))>
 	        (skip_eq(i, end, t), skip_eq(end, end, t));
 }
 
 template <typename Iter>
-inline auto skip_seq_eq(const Seq<Iter> &s, const typename Iter::value_type &t)
+inline auto skip_seq_eq(
+	const Seq<Iter>& s,
+	const typename std::iterator_traits<Iter>::value_type& t)
 {
 	return Seq<decltype(skip_eq(s.first, s.second, t))>
 		(skip_eq(s.first, s.second, t), skip_eq(s.second, s.second, t));
@@ -98,3 +117,5 @@ inline auto skip_seq_eq(const Seq<Iter> &s, const typename Iter::value_type &t)
 
 }
 }
+
+#endif

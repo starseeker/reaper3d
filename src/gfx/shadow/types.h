@@ -11,10 +11,9 @@ namespace reaper {
 namespace gfx {
 namespace shadow {
 
-using std::vector;
-using namespace world;
-using namespace object;
 using gfx::texture::DynamicTexture;
+using object::SillyBase;
+using world::Frustum;
 
 class ShadowData
 {
@@ -59,4 +58,3 @@ public:
 }
 
 #endif
-

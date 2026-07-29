@@ -60,10 +60,11 @@
  *
  */
 
-#include "hw/compat.h"
 
 #include "main/types.h"
 
+#include <functional>
+#include <memory>
 #include <vector>
 
 #include "gfx/managers.h"
@@ -73,7 +74,6 @@
 #include "hw/debug.h"
 #include "hw/gl.h"
 #include "misc/map.h"
-#include "misc/creator.h"
 
 #include "misc/sequence.h"
 #include "misc/free.h"
@@ -82,22 +82,17 @@ namespace reaper {
 namespace {
         debug::DebugOutput dout("gfx::texture::Manager",0);
 }
-namespace misc { 
-	template <>
-    UniquePtr<gfx::TextureMgr>::I UniquePtr<gfx::TextureMgr>::inst = {};
-}
 namespace gfx {
 namespace lowlevel {
 
 using namespace texture;
-using misc::CreateBase;
-using misc::Creator;
 
 /// Manages loading/deleting of file textures
 class TextureMgrImpl
 {
-	typedef misc::Map<Unique,Texture2D> TextureCont;
-	typedef std::map<Unique, CreateBase<Texture2D>*> TextureCreators;
+	using TextureCont = misc::Map<Unique, Texture2D>;
+	using TextureFactory = std::function<std::unique_ptr<Texture2D>()>;
+	using TextureCreators = std::map<Unique, TextureFactory>;
 
 	TextureCont     manager;
 	TextureCreators spec_textures;
@@ -119,12 +114,13 @@ public:
 TextureMgrImpl::TextureMgrImpl() : 
 	manager("gfx::texture")
 {
-	spec_textures["smoke"] = new misc::Creator<Texture2D, Smoke>();
+	spec_textures["smoke"] = [] {
+		return std::make_unique<Smoke>();
+	};
 }
 
 TextureMgrImpl::~TextureMgrImpl()
 {
-	misc::for_each(misc::seq(spec_textures), misc::delete_it);
 	throw_on_gl_error("texture::TextureMgrImpl::~TextureMgrImpl()");
 }
 
@@ -148,8 +144,10 @@ inline Texture2D* TextureMgrImpl::load(Unique id, int level)
 	Texture2D *t = manager.get_if(id);
 
 	if(t == 0) {
-		if(spec_textures.find(id) != spec_textures.end()) {
-			t = &manager.insert(spec_textures[id]->create(), id);
+		const auto creator = spec_textures.find(id);
+		if(creator != spec_textures.end()) {
+			auto texture = creator->second();
+			t = &manager.insert(texture.release(), id);
 		} else {
 			t = &manager.insert(new Texture(id), id);
 		}

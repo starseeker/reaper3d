@@ -1,4 +1,8 @@
-#include "hw/compat.h"
+
+#include <algorithm>
+#include <memory>
+#include <utility>
+#include <vector>
 
 #include "hw/worker.h"
 #include "hw/abstime.h"
@@ -20,21 +24,23 @@ class PngWriter
 {
 	std::string fn;
 	int w, h;
-	char* data;
+	std::vector<char> data;
 public:
-	PngWriter(std::string f, int width, int height, char* d)
-	 : fn(f), w(width), h(height), data(d)
+	PngWriter(std::string f, int width, int height, std::vector<char> pixels)
+	 : fn(std::move(f)), w(width), h(height), data(std::move(pixels))
 	{}
 	bool operator()() {
-		char* data2 = (char*) malloc(w*h*4);
-		for(int i=0; i<h; i++) {
-			for(int j=0; j<w*3; j++) {
-				data2[(i*w*3)+j] = data[((h-i-1)*w*3)+j];
-			}
+		const std::size_t row_bytes = static_cast<std::size_t>(w) * 3;
+		std::vector<char> flipped(data.size());
+		for(int row = 0; row < h; ++row) {
+			const auto source =
+				data.begin() + (h - row - 1) * row_bytes;
+			std::copy_n(
+				source,
+				row_bytes,
+				flipped.begin() + row * row_bytes);
 		}
-		free(data);
-		misc::save_png(fn, data2, w, h);
-		free(data2);
+		misc::save_png(fn, flipped.data(), w, h);
 		return false;
 	}
 };
@@ -44,13 +50,29 @@ void Renderer::screenshot()
 {	
 	int vp[4];
 	glGetIntegerv(GL_VIEWPORT, vp);
-	// FIXME (need to allocat more memory than is used, otherwise crash.. hmm..)
-	char* data  = (char*)malloc(vp[2] * vp[3] * 4);
 
-	glReadPixels(vp[0], vp[1], vp[2], vp[3], GL_RGB, GL_UNSIGNED_BYTE, data);
+	GLint previous_pack_alignment = 0;
+	glGetIntegerv(GL_PACK_ALIGNMENT, &previous_pack_alignment);
+	glPixelStorei(GL_PACK_ALIGNMENT, 1);
+	std::vector<char> data(
+		static_cast<std::size_t>(vp[2]) * vp[3] * 3);
+	glReadPixels(
+		vp[0],
+		vp[1],
+		vp[2],
+		vp[3],
+		GL_RGB,
+		GL_UNSIGNED_BYTE,
+		data.data());
+	glPixelStorei(GL_PACK_ALIGNMENT, previous_pack_alignment);
 
 	std::string fn = hw::time::strtime("shot_%Y-%m-%d_%H.%M.%S");
-	hw::worker::worker()->add_job(new PngWriter(fn, vp[2], vp[3], data));
+	hw::worker::worker()->add_job(
+		std::make_shared<PngWriter>(
+			fn,
+			vp[2],
+			vp[3],
+			std::move(data)));
 
 	dout << "Screenshot saved to: " << fn << ".png\n";
 }

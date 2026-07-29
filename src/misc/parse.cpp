@@ -1,12 +1,14 @@
 
-#include "hw/compat.h"
 
+#include <charconv>
 #include <cctype>
 #include <string>
 #include <iostream>
 #include <cstdio>
 #include <sstream>
 #include <map>
+
+#include <cstring>
 
 #include "misc/parse.h"
 
@@ -21,38 +23,36 @@ using std::istream;
 void chomp(char *s) {
 	if (!s)
 		return;
-	int i = strlen(s) - 1;
-	while (i >= 0 && (s[i] == '\n' || s[i] == '\r'))
-		s[i--] = '\0';
+	std::size_t length = std::strlen(s);
+	while (length > 0 && (s[length - 1] == '\n' || s[length - 1] == '\r'))
+		s[--length] = '\0';
 }
 
 void chomp(string &s) {
-	int i = s.size() - 1;
-	while (i >= 0 && (s[i] == '\n' || s[i] == '\r'))
-		i--;
-	s.resize(i+1);
+	while (!s.empty() && (s.back() == '\n' || s.back() == '\r'))
+		s.pop_back();
 }
 
 long stol(cstrr s)
 {
-	if (s.size())
-		return atol(s.c_str());
-	else
-		return 0;
+	long value = 0;
+	const auto result =
+		std::from_chars(s.data(), s.data() + s.size(), value);
+	return result.ec == std::errc{} ? value : 0;
 }
 
 int stoi(cstrr s)
 {
-	if (s.size())
-		return atoi(s.c_str());
-	else
-		return 0;
+	int value = 0;
+	const auto result =
+		std::from_chars(s.data(), s.data() + s.size(), value);
+	return result.ec == std::errc{} ? value : 0;
 }
 
 float stof(cstrr s)
 {
 	std::istringstream is(s);
-	float f;
+	float f = 0;
 	is >> f;
 	return f;
 }

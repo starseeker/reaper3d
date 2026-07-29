@@ -2,8 +2,7 @@
 # Based on build/ac/hw/Makefile.am
 
 add_library(hw STATIC
-    compat.cpp
-    conc_pthread.cpp
+    concurrent.cpp
     debug.cpp
     event.cpp
     event_impl.cpp
@@ -18,7 +17,6 @@ add_library(hw STATIC
     glh_exts.cpp
     mapping.cpp
     netcompat.cpp
-    osinfo.cpp
     profile.cpp
     snd_system.cpp
     snd_dummy.cpp
@@ -37,7 +35,7 @@ add_library(hw STATIC
 target_include_directories(hw PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
 # Link GLFW for the windowing backend
-target_link_libraries(hw PUBLIC glfw ext)
+target_link_libraries(hw PUBLIC glfw ext Threads::Threads)
 
 if(OPENAL_FOUND)
     target_link_libraries(hw PUBLIC ${OPENAL_LIBRARIES})

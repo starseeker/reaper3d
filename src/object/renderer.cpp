@@ -15,7 +15,6 @@
  * soundtweaking...
  */
 
-#include "hw/compat.h"
 
 #include "gfx/gfx.h"
 #include "object/object_impl.h"
@@ -80,22 +79,19 @@ Laser::Laser(const ShotInfo& si, const Matrix& mtx)
 Ship::Ship(const std::string &mesh, const Matrix &mtx, float radius, hull::Shielded &h, float trail_size, const Point &engine_pos) :
 	hull(mesh, mtx, false), shield(mtx, radius, h), 
 	trail(gfx::enginetrail(mtx, trail_size, engine_pos)),
-	hud(0)
+	hud(nullptr)
 {
 	trail.insert();
 }
 
-Ship::~Ship()
-{
-	delete hud;
-}
+Ship::~Ship() = default;
 
 void Ship::render_hud(PlayerBase::HUD ht, const hull::Shielded& s,
 		      const phys::Ship& phys, const ShipInfo& info,
 		      MissileType mt, const weapon::Missiles* m) const
 {
-	if (hud == 0)
-		hud = new gfx::HUD();
+	if (!hud)
+		hud = std::make_unique<gfx::HUD>();
 	gfx::HudData h;
 	h.type = ht;
 	h.hull = s.get_health() / info.health;

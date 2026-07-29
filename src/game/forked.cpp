@@ -1,28 +1,24 @@
 
-#include "hw/compat.h"
+
+#include <atomic>
+#include <memory>
 
 #include "hw/gfx.h"
 #include "hw/concurrent.h"
 #include "game/menus.h"
 #include "game/helpers.h"
 #include "res/res.h"
-#include <memory>
-
 #include "game/forked.h"
 
 namespace reaper {
 
-class Reaper::Run : public hw::concurrent::Runnable
+class Reaper::Run
 {
-	hw::gfx::Gfx* gx;
-	game::Game* go;
-	bool quit_req, done;
+	std::atomic_bool quit_req{false};
+	std::atomic_bool done{false};
 	hw::concurrent::Semaphore init_done;
 	std::string error;
 public:
-	Run() : gx(0), go(0), quit_req(false), done(false)
-	{
-	}
 	void run()
 	{
 //		debug::debug_disable();
@@ -35,21 +31,21 @@ public:
 			init_done.signal();
 			go->game_init();
 			go->game_start();
-			while (! (quit_req || go->loop_once()))
+			while (!(quit_req.load() || go->loop_once()))
 				;
-			done = true;
+			done.store(true);
 			return;
 		}
-		catch (error_base& e) {
+		catch (const error_base& e) {
 			error = e.what();
 		}
-		catch (std::exception& e) {
+		catch (const std::exception& e) {
 			error = e.what();
 		}
 		catch (...) {
 			error = "unknown error\n";
 		}
-		done = true;
+		done.store(true);
 		init_done.signal();
 	}
 	void start_wait()
@@ -58,7 +54,7 @@ public:
 	}
 	void req_stop()
 	{
-		quit_req = true;
+		quit_req.store(true);
 	}
 	std::string get_errmsg()
 	{
@@ -66,43 +62,49 @@ public:
 	}
 	bool is_done()
 	{
-		return done;
+		return done.load();
 	}
 };
 
 Reaper::Reaper(const std::string& root)
- : run(new Run()),
-   gth(new hw::concurrent::Thread(run))
+ : run(std::make_unique<Run>())
 {
 	if (!root.empty()) {
 		res::add_datapath(root + "/data/");
 	}
 }
 
+Reaper::~Reaper()
+{
+	stop();
+}
+
 bool Reaper::start()
 {
-	gth->start();
+	game_thread = std::thread(&Run::run, run.get());
 	run->start_wait();
 	return run->get_errmsg().empty();
 }
 
 void Reaper::stop()
 {
+	if (!run)
+		return;
+
 	run->req_stop();
-	gth->stop(true);
-	delete gth;
-	delete run;
-	run = 0;
+	if (game_thread.joinable())
+		game_thread.join();
+	run.reset();
 }
 
 bool Reaper::is_done()
 {
-	return run->is_done();
+	return !run || run->is_done();
 }
 
 std::string Reaper::get_errmsg()
 {
-	return run->get_errmsg();
+	return run ? run->get_errmsg() : std::string{};
 }
 
 }
@@ -112,5 +114,3 @@ extern "C"
 reaper::Reaper* create_reaper(void*) {
 	return new reaper::Reaper();
 }
-
-

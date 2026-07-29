@@ -26,7 +26,7 @@ public:
 	const std::string sound;
 	float exp_intensity;
 	float light_radius;
-	ShotInfo(const std::string& m,
+	ShotInfo(const std::string&,
 		const float speed,
 		const float lifespan,
 		const float damage,
@@ -213,4 +213,3 @@ public:
 }
 }
 #endif
-

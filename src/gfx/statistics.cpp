@@ -1,4 +1,3 @@
-#include "hw/compat.h"
 
 #include <sstream>
 
@@ -144,6 +143,7 @@ void Statistics::render()
 			red = !red;
 		}
 		}
+		[[fallthrough]];
 	case 3:
 		{
 		glColor3f(1,1,1);
@@ -182,10 +182,12 @@ void Statistics::render()
 		put_stat("Verts/second:  ", verts_per_sec/1000,0,.575);
 		put_stat("Tris/second:   ", tris_per_sec/1000,0,.55);
 		}
+		[[fallthrough]];
 	case 2:
 		glColor3f(1,1,1);
 		put_stat("Textures(k): ", texture::TextureBase::all_textures_size() >> 10,0,.8);
 		put_stat("Resident(k): ", texture::TextureBase::resident_textures_size() >> 10,0,.775);
+		[[fallthrough]];
 	case 1:
 		{
 		glColor3f(1,1,1);

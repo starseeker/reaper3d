@@ -1,5 +1,4 @@
 
-#include "hw/compat.h"
 
 #include "gfx/cloud/simulate.h"
 
