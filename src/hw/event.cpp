@@ -72,7 +72,7 @@ std::istream& operator>>(std::istream& is, Event& e)
 
 EventSystem::EventSystem(gfx::Gfx& g)
 {
-	impl = std::make_unique<EventDispatcher>(g);
+	impl = std::make_shared<EventDispatcher>(g);
 }
 
 
@@ -83,17 +83,18 @@ EventSystem::~EventSystem()
 
 EventProxy EventSystem::get_ref(PlayerID id)
 {
-	return EventProxy(EventSystem::impl.get(), id);
+	return EventProxy(EventSystem::impl, id);
 }
 
-EventProxy* EventSystem::create_ref(PlayerID id)
+std::unique_ptr<EventProxy> EventSystem::create_ref(PlayerID id)
 {
-	return new EventProxy(EventSystem::impl.get(), id);
+	return std::unique_ptr<EventProxy>(
+		new EventProxy(EventSystem::impl, id));
 }
 
-std::unique_ptr<EventDispatcher> EventSystem::impl;
+std::shared_ptr<EventDispatcher> EventSystem::impl;
 
-EventProxy::EventProxy(EventDispatcher* i, PlayerID id)
+EventProxy::EventProxy(const std::shared_ptr<EventDispatcher>& i, PlayerID id)
  : listener_id(id), state(10)
 {
 	dlog << "created ep with id " << listener_id << '\n';
@@ -169,16 +170,16 @@ public:
 	}
 };
 
-void EventSystem::add_filter(EventFilter* f)
+void EventSystem::add_filter(std::unique_ptr<EventFilter> f)
 {
-	impl->add_filter(f);
+	impl->add_filter(std::move(f));
 }
 
 void EventSystem::set_mapping(Mapping* imap)
 {
 	MappingPtr map(imap);
-	impl->add_filter(new FixRepeats(map));
-	impl->add_filter(new EventMap(map));
+	impl->add_filter(std::make_unique<FixRepeats>(map));
+	impl->add_filter(std::make_unique<EventMap>(map));
 }
 
 void EventSystem::set_mapping(const std::string& id)
@@ -250,9 +251,9 @@ public:
 	}
 };
 
-EventFilter* make_playbackdevice(const std::string& name)
+std::unique_ptr<EventFilter> make_playbackdevice(const std::string& name)
 {
-	return new PlaybackDevice(name);
+	return std::make_unique<PlaybackDevice>(name);
 }
 
 class EventDumper : public EventFilterImpl
@@ -272,20 +273,24 @@ public:
 	}
 };
 
-EventFilter* make_savedevice()
+std::unique_ptr<EventFilter> make_savedevice()
 {
-	return new EventDumper();
+	return std::make_unique<EventDumper>();
 }
 
 
 bool EventProxy::get_event(Event& e, bool block)
 {
-	return impl->get_event(e, listener_id, block);
+	const auto dispatcher = impl.lock();
+	return dispatcher && dispatcher->get_event(e, listener_id, block);
 }
 
 bool EventProxy::key(id::EventID k)
 {
-	impl->poll(listener_id, ev_table);
+	if (const auto dispatcher = impl.lock())
+		dispatcher->poll(listener_id, ev_table);
+	else
+		return false;
 	return ev_table[k] > 0.0;
 }
 
@@ -296,13 +301,19 @@ bool EventProxy::key(char k)
 
 bool EventProxy::button(int b)
 {
-	impl->poll(listener_id, ev_table);
+	if (const auto dispatcher = impl.lock())
+		dispatcher->poll(listener_id, ev_table);
+	else
+		return false;
 	return ev_table[id::mk(id::Btn0 + b)] > 0.0;
 }
 
 float EventProxy::axis(int a)
 {
-	impl->poll(listener_id, ev_table);
+	if (const auto dispatcher = impl.lock())
+		dispatcher->poll(listener_id, ev_table);
+	else
+		return 0.0f;
 	return ev_table[id::mk(id::Axis0 + a)];
 }
 
@@ -320,4 +331,3 @@ bool EventProxy::axis_changed(int a)
 }
 }
 }
-

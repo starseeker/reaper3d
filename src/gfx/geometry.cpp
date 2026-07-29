@@ -25,17 +25,21 @@ Geometry::Geometry(const vector<Point> &pts, const vector<IdxTriangle> &tris)
 
 void Geometry::init(const vector<Point> &pts, const vector<IdxTriangle> &tris)
 {
-	points.insert(points.begin(), pts.begin(), pts.end());
+	points = pts;
+	triangles.clear();
+	edges.clear();
+
+	if (points.empty())
+		return;
 
 	triangles.reserve(tris.size());
-	for(std::vector<IdxTriangle>::const_iterator i = tris.begin(); i != tris.end(); ++i) {
-		triangles.push_back(Triangle(*i, &points[0]));
-	}
+	for (const auto &triangle : tris)
+		triangles.emplace_back(triangle, points.data());
 
-	for(std::vector<Triangle>::iterator i = triangles.begin(); i != triangles.end(); ++i) {
-		add_edge(i->v1, i->v2, &*i);
-		add_edge(i->v2, i->v3, &*i);
-		add_edge(i->v3, i->v1, &*i);
+	for (auto &triangle : triangles) {
+		add_edge(triangle.v1, triangle.v2, &triangle);
+		add_edge(triangle.v2, triangle.v3, &triangle);
+		add_edge(triangle.v3, triangle.v1, &triangle);
 	}
 }
 
@@ -127,9 +131,12 @@ void ShadowVolume::reset()
 
 void ShadowVolume::render() const
 {
+	if (points.empty())
+		return;
+
 	//glPushMatrix();
 	//glMultMatrix(mtx);
-	glVertexPointer(3, GL_FLOAT, sizeof(Point), &points[0]);
+	glVertexPointer(3, GL_FLOAT, sizeof(Point), points.data());
 	glDrawArrays(GL_QUADS, 0, points.size());
 //	glDrawElements(GL_TRIANGLES, triangles.size()*3, GL_UNSIGNED_INT, &triangles[0]);
 	//glPopMatrix();
@@ -138,4 +145,3 @@ void ShadowVolume::render() const
 }
 }
 }
-

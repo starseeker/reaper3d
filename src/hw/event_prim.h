@@ -2,7 +2,9 @@
 #ifndef REAPER_HW_EVENT_PRIM_H
 #define REAPER_HW_EVENT_PRIM_H
 
+#include <memory>
 #include <queue>
+#include <vector>
 
 #include "hw/event.h"
 #include "hw/gfx_driver.h"
@@ -103,13 +105,13 @@ public:
 
 };
 
-typedef std::deque<InputDevice*> InputDevices;
-typedef std::back_insert_iterator<InputDevices> device_inserter;
+using InputDevices = std::vector<std::unique_ptr<InputDevice>>;
 
 class InputDeviceModule
 {
 public:
-	virtual void scan_inputdevices(lowlevel::Gfx_driver_data*, device_inserter out) = 0;
+	virtual InputDevices scan_inputdevices(
+		lowlevel::Gfx_driver_data*) = 0;
 	virtual ~InputDeviceModule() = default;
 };
 

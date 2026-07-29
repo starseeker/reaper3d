@@ -11,6 +11,7 @@
 /************************************/
 #include <stdio.h>
 #include <sys/types.h>
+#include <vector>
 
 #if defined(_WIN32) && defined(DYNAMIC_LIB)
 #ifdef MPEGSOUND_EXPORTS
@@ -28,16 +29,6 @@
 
 #endif
 
-
-#ifdef PTHREADEDMPEG
-#ifdef HAVE_PTHREAD_H
-#include <pthread.h>
-#else
-#ifdef HAVE_PTHREAD_MIT_PTHREAD_H
-#include <pthread/mit/pthread.h>
-#endif
-#endif
-#endif
 
 #ifndef _L__SOUND__
 #define _L__SOUND__
@@ -229,7 +220,7 @@ private:
 class MPEGSOUND_API Mpegbitwindow
 {
 public:
-  Mpegbitwindow(){bitindex=point=0;};
+  Mpegbitwindow() = default;
 
   void initialize(void)  {bitindex=point=0;};
   int  gettotalbit(void) const {return bitindex;};
@@ -237,28 +228,15 @@ public:
   void wrap(void);
   void rewind(int bits)  {bitindex-=bits;};
   void forward(int bits) {bitindex+=bits;};
-  int getbit(void) {
-      int r=(buffer[bitindex>>3]>>(7-(bitindex&7)))&1;
-      bitindex++;
-      return r;
-  }
-  int getbits9(int bits)
-  {
-      unsigned short a;
-      { int offset=bitindex>>3;
-
-        a=(((unsigned char)buffer[offset])<<8) | ((unsigned char)buffer[offset+1]);
-      }
-      a<<=(bitindex&7);
-      bitindex+=bits;
-      return (int)((unsigned int)(a>>(16-bits)));
-  }
+  int getbit(void) {return getbits(1);}
+  int getbits9(int bits) {return getbits(bits);}
   int  getbits(int bits);
 
 
 private:
-  int  point,bitindex;
-  char buffer[2*WINDOWSIZE];
+  int point = 0;
+  int bitindex = 0;
+  char buffer[2*WINDOWSIZE]{};
 };
 
 
@@ -330,7 +308,7 @@ public:
 private:
   int currentframe,totalframe;
   int decodeframe;
-  int *frameoffsets;
+  std::vector<int> frameoffsets;
 
   /******************************/
   /* Frame management functions */
@@ -465,45 +443,9 @@ private:
   void putraw(short int pcm) {rawdata[rawdataoffset++]=pcm;};
   void flushrawdata(void);
 
-  /***************************/
-  /* Interface for threading */
-  /***************************/
-#ifdef PTHREADEDMPEG
-private:
-  struct
-  {
-    short int *buffer;
-    int framenumber,frametail;
-    int head,tail;
-    int *sizes;
-  }threadqueue;
-
-  struct
-  {
-    bool thread;
-    bool quit,done;
-    bool pause;
-    bool criticallock,criticalflag;
-  }threadflags;
-
-  pthread_t thread;
-
-public:
-  void threadedplayer(void);
-  bool makethreadedplayer(int framenumbers);
-  void freethreadedplayer(void);
-
-  void stopthreadedplayer(void);
-  void pausethreadedplayer(void);
-  void unpausethreadedplayer(void);
-
-  bool existthread(void);
-  int  getframesaved(void);
-#endif
 };
 
 
 }
 
 #endif
-

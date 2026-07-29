@@ -171,11 +171,13 @@ class IDM_GLFW : public InputDeviceModule
 public:
     IDM_GLFW(ifs::Event* m) : main(m) { }
     
-    void scan_inputdevices(Gfx_driver_data* g, device_inserter out)
+    InputDevices scan_inputdevices(Gfx_driver_data* g)
     {
-        *out++ = new KeyboardGLFW(g, main);
-        *out++ = new MouseGLFW(g, main);
+        InputDevices devices;
+        devices.push_back(std::make_unique<KeyboardGLFW>(g, main));
+        devices.push_back(std::make_unique<MouseGLFW>(g, main));
         derr << "GLFW input devices initialized\n";
+        return devices;
     }
 };
 

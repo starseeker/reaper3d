@@ -13,53 +13,23 @@ namespace mpegsound {
 // Inline functions
 inline int Mpegtoraw::getbyte(void)
 {
-  int r=(unsigned char)buffer[bitindex>>3];
-
-  bitindex+=8;
-  return r;
+  return getbits(8);
 };
 
 inline int Mpegtoraw::getbits9(int bits)
 {
-  unsigned short a;
-#ifndef WORDS_BIGENDIAN
-  {
-    int offset=bitindex>>3;
-
-    a=(((unsigned char)buffer[offset])<<8) | ((unsigned char)buffer[offset+1]);
-  }
-#else
-  a=*((unsigned short *)(buffer+((bitindex>>3))));
-#endif
-
-  a<<=(bitindex&7);
-  bitindex+=bits;
-  return (int)((unsigned int)(a>>(16-bits)));
+  return getbits(bits);
 };
 
 inline int Mpegtoraw::getbits8(void)
 {
-  unsigned short a;
-
-  {
-    int offset=bitindex>>3;
-
-    a=(((unsigned char)buffer[offset])<<8) | ((unsigned char)buffer[offset+1]);
-  }
-
-  a<<=(bitindex&7);
-  bitindex+=8;
-  return (int)((unsigned int)(a>>8));
+  return getbits(8);
 };
 
 inline int Mpegtoraw::getbit(void)
 {
-  int r=(buffer[bitindex>>3]>>(7-(bitindex&7)))&1;
-
-  bitindex++;
-  return r;
+  return getbits(1);
 };
 
 }
 #endif
-

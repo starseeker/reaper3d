@@ -311,7 +311,7 @@ std::string talk(std::iostream& io, const std::string& s)
 }
 
 
-hw::event::EventFilter* NetGame::connect(std::string srv)
+std::unique_ptr<hw::event::EventFilter> NetGame::connect(std::string srv)
 {
 	misc::stringpair server = misc::split(srv, ':');
 	int port = server.second.empty()
@@ -337,7 +337,7 @@ hw::event::EventFilter* NetGame::connect(std::string srv)
 	srv_talk = std::make_shared<ServerTalk>(sync_mtx);
 	srv_talk->set_stream(conn.get());
 	hw::worker::worker()->add_job(srv_talk);
-	return new NetFwd(srv_talk);
+	return std::make_unique<NetFwd>(srv_talk);
 }
 
 PlayerID NetGame::join(bool observer)

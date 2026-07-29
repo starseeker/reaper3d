@@ -56,6 +56,7 @@ private:
         Renderer();
 	std::unique_ptr<lowlevel::Renderer> i;
 	std::deque<Initializer*> inits;
+	bool shutdown_done;
 	friend class impl_accessor;
 	friend class reaper::misc::UniquePtr<Renderer>;
 
@@ -111,25 +112,25 @@ private:
  * minnesfixar...
  *
  * Revision 1.74  2001/10/08 15:59:18  macke
- * Separerad simulering och rendering fˆr grafikmotorn
+ * Separerad simulering och rendering f√∂r grafikmotorn
  *
  * Revision 1.73  2001/10/04 00:14:11  macke
- * Screenshots Ât r‰tt hÂll, VC-fix i refptr samt lite st‰d
+ * Screenshots √•t r√§tt h√•ll, VC-fix i refptr samt lite st√§d
  *
  * Revision 1.72  2001/08/06 12:16:12  peter
- * MegaMerge (se strandy_test-grenen fˆr diffar...)
+ * MegaMerge (se strandy_test-grenen f√∂r diffar...)
  *
  * Revision 1.71.2.1  2001/08/03 13:43:52  peter
  * pragma once obsolete...
  *
  * Revision 1.71  2001/07/30 23:43:15  macke
- * H‰pp, dÂ var det kˆrt.
+ * H√§pp, d√• var det k√∂rt.
  *
  * Revision 1.70  2001/07/27 15:44:51  peter
  * namnbyte..
  *
  * Revision 1.69  2001/07/24 23:52:47  macke
- * Jo, explicit ska det vara (fel pÂ annat st‰lle)..  r‰ttade till lite array-fel ocksÂ..
+ * Jo, explicit ska det vara (fel p√• annat st√§lle)..  r√§ttade till lite array-fel ocks√•..
  *
  * Revision 1.68  2001/07/24 17:13:58  peter
  * inge bra med explicit... effects.cpp skapar EffPtr med subklasser till Eff...
@@ -138,16 +139,15 @@ private:
  * Slimmad grafikhantering samt lite namnbyten
  *
  * Revision 1.66  2001/07/06 01:47:10  macke
- * Refptrfix/headerfilsst‰d/objekt-skapande/mm
+ * Refptrfix/headerfilsst√§d/objekt-skapande/mm
  *
  * Revision 1.65  2001/06/09 01:58:47  macke
  * Grafikmotor reorg
  *
  * Revision 1.64  2001/05/14 20:00:52  macke
- * bugfix och rˆk pÂ missiler..
+ * bugfix och r√∂k p√• missiler..
  *
  * Revision 1.63  2001/05/10 11:40:11  macke
- * h‰pp
+ * h√§pp
  *
  */
-

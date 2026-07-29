@@ -44,7 +44,7 @@ Renderer& Renderer::get_unsafe_ref()
 }
 
 //-----------------------------------------------------------------
-Renderer::Renderer() : i(nullptr)
+Renderer::Renderer() : i(nullptr), shutdown_done(false)
 {
 	using namespace reaper::misc;
 
@@ -64,6 +64,10 @@ Renderer::Renderer() : i(nullptr)
 //-----------------------------------------------------------------
 void Renderer::shutdown()
 {
+	if (shutdown_done)
+		return;
+	shutdown_done = true;
+
 	i.reset();
 
 	for(std::deque<Initializer*>::iterator i = inits.begin(); i != inits.end(); ++i)
@@ -77,6 +81,7 @@ void Renderer::shutdown()
 }
 Renderer::~Renderer()
 {
+	shutdown();
 }
 
 //-----------------------------------------------------------------

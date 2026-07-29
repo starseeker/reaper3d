@@ -47,7 +47,7 @@ public:
 	void set_loop() { }
 
 	EffectPtr clone() const {
-		return EffectPtr(new DummyEff());
+		return std::make_unique<DummyEff>();
 	}
 };
 
@@ -69,17 +69,17 @@ public:
 	void set_loop() { eff->set_loop(); }
 
 	EffectPtr clone() const {
-		return EffectPtr(new Wrap(eff));
+		return std::make_unique<Wrap>(eff);
 	}
 };
 
 class DistWrap : public Wrap
 {
 	bool active, enable;
-	Point* cam; // FIXME evil
+	std::shared_ptr<const Point> cam;
 public:
-	DistWrap(EffectSPtr eff, Point* c)
-	 : Wrap(eff), active(false), enable(false), cam(c)
+	DistWrap(EffectSPtr eff, std::shared_ptr<const Point> c)
+	 : Wrap(std::move(eff)), active(false), enable(false), cam(std::move(c))
 	{ }
 	void play() {
 		active = true;
@@ -106,7 +106,7 @@ public:
 		}
 	}
 	EffectPtr clone() const {
-		return EffectPtr(new DistWrap(eff, cam));
+		return std::make_unique<DistWrap>(eff, cam);
 	}
 };
 
@@ -125,7 +125,7 @@ class Internal
 	queue<pair<int, EffectSPtr> > death_list;
 
 	bool sound_ok;
-	Point cam_pos;
+	std::shared_ptr<Point> cam_pos;
 
 	int count_pos, count_move;
 	hw::time::RelTime last;
@@ -133,7 +133,9 @@ class Internal
 	int tick;
 public:
 	Internal()
-	 : cyl(Point2D(0, 0), 600), count_pos(0), count_move(0), last(0), tick(0)
+	 : cyl(Point2D(0, 0), 600),
+	   cam_pos(std::make_shared<Point>()),
+	   count_pos(0), count_move(0), last(0), tick(0)
 	{
 		sound_ok = ss.init();
 		ss.set_volume(0);
@@ -146,10 +148,10 @@ public:
 		Cache::iterator i = cache.find(id);
 		EffectSPtr eff;
 		if (i != cache.end())
-			eff = EffectSPtr(i->second->clone().release());
+			eff = i->second->clone();
 		else {
-			eff = EffectSPtr(ss.prepare_effect(id).release());
-			cache[id] = EffectSPtr(eff->clone().release());
+			eff = ss.prepare_effect(id);
+			cache[id] = eff->clone();
 		}
 		eff->set_volume(vol);
 		if (loop)
@@ -168,22 +170,22 @@ public:
 EffectPtr Manager::load(const string& id, float vol, bool loop)
 {
 	if (snd_int->count_move++ > max_new_move_snd_per_sec) {
-		return EffectPtr(new DummyEff());
+		return std::make_unique<DummyEff>();
 	} else {
 		EffectSPtr eff = snd_int->load(id, vol, loop);
-		return EffectPtr(new DistWrap(eff, &snd_int->cam_pos));
+		return std::make_unique<DistWrap>(eff, snd_int->cam_pos);
 	}
 }
 
 EffectPtr Manager::load(const string& id, const Point& pos, float vol)
 {
 	if ((snd_int->count_pos++ > max_new_pos_snd_per_sec) || 
-	    (length(pos - snd_int->cam_pos) > max_pos_sound_distance))
-		return EffectPtr(new DummyEff());
+	    (length(pos - *snd_int->cam_pos) > max_pos_sound_distance))
+		return std::make_unique<DummyEff>();
 
 	EffectSPtr eff = snd_int->load(id, vol, false);
 	eff->set_position(pos);
-	return EffectPtr(new Wrap(eff));
+	return std::make_unique<Wrap>(eff);
 }
 
 
@@ -192,7 +194,7 @@ void Manager::play(const string& id, const Point& pos, float v)
 	EffectPtr eff = load(id, pos, v);
 	eff->play();
 	snd_int->death_list.emplace(
-		snd_int->tick, EffectSPtr(eff.release()));
+		snd_int->tick, EffectSPtr(std::move(eff)));
 }
 
 
@@ -216,7 +218,7 @@ SoundRef Manager::get_ref()  { return SoundRef(); }
 
 void Manager::set_camera(const Point& pos, const Vector& dir, const Vector& vel)
 {
-	snd_int->cam_pos = pos;
+	*snd_int->cam_pos = pos;
 	snd_int->cyl.p = Point2D(pos.x, pos.z);
 	snd_int->ss.set_listener(pos, dir, vel);
 }

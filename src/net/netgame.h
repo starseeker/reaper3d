@@ -44,7 +44,7 @@ public:
 	NetGame(const NetGame&) = delete;
 	NetGame& operator=(const NetGame&) = delete;
 
-	hw::event::EventFilter* connect(std::string srv);
+	std::unique_ptr<hw::event::EventFilter> connect(std::string srv);
 	void shutdown();
 
 	PlayerID join(bool observer);

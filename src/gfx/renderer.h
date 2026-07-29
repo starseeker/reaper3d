@@ -49,7 +49,7 @@ public:
 	inline int simeff_size();
 	inline int orpeff_size();
 
-	typedef std::deque<Lake*>    LakeCont;
+	using LakeCont = std::deque<std::unique_ptr<Lake>>;
 	typedef std::deque<Effect*>  EffectCont;
 	typedef quadtree::QuadTree<SimEffect*> SimEffectCont;
 	typedef std::deque<const RenderInfo*> MeshCont;
@@ -151,4 +151,3 @@ inline int Renderer::orpeff_size()
  * $Date: 2002/09/13 07:45:55 $
  *
  */
-

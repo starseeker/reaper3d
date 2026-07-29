@@ -11,10 +11,15 @@ namespace gfx {
 
 class impl_accessor {
 protected:
-	Renderer &r;
-	impl_accessor() : r(Renderer::get_unsafe_ref()) {}
+	RendererRef renderer;
+	impl_accessor() : renderer(Renderer::get_ref()) {}
 
-	lowlevel::Renderer& ref() const { return *r.i.get(); }
+	lowlevel::Renderer* ref() const
+	{
+		if (!renderer.valid())
+			return nullptr;
+		return renderer->i.get();
+	}
 };
 
 /// Helper class for pointers to graphics entities

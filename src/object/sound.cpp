@@ -83,7 +83,6 @@
 #include "object/base.h"
 #include "object/sound.h"
 #include "object/object.h"
-#include "misc/free.h"
  
 #include "snd/sound_system.h"
 
@@ -114,15 +113,16 @@ public:
 	{
 		eff->play();
 	}
-	Base* clone() const
+	std::unique_ptr<Base> clone() const
 	{
-		return new StaticImpl(eff->clone());
+		return std::make_unique<StaticImpl>(eff->clone());
 	}
 };
 
-Static* create_static(const std::string& name, const Point& pos)
+std::unique_ptr<Static> create_static(
+	const std::string& name, const Point& pos)
 {
-	return new StaticImpl(name, pos);
+	return std::make_unique<StaticImpl>(name, pos);
 }
 
 
@@ -149,9 +149,9 @@ public:
 	~EngineSound()
 	{
 	}
-	EngineSound* clone() const
+	std::unique_ptr<EngineSound> clone() const
 	{
-		EngineSound* e = new EngineSound();
+		auto e = std::make_unique<EngineSound>();
 		e->snd_inside = EffectPtr(snd_inside->clone());
 		e->snd_outside = EffectPtr(snd_outside->clone());
 		e->inside = inside;
@@ -183,51 +183,44 @@ public:
 
 class ShipImpl : public Ship
 {
-	bool sound_loaded;
 	bool inside;
-	EngineSound* engine_snd;
+	std::unique_ptr<EngineSound> engine_snd;
 public:
-	ShipImpl(EngineSound* e)
-	 : sound_loaded(false),
-	   inside(false),
-	   engine_snd(e)
+	ShipImpl(std::unique_ptr<EngineSound> e)
+	 : inside(false),
+	   engine_snd(std::move(e))
 	{ }
 	ShipImpl(const std::string& name, const Matrix& mat, const Vector& v)
-	 : sound_loaded(false), 
-	   inside(false),
-	   engine_snd(0)
+	 : inside(false),
+	   engine_snd(std::make_unique<EngineSound>(mat.pos()))
 	{
-		engine_snd = new EngineSound(mat.pos());
 	}
-	~ShipImpl()
-	{
-		misc::zero_delete(engine_snd);
-	}
+	~ShipImpl() = default;
 
-	Base* clone() const
+	std::unique_ptr<Base> clone() const
 	{
-		if (engine_snd == 0)
-			return 0;
-		return new ShipImpl(engine_snd->clone());
+		if (!engine_snd)
+			return nullptr;
+		return std::make_unique<ShipImpl>(engine_snd->clone());
 	}
 
 	void set_location(const Matrix& mat)
 	{
-		if (engine_snd == 0)
+		if (!engine_snd)
 			return;
 		engine_snd->position(mat.pos());
 	}
 
 	void set_velocity(const Vector& vel)
 	{
-		if (engine_snd == 0)
+		if (!engine_snd)
 			return;
 //		engine_snd->velocity(vel);
 	}
 
 	void engine_pitch(float f)
 	{
-		if (engine_snd == 0)
+		if (!engine_snd)
 			return;
 		engine_snd->pitch(f / 10);
 	}
@@ -238,22 +231,23 @@ public:
 			return;
 		inside = b;
 //		derr << "view: " << b << '\n';
-		if (engine_snd != 0)
+		if (engine_snd)
 			engine_snd->set_view(b);
 	}
 	void kill()
 	{
-		misc::zero_delete(engine_snd);
+		engine_snd.reset();
 	}
 };
 
 
-Ship* create_ship(const std::string& name, const Matrix& mat, const Vector& vel)
+std::unique_ptr<Ship> create_ship(
+	const std::string& name, const Matrix& mat, const Vector& vel)
 {
 	if (snd::Manager::get_ref().valid())
-		return new ShipImpl(name, mat, vel);
+		return std::make_unique<ShipImpl>(name, mat, vel);
 	else
-		return 0;
+		return nullptr;
 }
 
 
@@ -273,9 +267,9 @@ public:
 
 	~ProjectileImpl() {
 	}
-	Base* clone() const
+	std::unique_ptr<Base> clone() const
 	{
-		return new ProjectileImpl(snd->clone());
+		return std::make_unique<ProjectileImpl>(snd->clone());
 	}
 	void set_location(const Matrix& mat)
 	{
@@ -290,20 +284,25 @@ public:
 class DummyImpl : public Projectile
 {
 public:
-	Base* clone() const { return new DummyImpl(); }
+	std::unique_ptr<Base> clone() const
+	{
+		return std::make_unique<DummyImpl>();
+	}
 	void set_location(const Matrix&) { }
 	void set_velocity(const Vector&) { }
 };
 
 
-Projectile* create_proj(const std::string& name, const Matrix& mat, const Vector& vel)
+std::unique_ptr<Projectile> create_proj(
+	const std::string& name, const Matrix& mat, const Vector& vel)
 {
 	if (snd::Manager::get_ref().valid()) {
 		snd::EffectPtr snd = snd::Manager::get_ref()->load(name, 0.5, true);
 		if (snd.get())
-			return new ProjectileImpl(std::move(snd), mat, vel);
+			return std::make_unique<ProjectileImpl>(
+				std::move(snd), mat, vel);
 		else
-			return new DummyImpl();
+			return std::make_unique<DummyImpl>();
 	} else {
 		return nullptr;
 	}
@@ -314,4 +313,3 @@ Projectile* create_proj(const std::string& name, const Matrix& mat, const Vector
 }
 }
 }
-

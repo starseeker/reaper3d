@@ -9,7 +9,7 @@
  * engine tails now disappear properly opon death...
  *
  * Revision 1.5  2001/10/01 17:36:31  macke
- * Hmm.. grafikmotorn äger objekt som håller en ref-ptr till grafikmotorn.. fel!
+ * Hmm.. grafikmotorn Ã¤ger objekt som hÃ¥ller en ref-ptr till grafikmotorn.. fel!
  *
  * Revision 1.4  2001/09/24 02:33:24  macke
  * Meckat lite med fulbuggen i grafikmotorn.. verkar funka att deallokera nu.. ?
@@ -30,25 +30,35 @@ debug::DebugOutput dout("gfx::instance");
 namespace gfx {
 
 void EffectPtr::draw() const 
-{	
-	ref().draw(get()); 
+{
+	if (auto* renderer = ref())
+		renderer->draw(get());
 }
 
 void SimEffectPtr::insert() const   
 {
-	ref().insert(get()); 
+	if (auto* renderer = ref())
+		renderer->insert(get());
 }
 void SimEffectPtr::insert_release()
-{ 
-	ref().insert_orphan(release()); owned = false; 
+{
+	if (auto* renderer = ref()) {
+		renderer->insert_orphan(release());
+		owned = false;
+	}
 }
 void SimEffectPtr::transfer()       
 {
-	ref().transfer(release()); owned = false; 
+	if (auto* renderer = ref()) {
+		renderer->transfer(release());
+		owned = false;
+	}
 }
 void SimEffectPtr::remove() const   
 {
-	ref().remove(get()); owned = false; 
+	if (auto* renderer = ref())
+		renderer->remove(get());
+	owned = false;
 }
 
 SimEffectPtr::~SimEffectPtr() {

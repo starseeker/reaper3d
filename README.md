@@ -6,7 +6,7 @@ Originally a third year project by a bunch of students at Chalmers University
 Gothenburg, Sweden, it evidently got out of hand - at least, none of *my*
 student projects ever ended up being this impressive!
 
-I came across Reaper3D in the early 2000s during own youthful exploration of
+I came across Reaper3D in the early 2000s during youthful exploration of
 the open source software landscape.  It didn't have much game play, and I
 couldn't claim to be any good at playing it, but it functioned at a basic
 level and for an open source game of the day it was pretty neat.
@@ -100,7 +100,11 @@ Player 2 uses the arrow keys to steer, `Page Up`/`Page Down` for thrust, `End` f
 - GLFW is the default windowing and input backend.
 - The legacy fixed-function OpenGL renderer runs in a GLFW window with configurable windowed/fullscreen modes.
 - The original resource data, menu system, level loading, scenario system, physics, AI, HUD and gameplay loop are included.
-- Linux builds use OpenAL Soft for sound effects and audio decoding, with a silent fallback when no audio device is available.
+- Linux builds use OpenAL Soft for sound output, with a silent fallback when no
+  audio device is available. The repaired bundled MPEG decoder handles the
+  supplied MP3 music without an additional codec dependency.
+- CTest includes service-lifetime, full-track bundled MP3 decoding, and
+  headless OpenGL/VBO/shader regression tests.
 - Optional OSMesa smoke-test programs build when OSMesa development headers and libraries are available.
 - When OSMesa is available, the three graphics smoke tests are registered with CTest.
 
@@ -199,11 +203,16 @@ coverage:
 
 - **Complete the rendering modernization.** The game still relies primarily on OpenGL 1.x fixed-function/immediate-mode rendering. The VBO and GLSL code is currently framework/test infrastructure, not the main renderer.
 - **Expand headless coverage.** The full game starts with `REAPER_HEADLESS=1`; automated frame-loop and input assertions are still needed.
-- **Finish the Linux audio path.** OpenAL Soft provides effects and buffered WAV/MP3 playback; true streaming music and Windows audio support remain.
+- **Complete the remaining audio features.** OpenAL Soft provides effects and
+  buffered WAV/MP3 playback; true streaming music and non-Linux audio support
+  remain.
 - **Improve portability and dependency boundaries.** GLFW and OpenAL Soft are
   the supported runtime backends. Other operating systems still need build and
   runtime validation at the small number of remaining platform boundaries.
-- **Add broader automated regression coverage.** CTest now covers headless rendering, VBO conversion, and shader fallback; startup, input, resource loading, and audio assertions remain.
+- **Add broader automated regression coverage.** CTest now covers service
+  lifetimes, full-track MP3 decoding, headless rendering, VBO conversion, and
+  shader fallback; full application startup, input, and resource-loading
+  assertions remain.
 - **Finish editor interaction.** The GLFW/ImGui editors have camera/grid controls, editable level metadata, and navigation-resource loading; object placement, renderer integration, and graph-node editing remain.
 
 ## License

@@ -9,25 +9,20 @@
 #include "config.h"
 #endif
 
-#ifdef PTHREADEDMPEG
-#include <pthread.h>
-#endif
-
+#include <algorithm>
 #include <math.h>
+#include <cstdint>
 #include <stdlib.h>
 //#include <unistd.h>
 
 #include "mpegsound.h"
 #include "mpegsound_locals.h"
 
-#define MY_PI 3.14159265358979323846
-
 namespace mpegsound {
 
 Mpegtoraw::Mpegtoraw(Soundinputstream *loader,Soundplayer *player)
 {
   __errorcode=SOUND_ERROR_OK;
-  frameoffsets=NULL;
 
   forcetomonoflag=false;
   downfrequency=0;
@@ -36,60 +31,23 @@ Mpegtoraw::Mpegtoraw(Soundinputstream *loader,Soundplayer *player)
   this->player=player;
 }
 
-Mpegtoraw::~Mpegtoraw()
-{
-  if(frameoffsets)delete [] frameoffsets;
-}
-
-#ifndef WORDS_BIGENDIAN
-#define _KEY 0
-#else
-#define _KEY 3
-#endif
+Mpegtoraw::~Mpegtoraw() = default;
 
 int Mpegtoraw::getbits( int bits )
 {
-    union
-    {
-        char store[4];
-        int current;
-    } u;
-    int bi;
-
-    if( ! bits )
-        return 0;
-
-    u.current = 0;
-    bi = (bitindex & 7);
-    u.store[ _KEY ] = buffer[ bitindex >> 3 ] << bi;
-    bi = 8 - bi;
-    bitindex += bi;
-
-    while( bits )
-    {
-        if( ! bi )
-        {
-            u.store[ _KEY ] = buffer[ bitindex >> 3 ];
-            bitindex += 8;
-            bi = 8;
-        }
-
-        if( bits >= bi )
-        {
-            u.current <<= bi;
-            bits -= bi;
-            bi = 0;
-        }
-        else
-        {
-            u.current <<= bits;
-            bi -= bits;
-            bits = 0;
-        }
-    }
-    bitindex -= bi;
-
-    return( u.current >> 8 );
+  std::uint32_t value = 0;
+  while (bits > 0)
+  {
+    const int bit_offset = bitindex & 7;
+    const int count = std::min(bits, 8 - bit_offset);
+    const auto byte = static_cast<std::uint8_t>(buffer[bitindex >> 3]);
+    const auto mask = (1U << count) - 1U;
+    value = (value << count) |
+            ((byte >> (8 - bit_offset - count)) & mask);
+    bitindex += count;
+    bits -= count;
+  }
+  return static_cast<int>(value);
 }
 
 void Mpegtoraw::setforcetomono(bool flag)
@@ -133,87 +91,25 @@ int  Mpegtoraw::getpcmperframe(void)
 }
 
 inline void Mpegtoraw::flushrawdata(void)
-#ifdef PTHREADEDMPEG
-{
-  if(threadflags.thread)
-  {
-    if(((threadqueue.tail+1)%threadqueue.framenumber)==threadqueue.head)
-    {
-      while(((threadqueue.tail+1)%threadqueue.framenumber)==threadqueue.head)
-	usleep(200);
-    }
-    memcpy(threadqueue.buffer+(threadqueue.tail*RAWDATASIZE),rawdata,
-	   RAWDATASIZE*sizeof(short int));
-    threadqueue.sizes[threadqueue.tail]=(rawdataoffset<<1);
-    
-    if(threadqueue.tail>=threadqueue.frametail)
-      threadqueue.tail=0;
-    else threadqueue.tail++;
-  }
-  else
-  {
-    player->putblock((char *)rawdata,rawdataoffset<<1);
-    currentframe++;
-  }
-  rawdataoffset=0;
-}
-#else
 {
   player->putblock((char *)rawdata,rawdataoffset<<1);
   currentframe++;
   rawdataoffset=0;
 };
-#endif
-
-inline void stripfilename(char *dtr,char *str,int max)
-{
-  char *ss;
-  int p=0,s=0;
-
-  for(;str[p];p++)
-    if(str[p]=='/')
-    {
-      p++;
-      s=p;
-    }
-
-  ss=str+s;
-  for(p=0;p<max && ss[p];p++)dtr[p]=ss[p];
-  dtr[p]=0;
-}
 
 // Convert mpeg to raw
 // Mpeg headder class
 void Mpegtoraw::initialize()
 {
-  static bool initialized=false;
-
   int i;
-  REAL *s1,*s2;
-  REAL *s3,*s4;
 
   scalefactor=SCALE;
   calcbufferoffset=15;
   currentcalcbuffer=0;
 
-
-  s1=calcbufferL[0];s2=calcbufferR[0];
-  s3=calcbufferL[1];s4=calcbufferR[1];
   for(i=CALCBUFFERSIZE-1;i>=0;i--)
     calcbufferL[0][i]=calcbufferL[1][i]=
     calcbufferR[0][i]=calcbufferR[1][i]=0.0;
-
-  if(!initialized)
-  {
-    /*
-    for(i=0;i<16;i++)hcos_64[i]=1.0/(2.0*cos(MY_PI*double(i*2+1)/64.0));
-    for(i=0;i< 8;i++)hcos_32[i]=1.0/(2.0*cos(MY_PI*double(i*2+1)/32.0));
-    for(i=0;i< 4;i++)hcos_16[i]=1.0/(2.0*cos(MY_PI*double(i*2+1)/16.0));
-    for(i=0;i< 2;i++)hcos_8 [i]=1.0/(2.0*cos(MY_PI*double(i*2+1)/ 8.0));
-    hcos_4=1.0/(2.0*cos(MY_PI*1.0/4.0));
-    */
-    initialized=true;
-  }
 
   layer3initialize();
 
@@ -226,28 +122,14 @@ void Mpegtoraw::initialize()
   else totalframe=0;
 
 
-  if(frameoffsets)delete [] frameoffsets;
-
-  if(totalframe>0)
-  {
-    frameoffsets=new int[totalframe];
-    for(i=totalframe-1;i>=0;i--)
-      frameoffsets[i]=0;
-  }
-  else frameoffsets=NULL;
-
-#ifdef PTHREADEDMPEG
-  threadflags.thread=false;
-  threadqueue.buffer=NULL;
-  threadqueue.sizes=NULL;
-#endif
+  frameoffsets.assign(std::max(totalframe, 0), 0);
 };
 
 void Mpegtoraw::setframe(int framenumber)
 {
   int pos=0;
 
-  if(frameoffsets==NULL)return;
+  if(frameoffsets.empty())return;
   if(framenumber==0)pos=frameoffsets[0];
   else
   {
@@ -279,16 +161,6 @@ void Mpegtoraw::setframe(int framenumber)
 
 void Mpegtoraw::clearbuffer(void)
 {
-#ifdef PTHREADEDMPEG
-  if(threadflags.thread)
-  {
-    threadflags.criticalflag=false;
-    threadflags.criticallock=true;
-    while(!threadflags.criticalflag)usleep(1);
-    threadqueue.head=threadqueue.tail=0;
-    threadflags.criticallock=false;
-  }
-#endif
   player->abort();
   player->resetsoundtype();
 }
@@ -362,14 +234,26 @@ bool Mpegtoraw::loadheader(void)
   protection=c&1;
   layer=4-((c>>1)&3);
   version=(_mpegversion)((c>>3)^1);
+  if(layer<1 || layer>3)
+    return seterrorcode(SOUND_ERROR_BAD);
 
-  c=((loader->getbytedirect()))>>1;
+  c=loader->getbytedirect();
+  if(c<0)
+    return seterrorcode(SOUND_ERROR_FINISH);
+  c>>=1;
   padding=(c&1);             c>>=1;
-  frequency=(_frequency)(c&2); c>>=2;
+  const int frequency_index=c&3;
+  if(frequency_index==3)
+    return seterrorcode(SOUND_ERROR_BAD);
+  frequency=(_frequency)frequency_index; c>>=2;
   bitrateindex=(int)c;
-  if(bitrateindex==15)return seterrorcode(SOUND_ERROR_BAD);
+  if(bitrateindex==0 || bitrateindex==15)
+    return seterrorcode(SOUND_ERROR_BAD);
 
-  c=((unsigned int)(loader->getbytedirect()))>>4;
+  c=loader->getbytedirect();
+  if(c<0)
+    return seterrorcode(SOUND_ERROR_FINISH);
+  c=((unsigned int)c)>>4;
   extendedmode=c&3;
   mode=(_mode)(c>>2);
 
@@ -434,7 +318,10 @@ bool Mpegtoraw::loadheader(void)
     }
   }
 
-  if(!fillbuffer(framesize-4))seterrorcode(SOUND_ERROR_FILEREADFAIL);
+  if(framesize<4 || framesize>static_cast<int>(sizeof(buffer))+4)
+    return seterrorcode(SOUND_ERROR_BAD);
+  if(!fillbuffer(framesize-4))
+    return seterrorcode(SOUND_ERROR_FILEREADFAIL);
 
   if(!protection)
   {
@@ -443,122 +330,9 @@ bool Mpegtoraw::loadheader(void)
   }
 
 
-  if(loader->eof())return seterrorcode(SOUND_ERROR_FINISH);
-
   return true;
 }
 
-/***************************/
-/* Playing in multi-thread */
-/***************************/
-#ifdef PTHREADEDMPEG
-/* Player routine */
-void Mpegtoraw::threadedplayer(void)
-{
-  while(!threadflags.quit)
-  {
-    while(threadflags.pause || threadflags.criticallock)
-    {
-      threadflags.criticalflag=true;
-      usleep(200);
-    }
-
-    if(threadqueue.head!=threadqueue.tail)
-    {
-      player->putblock(threadqueue.buffer+threadqueue.head*RAWDATASIZE,
-      		       threadqueue.sizes[threadqueue.head]);
-      currentframe++;
-      if(threadqueue.head==threadqueue.frametail)
-	threadqueue.head=0;
-      else threadqueue.head++;
-    }
-    else
-    {
-      if(threadflags.done)break;  // Terminate when done
-      usleep(200);
-    }
-  }
-  threadflags.thread=false;
-}
-
-static void *threadlinker(void *arg)
-{
-  ((Mpegtoraw *)arg)->threadedplayer();
-
-  return NULL;
-}
-
-bool Mpegtoraw::makethreadedplayer(int framenumbers)
-{
-  threadqueue.buffer=
-    (short int *)malloc(sizeof(short int)*RAWDATASIZE*framenumbers);
-  if(threadqueue.buffer==NULL)
-    seterrorcode(SOUND_ERROR_MEMORYNOTENOUGH);
-  threadqueue.sizes=(int *)malloc(sizeof(int)*framenumbers);
-  if(threadqueue.sizes==NULL)
-    seterrorcode(SOUND_ERROR_MEMORYNOTENOUGH);
-  threadqueue.framenumber=framenumbers;
-  threadqueue.frametail=framenumbers-1;
-  threadqueue.head=threadqueue.tail=0;
-
-
-  threadflags.quit=threadflags.done=
-  threadflags.pause=threadflags.criticallock=false;
-
-  threadflags.thread=true;
-  if(pthread_create(&thread,0,threadlinker,this))
-    seterrorcode(SOUND_ERROR_THREADFAIL);
-
-  return true;
-}
-
-void Mpegtoraw::freethreadedplayer(void)
-{
-  threadflags.criticallock=
-  threadflags.pause=false;
-  threadflags.done=true;               // Terminate thread player
-  while(threadflags.thread)usleep(10); // Wait for done...
-  if(threadqueue.buffer)free(threadqueue.buffer);
-  if(threadqueue.sizes)free(threadqueue.sizes);
-}
-
-
-
-
-void Mpegtoraw::stopthreadedplayer(void)
-{
-  threadflags.quit=true;
-};
-
-void Mpegtoraw::pausethreadedplayer(void)
-{
-  threadflags.pause=true;
-};
-
-void Mpegtoraw::unpausethreadedplayer(void)
-{
-  threadflags.pause=false;
-};
-
-
-bool Mpegtoraw::existthread(void)
-{
-  return threadflags.thread;
-}
-
-int  Mpegtoraw::getframesaved(void)
-{
-  if(threadqueue.framenumber)
-    return
-      ((threadqueue.tail+threadqueue.framenumber-threadqueue.head)
-       %threadqueue.framenumber);
-  return 0;
-}
-
-#endif
-
-
-//#include <iostream.h>
 // Convert mpeg to raw
 bool Mpegtoraw::run(int frames)
 {

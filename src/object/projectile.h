@@ -11,6 +11,8 @@
 #include "object/sound.h"
 #include "object/collide.h"
 
+#include <memory>
+
 namespace reaper {
 namespace object {
 
@@ -30,7 +32,7 @@ class ProjectileBase
 	float death_time;
 	void move();
 protected:
-	sound::Projectile* sound;
+	std::unique_ptr<sound::Projectile> sound_effect;
 	hull::Shielded hull;  //Dummy hull
 
 public:

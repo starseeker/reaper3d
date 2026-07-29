@@ -143,6 +143,9 @@ struct Gather
 	void operator()(const T &i)
 	{
 		const RenderInfo* ri = i->render(true);
+		if (ri == nullptr)
+			return;
+
 		for(RenderInfo::iterator rii = ri->begin(); rii != ri->end(); ++rii) {
 			(rii->blend ? bmi : mi) = &(*rii);
 		}
@@ -362,9 +365,8 @@ void Renderer::render_water()
 	if(!Settings::current.draw_water)
 		return;
 
-	for(LakeCont::const_iterator i = lakes.begin(); i != lakes.end(); ++i) {
-		(*i)->render(frustum);
-	}
+	for (const auto& lake : lakes)
+		lake->render(frustum);
 }
 
 
@@ -464,7 +466,7 @@ void Renderer::render_shadows(const world::Frustum &frustum)
  * *** empty log message ***
  *
  * Revision 1.7  2002/02/11 11:12:29  macke
- * shadows für alle .. dynamics.. :)
+ * shadows fÃ¼r alle .. dynamics.. :)
  *
  * Revision 1.6  2002/02/10 13:58:39  macke
  * cleanup
@@ -479,7 +481,7 @@ void Renderer::render_shadows(const world::Frustum &frustum)
  * do'h..
  *
  * Revision 1.2  2002/01/28 01:41:38  macke
- * bläurgh
+ * blÃ¤urgh
  *
  * Revision 1.1  2002/01/28 00:50:39  macke
  * gfx reorg

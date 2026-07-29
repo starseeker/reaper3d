@@ -4,6 +4,8 @@
 #ifndef OBJECT_SOUND_H
 #define OBJECT_SOUND_H
 
+#include <memory>
+
 
 namespace reaper
 {
@@ -20,7 +22,7 @@ class Base
 {
 
 public:
-	virtual Base* clone() const = 0;
+	virtual std::unique_ptr<Base> clone() const = 0;
 	virtual ~Base() { }
 };
 
@@ -57,11 +59,14 @@ public:
 
 class Static : public Base, public Ping { };
 
-Static* create_static(const std::string& name, const Point& pos);
+std::unique_ptr<Static> create_static(
+	const std::string& name, const Point& pos);
 
-Ship* create_ship(const std::string& name, const Matrix& mat, const Vector& vel);
+std::unique_ptr<Ship> create_ship(
+	const std::string& name, const Matrix& mat, const Vector& vel);
 
-Projectile* create_proj(const std::string& name, const Matrix& mat, const Vector& vel);
+std::unique_ptr<Projectile> create_proj(
+	const std::string& name, const Matrix& mat, const Vector& vel);
 
 
 }
@@ -69,4 +74,3 @@ Projectile* create_proj(const std::string& name, const Matrix& mat, const Vector
 }
 
 #endif
-	

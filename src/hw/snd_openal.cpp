@@ -214,28 +214,27 @@ public:
 	void set_position(const Point& p)
 	{
 		al_chk_err("pos begin");
+		pos = p;
 		if (valid())
 			alSource3f(src_id, AL_POSITION, pos.x, pos.y, pos.z);
-		pos = p;
 		al_chk_err("pos end");
 	}
 
 	void set_direction(const Vector& v)
 	{
 		al_chk_err("dir begin");
+		vec = v;
 		if (valid())
 			alSource3f(src_id, AL_DIRECTION, vec.x, vec.y, vec.z);
-		vec = v;
 		al_chk_err("dir end");
 	}
 
 	void set_velocity(const Vector& v)
 	{
 		al_chk_err("vel begin");
-		if (valid()) {
-			alSource3f(src_id, AL_VELOCITY, vel.x, vel.y, vel.z);
-		}
 		vel = v;
+		if (valid())
+			alSource3f(src_id, AL_VELOCITY, vel.x, vel.y, vel.z);
 		al_chk_err("vel end");
 	}
 	void set_pitch(float p)
@@ -257,9 +256,9 @@ public:
 	void set_volume(float v)
 	{
 		al_chk_err("vol begin");
+		vol = v;
 		if (valid())
 			alSourcef(src_id, AL_GAIN, vol);
-		vol = v;
 		al_chk_err("vol end");
 	}
 

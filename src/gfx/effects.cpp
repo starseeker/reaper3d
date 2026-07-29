@@ -1,6 +1,7 @@
 
 #include <vector>
 #include <deque>
+#include <memory>
 
 #include "main/types.h"
 #include "main/types_ops.h"
@@ -41,9 +42,9 @@ class Shot : public Effect
 {
 	class ShotInitializer : public Initializer
 	{
-		misc::StaticGeometry *geom;
+		std::unique_ptr<misc::StaticGeometry> geom;
 	public:
-		ShotInitializer() : geom(0) {}
+		ShotInitializer() = default;
 
 		void init() {
 			using reaper::misc::push_back;
@@ -78,13 +79,13 @@ class Shot : public Effect
 				<< 1 << 4 << 5
 				<< 1 << 5 << 2;
 
-			geom = new misc::StaticGeometry(&points[0], &colors[0], 0, 0,
-				    true, points.size(), &indices[0], indices.size());
+			geom = std::make_unique<misc::StaticGeometry>(
+				points.data(), colors.data(), nullptr, nullptr, true,
+				points.size(), indices.data(), indices.size());
 		}
 
 		void exit() {
-			delete geom;
-			geom = 0;
+			geom.reset();
 		}
 
 		void render() {
@@ -595,11 +596,11 @@ class LightBase : public SimEffect
 {
 protected:
 	LightRef lr;
-	mutable light::Light* light;
+	std::unique_ptr<light::Light> light;
 
 	float fade_speed;    ///< amount to increase constant attenuation every second
 
-	LightBase(light::Light*, float fade_speed);
+	LightBase(std::unique_ptr<light::Light>, float fade_speed);
 	world::Sphere sphere;
 public:
 	~LightBase() { }
@@ -615,8 +616,9 @@ public:
 	void restore() const {}
 };
 
-LightBase::LightBase(light::Light *l, float fs) :
-	SimEffect("light",""), lr(LightMgr::get_ref()), light(l), fade_speed(fs)
+LightBase::LightBase(std::unique_ptr<light::Light> l, float fs) :
+	SimEffect("light",""), lr(LightMgr::get_ref()),
+	light(std::move(l)), fade_speed(fs)
 {
 }
 
@@ -643,17 +645,17 @@ public:
 };
 
 StaticLight::StaticLight(const Point &p, const Color &c, float r, float f) :
-	LightBase(new light::Light(p, c, r), f)
+	LightBase(std::make_unique<light::Light>(p, c, r), f)
 {
 	sphere.p = p;
 	sphere.r = r;
-	lr->add_static(light);
+	lr->add_static(light.get());
 }
 
 StaticLight::~StaticLight()
 {
-	lr->remove_static(light);
-	delete light;
+	if (lr.valid())
+		lr->remove_static(light.get());
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -678,20 +680,20 @@ public:
 };
 
 DynamicLight::DynamicLight(const Matrix &m, const Point &o, const Color &c,
-	                   float r, float fs, bool g) :
-	LightBase(new light::Light(Point(m.pos() + o), c, r), fs),
+		                   float r, float fs, bool g) :
+	LightBase(std::make_unique<light::Light>(Point(m.pos() + o), c, r), fs),
 	mtx(m), offset(o), vel(0,0,0), grav(g)
 {
 	sphere.p = m.pos() + o;
 	sphere.r = r;
-	lr->add_dynamic(light);
+	lr->add_dynamic(light.get());
 }
 
 
 DynamicLight::~DynamicLight()
 {
-	lr->remove_dynamic(light);
-	delete light;
+	if (lr.valid())
+		lr->remove_dynamic(light.get());
 }
 
 void DynamicLight::set_offset(const Point &p)
@@ -815,19 +817,19 @@ SimEffectPtr dynamic_light(const Matrix &m, const Point &o, const Color &color,
  * reversed last two revs
  *
  * Revision 1.59  2002/01/10 23:09:06  macke
- * massa bˆk
+ * massa b√∂k
  *
  * Revision 1.58  2002/01/08 19:40:21  macke
- * TexturdetaljnivÂ, samt lite smÂfix..
+ * Texturdetaljniv√•, samt lite sm√•fix..
  *
  * Revision 1.57  2001/12/18 14:34:57  macke
  * minifix
  *
  * Revision 1.56  2001/12/14 16:31:24  macke
- * meck Â pul
+ * meck √• pul
  *
  * Revision 1.55  2001/12/13 17:03:28  peter
- * smÂfixar...
+ * sm√•fixar...
  *
  * Revision 1.54  2001/12/11 23:16:45  macke
  * engine tails now disappear properly opon death...
@@ -845,7 +847,7 @@ SimEffectPtr dynamic_light(const Matrix &m, const Point &o, const Color &color,
  * ljudfixar (smartptr), andra mindre fixar..
  *
  * Revision 1.49  2001/11/25 19:56:20  peter
- * kommer inte Ât privat shot::initialize...
+ * kommer inte √•t privat shot::initialize...
  *
  * Revision 1.48  2001/11/21 00:27:51  picon
  * missile smoke / ship tail / misc
@@ -857,28 +859,28 @@ SimEffectPtr dynamic_light(const Matrix &m, const Point &o, const Color &color,
  * diverse minnesfixar och strul...
  *
  * Revision 1.45  2001/10/08 15:59:17  macke
- * Separerad simulering och rendering fˆr grafikmotorn
+ * Separerad simulering och rendering f√∂r grafikmotorn
  *
  * Revision 1.44  2001/09/24 02:33:23  macke
  * Meckat lite med fulbuggen i grafikmotorn.. verkar funka att deallokera nu.. ?
  *
  * Revision 1.43  2001/09/10 00:24:53  macke
- * Grafikfix... (skum cpu-l‰cka i ljuss‰ttningen kvarstÂr)
+ * Grafikfix... (skum cpu-l√§cka i ljuss√§ttningen kvarst√•r)
  *
  * Revision 1.42  2001/08/18 16:46:20  macke
  * Grafikfixar
  *
  * Revision 1.41  2001/08/06 12:16:11  peter
- * MegaMerge (se strandy_test-grenen fˆr diffar...)
+ * MegaMerge (se strandy_test-grenen f√∂r diffar...)
  *
  * Revision 1.40.2.1  2001/07/31 17:34:03  peter
  * testgren...
  *
  * Revision 1.40  2001/07/30 23:43:15  macke
- * H‰pp, dÂ var det kˆrt.
+ * H√§pp, d√• var det k√∂rt.
  *
  * Revision 1.39  2001/07/24 23:52:46  macke
- * Jo, explicit ska det vara (fel pÂ annat st‰lle)..  r‰ttade till lite array-fel ocksÂ..
+ * Jo, explicit ska det vara (fel p√• annat st√§lle)..  r√§ttade till lite array-fel ocks√•..
  *
  * Revision 1.38  2001/07/23 23:48:10  macke
  * Slimmad grafikhantering samt lite namnbyten
@@ -887,7 +889,7 @@ SimEffectPtr dynamic_light(const Matrix &m, const Point &o, const Color &color,
  * gcc-3.0 fixar
  *
  * Revision 1.36  2001/07/06 01:47:09  macke
- * Refptrfix/headerfilsst‰d/objekt-skapande/mm
+ * Refptrfix/headerfilsst√§d/objekt-skapande/mm
  *
  * Revision 1.35  2001/06/09 01:58:46  macke
  * Grafikmotor reorg
@@ -902,10 +904,9 @@ SimEffectPtr dynamic_light(const Matrix &m, const Point &o, const Color &color,
  * *** empty log message ***
  *
  * Revision 1.31  2001/05/14 20:00:51  macke
- * bugfix och rˆk pÂ missiler..
+ * bugfix och r√∂k p√• missiler..
  *
  * Revision 1.30  2001/05/10 11:40:10  macke
- * h‰pp
+ * h√§pp
  *
  */
-

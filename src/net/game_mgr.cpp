@@ -63,13 +63,13 @@ struct GameMgr_impl
 
 	hw::time::RelTime last_sync_s, last_sync_r, last_save;
 	hw::time::RelTime sync_interval;
-	hw::event::EventFilter* ef;
+	std::unique_ptr<hw::event::EventFilter> ef;
 	string map;
 
 	GameMgr_impl(hw::gfx::Gfx& gx)
 	 : es(gx), 
 	   last_sync_s(0), last_sync_r(0), last_save(0),
-	   sync_interval(100), ef(0)
+	   sync_interval(100), ef(nullptr)
 	{
 		es.disable();
 	}
@@ -317,7 +317,7 @@ void GameMgr::go_go_go()
 	impl->es.set_mapping(impl->map);
 	if (impl->net.is_connected()) {
 		impl->net.sync_start();
-		impl->es.add_filter(impl->ef);
+		impl->es.add_filter(std::move(impl->ef));
 	}
 	hw::time::reset_rel_time();
 	impl->es.enable();

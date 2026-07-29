@@ -143,7 +143,7 @@ SoundPtr SoundSystem::prepare_music(const string& id)
 				std::move(source));
 	} catch (error_base& e) {
 		derr << "failed to load music: " << e.what() << '\n';
-		return std::unique_ptr<Sound>(dummysound().release());
+		return dummysound();
 	}
 	return SoundPtr(nullptr);
 }

@@ -36,7 +36,7 @@ public:
 	bool _readbuffer(char *buffer,int bytes)
 	{
 		input->read(buffer, bytes);
-		return input->good();
+		return input->gcount() == bytes;
 	}
 	
 	int  getbytedirect(void)
@@ -52,7 +52,7 @@ public:
 	int  getblock(char *buffer,int size)
 	{
 		input->read(buffer, size);
-		return (input->good()) ? size : 0;
+		return static_cast<int>(input->gcount());
 	}
 
 	int getsize(void)
@@ -67,6 +67,7 @@ public:
 	
 	void setposition(int pos)
 	{
+		input->clear();
 		misc::set_pos(*input, pos);
 	}
 };

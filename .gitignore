@@ -1,6 +1,7 @@
 # Build directories
 build/
 cmake-build-*/
+build-*/
 
 # Generated files
 *.o
@@ -37,6 +38,7 @@ test_*.pdf
 test_error_handling/
 test_1x1.png
 debug.out
+src/ext/imgui
 
 # LMDB database files (created by application)
 *.db

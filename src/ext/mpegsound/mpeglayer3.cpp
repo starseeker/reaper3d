@@ -18,10 +18,37 @@
 #include <math.h>
 #include <stdlib.h>
 
+#include <algorithm>
+#include <cassert>
+#include <cstddef>
+#include <mutex>
+
 #include "mpegsound.h"
 #include "mpegsound_locals.h"
 
 namespace mpegsound {
+
+template <typename T, std::size_t Columns>
+T& flat_sample(T (*samples)[Columns], int index)
+{
+  assert(index >= 0 && index < SBLIMIT * SSLIMIT);
+  return samples[index / static_cast<int>(Columns)]
+                [index % static_cast<int>(Columns)];
+}
+
+template <std::size_t Channels>
+void invert_odd_samples(
+    REAL (&samples)[Channels][SSLIMIT][SBLIMIT],
+    int channel_count, int subband_limit)
+{
+  assert(channel_count >= 1 &&
+         channel_count <= static_cast<int>(Channels));
+  for (int channel = 0; channel < channel_count; ++channel)
+    for (int sample = 1; sample < SSLIMIT; sample += 2)
+      for (int subband = 1; subband < subband_limit; subband += 2)
+        samples[channel][sample][subband] =
+          -samples[channel][sample][subband];
+}
 
 inline void Mpegbitwindow::wrap(void)
 {
@@ -30,10 +57,10 @@ inline void Mpegbitwindow::wrap(void)
 
   if(p>=point)
   {
-    for(int i=4;i<point;i++)
-      buffer[WINDOWSIZE+i]=buffer[i];
+    if (point > 4)
+      std::copy(buffer + 4, buffer + point, buffer + WINDOWSIZE + 4);
   }
-  *((int *)(buffer+WINDOWSIZE))=*((int *)buffer);
+  std::copy_n(buffer, 4, buffer + WINDOWSIZE);
 }
 
 
@@ -92,6 +119,7 @@ static RATIOS rat_1[16],rat_2[2][64];
 
 void Mpegtoraw::layer3initialize(void)
 {
+  static std::mutex table_mutex;
   static bool initializedlayer3=false;
   int i;
   int j,k,l;
@@ -110,6 +138,7 @@ void Mpegtoraw::layer3initialize(void)
 
   bitwindow.initialize();
 
+  const std::lock_guard<std::mutex> lock(table_mutex);
   if(initializedlayer3)return;
 
   // Calculate win
@@ -720,7 +749,7 @@ void Mpegtoraw::layer3huffmandecode(int ch,int gr,int out[SBLIMIT][SSLIMIT])
   layer3grinfo *gi=&(sideinfo.ch[ch].gr[gr]);
   int part2_3_end=layer3part2start+(gi->part2_3_length);
   int region1Start,region2Start;
-  int i,e=gi->big_values<<1;
+  int i,e=std::min(static_cast<int>(gi->big_values<<1), ARRAYSIZE);
 
   /* Find region boundary for short block case. */
   if(gi->generalflag)
@@ -731,9 +760,13 @@ void Mpegtoraw::layer3huffmandecode(int ch,int gr,int out[SBLIMIT][SSLIMIT])
   }
   else
   {          /* Find region boundary for long block case. */
-    region1Start=sfBandIndextable[version][frequency].l[gi->region0_count+1];
-    region2Start=sfBandIndextable[version][frequency].l[gi->region0_count+
-						        gi->region1_count+2];
+    const auto region1_index=
+      std::min(static_cast<int>(gi->region0_count+1), 22);
+    const auto region2_index=
+      std::min(static_cast<int>(gi->region0_count+
+				gi->region1_count+2), 22);
+    region1Start=sfBandIndextable[version][frequency].l[region1_index];
+    region2Start=sfBandIndextable[version][frequency].l[region2_index];
   }
 
   /* Read bigvalues area. */
@@ -761,21 +794,26 @@ void Mpegtoraw::layer3huffmandecode(int ch,int gr,int out[SBLIMIT][SSLIMIT])
     if(h->treelen)
       while(i<end)
       {
-	huffmandecoder_1(h,&out[0][i],&out[0][i+1]);
+	huffmandecoder_1(h,&flat_sample(out, i),&flat_sample(out, i+1));
 	i+=2;
       }
     else
       for(;i<end;i+=2)
-	out[0][i]  =
-	out[0][i+1]=0;
+	flat_sample(out, i) =
+	flat_sample(out, i+1) = 0;
   }
 
   /* Read count1 area. */
   const HUFFMANCODETABLE *h=&ht[gi->count1table_select+32];
   while(bitwindow.gettotalbit()<part2_3_end)
   {
-    huffmandecoder_2(h,&out[0][i+2],&out[0][i+3],
-		     &out[0][i  ],&out[0][i+1]);
+    if (i > ARRAYSIZE - 4)
+    {
+      bitwindow.rewind(bitwindow.gettotalbit()-part2_3_end);
+      return;
+    }
+    huffmandecoder_2(h,&flat_sample(out, i+2),&flat_sample(out, i+3),
+		     &flat_sample(out, i),&flat_sample(out, i+1));
     i+=4;
 
     if(i>=ARRAYSIZE)
@@ -785,7 +823,7 @@ void Mpegtoraw::layer3huffmandecode(int ch,int gr,int out[SBLIMIT][SSLIMIT])
     }
   }
   
-  for(;i<ARRAYSIZE;i++)out[0][i]=0;
+  for(;i<ARRAYSIZE;i++)flat_sample(out, i)=0;
   bitwindow.rewind(bitwindow.gettotalbit()-part2_3_end);
 }
 
@@ -832,8 +870,10 @@ void Mpegtoraw::layer3dequantizesample(int ch,int gr,
 			   pretab[cb],scalefactors[ch].l[cb]);
       for(;index<next_cb_boundary;)
       {
-	out[0][index]=factor*TO_FOUR_THIRDS[in[0][index]];index++;
-	out[0][index]=factor*TO_FOUR_THIRDS[in[0][index]];index++;
+	flat_sample(out, index)=
+	  factor*TO_FOUR_THIRDS[flat_sample(in, index)];index++;
+	flat_sample(out, index)=
+	  factor*TO_FOUR_THIRDS[flat_sample(in, index)];index++;
       }
     }while(index<ARRAYSIZE);
   }
@@ -855,8 +895,10 @@ void Mpegtoraw::layer3dequantizesample(int ch,int gr,
 	       layer3twopow2_1(gi->subblock_gain[k],gi->scalefac_scale,
 			       scalefactors[ch].s[k][cb]);
 	do{
-	  out[0][index]=factor*TO_FOUR_THIRDS[in[0][index]];index++;
-	  out[0][index]=factor*TO_FOUR_THIRDS[in[0][index]];index++;
+	  flat_sample(out, index)=
+	    factor*TO_FOUR_THIRDS[flat_sample(in, index)];index++;
+	  flat_sample(out, index)=
+	    factor*TO_FOUR_THIRDS[flat_sample(in, index)];index++;
 	}while(--count);
       }
       cb++;
@@ -913,8 +955,9 @@ void Mpegtoraw::layer3dequantizesample(int ch,int gr,
 	}
       }
       /* LONG block types 0,1,3 & 1st 2 subbands of switched blocks */
-      out[0][index]*=layer3twopow2(gi->scalefac_scale,gi->preflag,
-				   pretab[cb],scalefactors[ch].l[cb]);
+      flat_sample(out, index)*=
+	layer3twopow2(gi->scalefac_scale,gi->preflag,
+		     pretab[cb],scalefactors[ch].l[cb]);
     }
 
     for(;index<ARRAYSIZE;index++)
@@ -943,9 +986,10 @@ void Mpegtoraw::layer3dequantizesample(int ch,int gr,
       }
       {
 	int t_index=(index-cb_begin)/cb_width;
-	out[0][index]*=layer3twopow2_1(gi->subblock_gain[t_index],
-				       gi->scalefac_scale,
-				       scalefactors[ch].s[t_index][cb]);
+	flat_sample(out, index)*=
+	  layer3twopow2_1(gi->subblock_gain[t_index],
+			 gi->scalefac_scale,
+			 scalefactors[ch].s[t_index][cb]);
       }
     }
   }
@@ -996,7 +1040,7 @@ inline void Mpegtoraw::layer3fixtostereo(int gr,REAL in[2][SBLIMIT][SSLIMIT])
 	    lines=sfBandIndex->s[sfb+1]-i;
 	    i=MUL3(i)+(j+1)*lines-1;
 	    for(;lines>0;lines--,i--)
-	      if(in[1][0][i]!=0.0f)
+	      if(flat_sample(in[1], i)!=0.0f)
 	      {
 		sfbcnt=sfb;
 		sfb=0;break;        // quit loop
@@ -1054,9 +1098,9 @@ inline void Mpegtoraw::layer3fixtostereo(int gr,REAL in[2][SBLIMIT][SSLIMIT])
 	    REAL temp;
 	    int k;
 
-	    temp=in[1][0][0];in[1][0][0]=1.0;
-	    for(k=3*SSLIMIT-1;in[1][0][k]==0.0;k--);
-	    in[1][0][0]=temp;
+	    temp=flat_sample(in[1], 0);flat_sample(in[1], 0)=1.0;
+	    for(k=3*SSLIMIT-1;flat_sample(in[1], k)==0.0;k--);
+	    flat_sample(in[1], 0)=temp;
 	    for(i=0;sfBandIndex->l[i]<=k;i++);
 	  }
 	  {
@@ -1100,7 +1144,7 @@ inline void Mpegtoraw::layer3fixtostereo(int gr,REAL in[2][SBLIMIT][SSLIMIT])
 	    }
 		  
 	    for(;lines>0;lines--,i--)
-	      if(in[1][0][i]!=0.0f)
+	      if(flat_sample(in[1], i)!=0.0f)
 	      {
 		sfbcnt=sfb;
 		sfb=0;break;       // quit loop
@@ -1154,9 +1198,9 @@ inline void Mpegtoraw::layer3fixtostereo(int gr,REAL in[2][SBLIMIT][SSLIMIT])
 	REAL temp;
 	int k;
 
-	temp=in[1][0][0];in[1][0][0]=1.0;
-	for(k=ARRAYSIZE-1;in[1][0][k]==0.0;k--);
-	in[1][0][0]=temp;
+	temp=flat_sample(in[1], 0);flat_sample(in[1], 0)=1.0;
+	for(k=ARRAYSIZE-1;flat_sample(in[1], k)==0.0;k--);
+	flat_sample(in[1], 0)=temp;
 	for(i=0;sfBandIndex->l[i]<=k;i++);
       }
 
@@ -1207,14 +1251,16 @@ inline void Mpegtoraw::layer3fixtostereo(int gr,REAL in[2][SBLIMIT][SSLIMIT])
       do{
 	if(is_pos[i]==7)
 	{
-	  REAL t=in[LS][0][i];
-	  in[LS][0][i]=(t+in[RS][0][i])*0.7071068f;
-	  in[RS][0][i]=(t-in[RS][0][i])*0.7071068f;
+	  REAL t=flat_sample(in[LS], i);
+	  flat_sample(in[LS], i)=
+	    (t+flat_sample(in[RS], i))*0.7071068f;
+	  flat_sample(in[RS], i)=
+	    (t-flat_sample(in[RS], i))*0.7071068f;
 	}
 	else
 	{
-	  in[RS][0][i]=in[LS][0][i]*is_ratio[i].r;
-	  in[LS][0][i]*=is_ratio[i].l;
+	  flat_sample(in[RS], i)=flat_sample(in[LS], i)*is_ratio[i].r;
+	  flat_sample(in[LS], i)*=is_ratio[i].l;
 	}
       }while(i--);
     }
@@ -1224,8 +1270,8 @@ inline void Mpegtoraw::layer3fixtostereo(int gr,REAL in[2][SBLIMIT][SSLIMIT])
       do{
 	if(is_pos[i]!=7)
 	{
-	  in[RS][0][i]=in[LS][0][i]*is_ratio[i].r;
-	  in[LS][0][i]*=is_ratio[i].l;
+	  flat_sample(in[RS], i)=flat_sample(in[LS], i)*is_ratio[i].r;
+	  flat_sample(in[LS], i)*=is_ratio[i].l;
 	}
       }while(i--);
     }
@@ -1236,10 +1282,12 @@ inline void Mpegtoraw::layer3fixtostereo(int gr,REAL in[2][SBLIMIT][SSLIMIT])
     {
       int i=ARRAYSIZE-1;
       do{
-	REAL t=in[LS][0][i];
+	REAL t=flat_sample(in[LS], i);
 
-	in[LS][0][i]=(t+in[RS][0][i])*0.7071068f;
-	in[RS][0][i]=(t-in[RS][0][i])*0.7071068f;
+	flat_sample(in[LS], i)=
+	  (t+flat_sample(in[RS], i))*0.7071068f;
+	flat_sample(in[RS], i)=
+	  (t-flat_sample(in[RS], i))*0.7071068f;
       }while(i--);
     }
   }
@@ -1255,19 +1303,9 @@ inline void layer3reorder_1(int version,int frequency,
   int sfb,sfb_start,sfb_lines;
   
   /* NO REORDER FOR LOW 2 SUBBANDS */
-  out[0][ 0]=in[0][ 0];out[0][ 1]=in[0][ 1];out[0][ 2]=in[0][ 2];
-  out[0][ 3]=in[0][ 3];out[0][ 4]=in[0][ 4];out[0][ 5]=in[0][ 5];
-  out[0][ 6]=in[0][ 6];out[0][ 7]=in[0][ 7];out[0][ 8]=in[0][ 8];
-  out[0][ 9]=in[0][ 9];out[0][10]=in[0][10];out[0][11]=in[0][11];
-  out[0][12]=in[0][12];out[0][13]=in[0][13];out[0][14]=in[0][14];
-  out[0][15]=in[0][15];out[0][16]=in[0][16];out[0][17]=in[0][17];
-
-  out[1][ 0]=in[1][ 0];out[1][ 1]=in[1][ 1];out[1][ 2]=in[1][ 2];
-  out[1][ 3]=in[1][ 3];out[1][ 4]=in[1][ 4];out[1][ 5]=in[1][ 5];
-  out[1][ 6]=in[1][ 6];out[1][ 7]=in[1][ 7];out[1][ 8]=in[1][ 8];
-  out[1][ 9]=in[1][ 9];out[1][10]=in[1][10];out[1][11]=in[1][11];
-  out[1][12]=in[1][12];out[1][13]=in[1][13];out[1][14]=in[1][14];
-  out[1][15]=in[1][15];out[1][16]=in[1][16];out[1][17]=in[1][17];
+  for (int subband = 0; subband < 2; ++subband)
+    for (int sample = 0; sample < SSLIMIT; ++sample)
+      out[subband][sample] = in[subband][sample];
 
 
   /* REORDERING FOR REST SWITCHED SHORT */
@@ -1281,9 +1319,11 @@ inline void layer3reorder_1(int version,int frequency,
     {
       int src_line=sfb_start+(sfb_start<<1)+freq;
       int des_line=src_line+(freq<<1);
-      out[0][des_line  ]=in[0][src_line               ];
-      out[0][des_line+1]=in[0][src_line+sfb_lines     ];
-      out[0][des_line+2]=in[0][src_line+(sfb_lines<<1)];
+      flat_sample(out, des_line)=flat_sample(in, src_line);
+      flat_sample(out, des_line+1)=
+	flat_sample(in, src_line+sfb_lines);
+      flat_sample(out, des_line+2)=
+	flat_sample(in, src_line+(sfb_lines<<1));
     }
   }
 }
@@ -1304,9 +1344,11 @@ inline void layer3reorder_2(int version,int frequency,REAL  in[SBLIMIT][SSLIMIT]
       int src_line=sfb_start+(sfb_start<<1)+freq;
       int des_line=src_line+(freq<<1);
 
-      out[0][des_line  ]=in[0][src_line               ];
-      out[0][des_line+1]=in[0][src_line+sfb_lines     ];
-      out[0][des_line+2]=in[0][src_line+(sfb_lines<<1)];
+      flat_sample(out, des_line)=flat_sample(in, src_line);
+      flat_sample(out, des_line+1)=
+	flat_sample(in, src_line+sfb_lines);
+      flat_sample(out, des_line+2)=
+	flat_sample(in, src_line+(sfb_lines<<1));
     }
   }
 }
@@ -1339,12 +1381,14 @@ void layer3antialias_2(REAL  in[SBLIMIT][SSLIMIT],
     {
       REAL bu,bd;
 
-      bu=in[0][index-n-1];bd=in[0][index+n];
-      out[0][index-n-1]=(bu*cs[n])-(bd*ca[n]);
-      out[0][index+n  ]=(bd*cs[n])+(bu*ca[n]);
+      bu=flat_sample(in, index-n-1);bd=flat_sample(in, index+n);
+      flat_sample(out, index-n-1)=(bu*cs[n])-(bd*ca[n]);
+      flat_sample(out, index+n)=(bd*cs[n])+(bu*ca[n]);
     }
-    out[0][index-SSLIMIT+8]=in[0][index-SSLIMIT+8];
-    out[0][index-SSLIMIT+9]=in[0][index-SSLIMIT+9];
+    flat_sample(out, index-SSLIMIT+8)=
+      flat_sample(in, index-SSLIMIT+8);
+    flat_sample(out, index-SSLIMIT+9)=
+      flat_sample(in, index-SSLIMIT+9);
   }
 
   out[31][ 8]=in[31][ 8];out[31][ 9]=in[31][ 9];
@@ -1659,8 +1703,6 @@ void Mpegtoraw::layer3hybrid(int ch,int gr,REAL in[SBLIMIT][SSLIMIT],
   }
 }
 
-#define NEG(a)  (a)=-(a)
-
 void Mpegtoraw::extractlayer3(void)
 {
   if(version)
@@ -1673,7 +1715,8 @@ void Mpegtoraw::extractlayer3(void)
     int main_data_end,flush_main;
     int bytes_to_discard;
 
-    layer3getsideinfo();
+    if (!layer3getsideinfo())
+      return;
 	 
     if(issync())
     {
@@ -1712,70 +1755,39 @@ void Mpegtoraw::extractlayer3(void)
 
   for(int gr=0;gr<2;gr++)
   {
-    union
-    {
-      int  is      [SBLIMIT][SSLIMIT];
-      REAL hin  [2][SBLIMIT][SSLIMIT];
-    }b1;
-    union
-    {
-      REAL ro   [2][SBLIMIT][SSLIMIT];
-      REAL lr   [2][SBLIMIT][SSLIMIT];
-      REAL hout [2][SSLIMIT][SBLIMIT];
-    }b2;
+    int quantized[SBLIMIT][SSLIMIT]{};
+    REAL reordered[2][SBLIMIT][SSLIMIT]{};
+    REAL spectral[2][SBLIMIT][SSLIMIT]{};
+    REAL hybrid[2][SSLIMIT][SBLIMIT]{};
 
 
       layer3part2start=bitwindow.gettotalbit();
       layer3getscalefactors (LS,gr);
-      layer3huffmandecode   (LS,gr      ,b1.is);
-      layer3dequantizesample(LS,gr,b1.is,b2.ro[LS]);
+      layer3huffmandecode   (LS,gr,quantized);
+      layer3dequantizesample(LS,gr,quantized,spectral[LS]);
     if(inputstereo)
     {
       layer3part2start=bitwindow.gettotalbit();
       layer3getscalefactors (RS,gr);
-      layer3huffmandecode   (RS,gr      ,b1.is);
-      layer3dequantizesample(RS,gr,b1.is,b2.ro[RS]);
+      layer3huffmandecode   (RS,gr,quantized);
+      layer3dequantizesample(RS,gr,quantized,spectral[RS]);
     }
 
-    layer3fixtostereo(gr,b2.ro);   // b2.ro -> b2.lr
+    layer3fixtostereo(gr,spectral);
     
     currentprevblock^=1;
-      layer3reorderandantialias(LS,gr,b2.lr[LS],b1.hin[LS]);
-      layer3hybrid (LS,gr,b1.hin[LS],b2.hout[LS]);
+      layer3reorderandantialias(LS,gr,spectral[LS],reordered[LS]);
+      layer3hybrid (LS,gr,reordered[LS],hybrid[LS]);
     if(outputstereo)
     {
-      layer3reorderandantialias(RS,gr,b2.lr[RS],b1.hin[RS]);
-      layer3hybrid (RS,gr,b1.hin[RS],b2.hout[RS]);
+      layer3reorderandantialias(RS,gr,spectral[RS],reordered[RS]);
+      layer3hybrid (RS,gr,reordered[RS],hybrid[RS]);
+    }
 
-      int i=2*SSLIMIT*SBLIMIT-1;
-      do{
-	NEG(b2.hout[0][0][i   ]);NEG(b2.hout[0][0][i- 2]);
-	NEG(b2.hout[0][0][i- 4]);NEG(b2.hout[0][0][i- 6]);
-	NEG(b2.hout[0][0][i- 8]);NEG(b2.hout[0][0][i-10]);
-	NEG(b2.hout[0][0][i-12]);NEG(b2.hout[0][0][i-14]);
-	NEG(b2.hout[0][0][i-16]);NEG(b2.hout[0][0][i-18]);
-	NEG(b2.hout[0][0][i-20]);NEG(b2.hout[0][0][i-22]);
-	NEG(b2.hout[0][0][i-24]);NEG(b2.hout[0][0][i-26]);
-	NEG(b2.hout[0][0][i-28]);NEG(b2.hout[0][0][i-30]);
-      }while((i-=2*SBLIMIT)>0);
-    }
-    else
-    {
-      int i=SSLIMIT*SBLIMIT-1;
-      do{
-	NEG(b2.hout[0][0][i   ]);NEG(b2.hout[0][0][i- 2]);
-	NEG(b2.hout[0][0][i- 4]);NEG(b2.hout[0][0][i- 6]);
-	NEG(b2.hout[0][0][i- 8]);NEG(b2.hout[0][0][i-10]);
-	NEG(b2.hout[0][0][i-12]);NEG(b2.hout[0][0][i-14]);
-	NEG(b2.hout[0][0][i-16]);NEG(b2.hout[0][0][i-18]);
-	NEG(b2.hout[0][0][i-20]);NEG(b2.hout[0][0][i-22]);
-	NEG(b2.hout[0][0][i-24]);NEG(b2.hout[0][0][i-26]);
-	NEG(b2.hout[0][0][i-28]);NEG(b2.hout[0][0][i-30]);
-      }while((i-=2*SBLIMIT)>0);
-    }
+    invert_odd_samples(hybrid, outputstereo ? 2 : 1, SBLIMIT);
 
     for(int ss=0;ss<SSLIMIT;ss++)
-      subbandsynthesis(b2.hout[LS][ss],b2.hout[RS][ss]);
+      subbandsynthesis(hybrid[LS][ss],hybrid[RS][ss]);
   }
 }
 
@@ -1785,7 +1797,8 @@ void Mpegtoraw::extractlayer3_2(void)
     int main_data_end,flush_main;
     int bytes_to_discard;
 
-    layer3getsideinfo_2();
+    if (!layer3getsideinfo_2())
+      return;
 	 
     if(issync())
     {
@@ -1822,62 +1835,39 @@ void Mpegtoraw::extractlayer3_2(void)
 
   //  for(int gr=0;gr<2;gr++)
   {
-    union
-    {
-      int  is      [SBLIMIT][SSLIMIT];
-      REAL hin  [2][SBLIMIT][SSLIMIT];
-    }b1;
-    union
-    {
-      REAL ro   [2][SBLIMIT][SSLIMIT];
-      REAL lr   [2][SBLIMIT][SSLIMIT];
-      REAL hout [2][SSLIMIT][SBLIMIT];
-    }b2;
+    int quantized[SBLIMIT][SSLIMIT]{};
+    REAL reordered[2][SBLIMIT][SSLIMIT]{};
+    REAL spectral[2][SBLIMIT][SSLIMIT]{};
+    REAL hybrid[2][SSLIMIT][SBLIMIT]{};
 
 
       layer3part2start=bitwindow.gettotalbit();
       layer3getscalefactors_2(LS);
-      layer3huffmandecode    (LS,0      ,b1.is);
-      layer3dequantizesample (LS,0,b1.is,b2.ro[LS]);
+      layer3huffmandecode    (LS,0,quantized);
+      layer3dequantizesample (LS,0,quantized,spectral[LS]);
     if(inputstereo)
     {
       layer3part2start=bitwindow.gettotalbit();
       layer3getscalefactors_2(RS);
-      layer3huffmandecode    (RS,0      ,b1.is);
-      layer3dequantizesample (RS,0,b1.is,b2.ro[RS]);
+      layer3huffmandecode    (RS,0,quantized);
+      layer3dequantizesample (RS,0,quantized,spectral[RS]);
     }
 
-    layer3fixtostereo(0,b2.ro);          // b2.ro -> b2.lr
+    layer3fixtostereo(0,spectral);
     
     currentprevblock^=1;
-      layer3reorderandantialias(LS,0,b2.lr[LS],b1.hin[LS]);
-      layer3hybrid (LS,0,b1.hin[LS],b2.hout[LS]);
+      layer3reorderandantialias(LS,0,spectral[LS],reordered[LS]);
+      layer3hybrid (LS,0,reordered[LS],hybrid[LS]);
     if(outputstereo)
     {
-      layer3reorderandantialias(RS,0,b2.lr[RS],b1.hin[RS]);
-      layer3hybrid (RS,0,b1.hin[RS],b2.hout[RS]);
+      layer3reorderandantialias(RS,0,spectral[RS],reordered[RS]);
+      layer3hybrid (RS,0,reordered[RS],hybrid[RS]);
+    }
 
-      int i=2*SSLIMIT*SBLIMIT-1;
-      do{
-	NEG(b2.hout[0][0][i-16]);NEG(b2.hout[0][0][i-18]);
-	NEG(b2.hout[0][0][i-20]);NEG(b2.hout[0][0][i-22]);
-	NEG(b2.hout[0][0][i-24]);NEG(b2.hout[0][0][i-26]);
-	NEG(b2.hout[0][0][i-28]);NEG(b2.hout[0][0][i-30]);
-      }while((i-=2*SBLIMIT)>0);
-    }
-    else
-    {
-      int i=SSLIMIT*SBLIMIT-1;
-      do{
-	NEG(b2.hout[0][0][i-16]);NEG(b2.hout[0][0][i-18]);
-	NEG(b2.hout[0][0][i-20]);NEG(b2.hout[0][0][i-22]);
-	NEG(b2.hout[0][0][i-24]);NEG(b2.hout[0][0][i-26]);
-	NEG(b2.hout[0][0][i-28]);NEG(b2.hout[0][0][i-30]);
-      }while((i-=2*SBLIMIT)>0);
-    }
+    invert_odd_samples(hybrid, outputstereo ? 2 : 1, SBLIMIT / 2);
 
     for(int ss=0;ss<SSLIMIT;ss++)
-      subbandsynthesis(b2.hout[LS][ss],b2.hout[RS][ss]);
+      subbandsynthesis(hybrid[LS][ss],hybrid[RS][ss]);
   }
 }
 

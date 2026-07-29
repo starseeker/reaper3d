@@ -13,7 +13,9 @@ using std::vector;
 
 struct Triangle : public PtrTriangle
 {
-	Triangle(const IdxTriangle &t, Point *pts) : PtrTriangle(&pts[t.v1], &pts[t.v2], &pts[t.v3]) {
+	Triangle(const IdxTriangle &t, Point *pts)
+		: PtrTriangle(&pts[t.v1], &pts[t.v2], &pts[t.v3]), lit(false)
+	{
 		n = norm(cross(*v2-*v1,*v3-*v1));
 	}
 
@@ -23,13 +25,12 @@ struct Triangle : public PtrTriangle
 
 struct Edge 
 {
-	Point *p1, *p2;
-	Triangle *t1, *t2;
+	Point *p1;
+	Point *p2;
+	Triangle *t1;
+	Triangle *t2;
 	
-	Edge(Point *P1, Point *P2) : t1(0), t2(0) {
-		p1 = P1;
-		p2 = P2;
-	}
+	Edge(Point *P1, Point *P2) : p1(P1), p2(P2), t1(nullptr), t2(nullptr) {}
 
 	bool operator==(const Edge &e) const {
 		return (p1 == e.p1 && p2 == e.p2) || (p1 == e.p2 && p2 == e.p1);
@@ -44,9 +45,8 @@ public:
 	Matrix mtx;
 	vector<Point> points;
 	vector<IdxTriangle> triangles;
-	const Geometry *geometry;
+	const Geometry *geometry = nullptr;
 
-	ShadowVolume() {}
 	void reset();
 	void render() const;
 
@@ -62,7 +62,7 @@ public:
 
 	void add_edge(Point *p1, Point *p2, Triangle *tri);
 
-	Geometry() {}
+	Geometry() = default;
 	Geometry(const vector<Point> &pts, const vector<IdxTriangle> &tris);
 	
 	void init(const vector<Point> &pts, const vector<IdxTriangle> &tris);
@@ -76,4 +76,3 @@ public:
 }
 
 #endif
-

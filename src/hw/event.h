@@ -146,8 +146,8 @@ public:
 	virtual void set_source(EventSource*) = 0;
 };
 
-EventFilter* make_savedevice();
-EventFilter* make_playbackdevice(const std::string& name);
+std::unique_ptr<EventFilter> make_savedevice();
+std::unique_ptr<EventFilter> make_playbackdevice(const std::string& name);
 
 
 /** Event consumer. */
@@ -180,12 +180,12 @@ typedef std::map<id::EventID, float> EventTable;
 
 class EventProxy
 {
-	EventDispatcher* impl;
+	std::weak_ptr<EventDispatcher> impl;
 	EventTable ev_table;
 	PlayerID listener_id;
 
 	friend class EventSystem;
-	EventProxy(EventDispatcher*, PlayerID id);
+	EventProxy(const std::shared_ptr<EventDispatcher>&, PlayerID id);
 
 	std::vector<float> state;
 
@@ -222,7 +222,7 @@ public:
 
 class EventSystem
 {
-	static std::unique_ptr<EventDispatcher> impl;
+	static std::shared_ptr<EventDispatcher> impl;
 public:
 	EventSystem(hw::gfx::Gfx&);
 	~EventSystem();
@@ -240,7 +240,7 @@ public:
 	  * \throw busy_id, invalid_id
 	  */
 	static EventProxy get_ref(PlayerID id);
-	static EventProxy* create_ref(PlayerID id);
+	static std::unique_ptr<EventProxy> create_ref(PlayerID id);
 
 	/** Set inputmapping.
 	 *  Changes eventmaps and discards all queued events.
@@ -253,7 +253,7 @@ public:
 	 */
 	void set_mapping(const std::string& id);
 
-	void add_filter(EventFilter*);
+	void add_filter(std::unique_ptr<EventFilter>);
 };
 
 
@@ -270,5 +270,3 @@ public:
 }
 
 #endif
-
-

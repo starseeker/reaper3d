@@ -11,57 +11,26 @@
 
 #include "mpegsound.h"
 
-#ifndef WORDS_BIGENDIAN
-#define _KEY 0
-#else
-#define _KEY 3
-#endif
+#include <algorithm>
+#include <cstdint>
 
 namespace mpegsound {
 
 int Mpegbitwindow::getbits(int bits)
 {
-  union
+  std::uint32_t value = 0;
+  while (bits > 0)
   {
-    char store[4];
-    int current;
-  }u;
-  int bi;
-  if(!bits)return 0;
-
-  u.current=0;
-  bi=(bitindex&7);
-  //  u.store[_KEY]=buffer[(bitindex>>3)&(WINDOWSIZE-1)]<<bi;
-  u.store[_KEY]=buffer[bitindex>>3]<<bi;
-  bi=8-bi;
-  bitindex+=bi;
-
-  while(bits)
-  {
-    if(!bi)
-    {
-      //      u.store[_KEY]=buffer[(bitindex>>3)&(WINDOWSIZE-1)];
-      u.store[_KEY]=buffer[bitindex>>3];
-      bitindex+=8;
-      bi=8;
-    }
-
-    if(bits>=bi)
-    {
-      u.current<<=bi;
-      bits-=bi;
-      bi=0;
-    }
-    else
-    {
-      u.current<<=bits;
-      bi-=bits;
-      bits=0;
-    }
+    const int bit_offset = bitindex & 7;
+    const int count = std::min(bits, 8 - bit_offset);
+    const auto byte = static_cast<std::uint8_t>(buffer[bitindex >> 3]);
+    const auto mask = (1U << count) - 1U;
+    value = (value << count) |
+            ((byte >> (8 - bit_offset - count)) & mask);
+    bitindex += count;
+    bits -= count;
   }
-  bitindex-=bi;
-
-  return (u.current>>8);
+  return static_cast<int>(value);
 }
 
 }

@@ -57,7 +57,8 @@ void Renderer::simulate(float dt)
 	hw::time::Profile p(stats[Simul]);
 	deque<SimEffect*> eff;
 
-	for_each(seq(lakes),          apply_val(&Lake::simulate, dt));
+	for (const auto& lake : lakes)
+		lake->simulate(dt);
 	for_each(seq(simul_effects),  apply_val(&SimEffect::simulate, dt));
 	for_each(seq(orphan_effects), collect_dead(back_inserter(eff), dt));
 	for_each(seq(eff),            remove_dead(orphan_effects));

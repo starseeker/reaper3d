@@ -3,6 +3,7 @@
 #include <cmath>
 #include <cstdlib>
 #include <algorithm>
+#include <limits>
 #include <stack>
 
 #include "main/types.h"
@@ -305,6 +306,19 @@ int load_s3tc(const std::string &file)
 	reaper::gfx::throw_on_gl_error("texture::load_s3tc() - entering");
 
 	res::res_stream is(res::Cache, file + ".s3tc", res::throw_on_error);
+	is.seekg(0, std::ios::end);
+	const std::streamoff file_size = is.tellg();
+	is.seekg(0, std::ios::beg);
+
+	const auto reject_cache = [&file]() -> void {
+		throw res::resource_not_found(
+			"invalid compressed texture cache: " + file + ".s3tc");
+	};
+
+	constexpr std::streamoff header_size = 6 * sizeof(int);
+	if (!is || file_size < header_size + static_cast<std::streamoff>(sizeof(int)))
+		reject_cache();
+
 	int w, h, c, format, internal_format, size;
 
 	read_binary(is, w);
@@ -314,31 +328,57 @@ int load_s3tc(const std::string &file)
 	read_binary(is, internal_format);
 	read_binary(is, size);
 
-	char *data   = (char*)malloc(w*h*c);
-	int lod      = 0;
-	int tot_size = size;
+	if (!is || w <= 0 || h <= 0 || w > 32768 || h > 32768 ||
+	    (c != 1 && c != 3 && c != 4) || format != get_format(c) ||
+	    internal_format != static_cast<int>(to_compressed(format)))
+		reject_cache();
+
+	const int max_lods = 1 + static_cast<int>(
+		std::floor(std::log2(static_cast<double>(std::max(w, h)))));
+	std::vector<char> data;
+	int lod = 0;
+	std::size_t total_size = 0;
 
 	int begin_lod = calc_lod(w, h, Settings::current.texture_scaling);
 
 	while(size != 0) {
-		is.read(data, size);
+		const std::streamoff data_pos = is.tellg();
+		if (lod >= max_lods || size < 0 || data_pos < 0 ||
+		    static_cast<std::streamoff>(size) >
+			    file_size - data_pos - static_cast<std::streamoff>(sizeof(int)))
+			reject_cache();
+
+		data.resize(static_cast<std::size_t>(size));
+		is.read(data.data(), size);
+		if (!is)
+			reject_cache();
+
 		if(lod >= begin_lod) {
 			int actual_lod = lod - begin_lod;
-			glCompressedTexImage2DARB(GL_TEXTURE_2D, actual_lod, internal_format, w, h, 0, size, data );
+			glCompressedTexImage2DARB(
+				GL_TEXTURE_2D, actual_lod, internal_format, w, h, 0,
+				size, data.data());
+			total_size += static_cast<std::size_t>(size);
+			if (total_size > static_cast<std::size_t>(
+				    std::numeric_limits<int>::max()))
+				reject_cache();
 		}
-		read_binary(is,size);
-		if(lod >= begin_lod) {
-			tot_size += size;
-		}
+
+		read_binary(is, size);
+		if (!is)
+			reject_cache();
+
 		w = max(1,w>>1);
 		h = max(1,h>>1);
 		lod++;
 	}
-	
-	free(data);
+
+	if (lod != max_lods)
+		reject_cache();
+
 	reaper::gfx::throw_on_gl_error("texture::load_s3tc()");
 
-	return tot_size;
+	return static_cast<int>(total_size);
 }
 
 int generate_save_s3tc(const std::string &file)

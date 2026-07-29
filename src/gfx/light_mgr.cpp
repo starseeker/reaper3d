@@ -15,7 +15,6 @@
 
 #include "misc/parse.h"
 #include "misc/sequence.h"
-#include "misc/free.h"
 
 #include "main/types_io.h"
 #include "main/types4_io.h"
@@ -49,7 +48,7 @@ class LightMgrImpl
 	typedef StaticCont::iterator  static_iterator;
 	typedef DynamicCont::iterator dynamic_iterator;
 
-	std::deque<Light*> read_lights;  // light sources that we own
+	std::deque<std::unique_ptr<Light>> read_lights;
 
 	GlobalCont globals;
 	DynamicCont dynamics;
@@ -146,8 +145,10 @@ LightMgrImpl::LightMgrImpl(const std::string& file) :
 		float la    = withdefault(light_data, "Linear Attenuation", 0.0);
 		float qa    = withdefault(light_data, "Quadratic Attenuation", 0.0);
 
-		Light *li = new Light(pos,dir,exp,ang,diff,spec,amb,ca,la,qa);
-		read_lights.push_back(li);
+		auto light = std::make_unique<Light>(
+			pos, dir, exp, ang, diff, spec, amb, ca, la, qa);
+		Light* li = light.get();
+		read_lights.push_back(std::move(light));
 
 		if(pos.w == 0 || amb != Color(0,0,0,1) || (la==0 && qa==0)) {
 			globals.push_back(li);
@@ -163,7 +164,6 @@ LightMgrImpl::LightMgrImpl(const std::string& file) :
 
 LightMgrImpl::~LightMgrImpl()
 {
-	for_each(seq(read_lights), delete_it);
 	//dout << "LightMgrImpl(): destroyed\n";
 }
 

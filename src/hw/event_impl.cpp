@@ -91,11 +91,10 @@ public:
 class InputReader : public EventFilter {
 	lowlevel::Gfx_driver_data* gx;
 	InputDevices inputs;
-	InputDevices::iterator current;
 	std::unique_ptr<MainEvIF_impl> mev;
 public:
 	InputReader(lowlevel::Gfx_driver_data* g)
-	 : gx(g), mev(new MainEvIF_impl())
+	 : gx(g), mev(std::make_unique<MainEvIF_impl>())
 	{
 		res::ConfigEnv cnf("hw_input");
 		res::ConfigEnv axis_conf(cnf["joystick"]);
@@ -104,15 +103,13 @@ public:
 		// Always use GLFW input system - plugin architecture removed
 		std::unique_ptr<InputDeviceModule> inp(create_event_glfw(mev.get()));
 
-		inp->scan_inputdevices(gx, std::back_inserter(inputs));
-		current = inputs.begin();
+		inputs = inp->scan_inputdevices(gx);
 	}
 
 	bool poll(Event& ev) {
 		// FIXME, should round-robin or something..
-		InputDevices::iterator i = inputs.begin();
-		for (;i != inputs.end(); ++i) {
-			if ((*i)->poll(ev)) {
+		for (const auto& input : inputs) {
+			if (input->poll(ev)) {
 				ev.time = hw::time::get_rel_time();
 //				derr << "Reading: " << ev << '\n';
 				return true;
@@ -241,10 +238,10 @@ bool EventDispatcher::get_event(Event& e, PlayerID id, bool block)
 	return true;
 }
 
-void EventDispatcher::add_filter(EventFilter* f)
+void EventDispatcher::add_filter(std::unique_ptr<EventFilter> f)
 {
 	f->set_source(filters.back().get());
-	filters.emplace_back(f);
+	filters.push_back(std::move(f));
 }
 
 }

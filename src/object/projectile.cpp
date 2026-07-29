@@ -5,7 +5,6 @@
 #include "object/event.h"
 #include "misc/command.h"
 #include "object/projectile.h"
-#include "misc/free.h"
 #include "snd/sound_system.h"
 
 namespace reaper {
@@ -24,7 +23,7 @@ ProjectileBase::ProjectileBase(const std::string& name, const Matrix &mtx, Compa
 	ShotBase(data, sim, phys_data.lifespan, mtx * Vector(0, 0, -phys_data.speed), p), 
 	phys(data, get_mtx()*Vector(0, 0, -phys_data.speed), phys_data, sim_time,sim_time+phys_data.lifespan),
 	death_time(sim_time+phys_data.lifespan),
-	sound(0),
+	sound_effect(nullptr),
 	hull(data, 0.0, 0.0)  //A dummy hull with zero life
 {
 }
@@ -35,9 +34,9 @@ ProjectileBase::~ProjectileBase()
 
 void ProjectileBase::move()
 {
-	if (sound) {
-		sound->set_location(data.get_mtx());
-		sound->set_velocity(velocity);
+	if (sound_effect) {
+		sound_effect->set_location(data.get_mtx());
+		sound_effect->set_velocity(velocity);
 	}
 }
 
@@ -45,7 +44,7 @@ Laser::Laser(const Matrix &mtx, CompanyID c, double sim, ID p) :
 	ProjectileBase("laser", mtx, c, sim, p),
 	rd(phys_data, get_mtx())
 {
-	sound = sound::create_proj(phys_data.sound, mtx, velocity);
+	sound_effect = sound::create_proj(phys_data.sound, mtx, velocity);
 	events().death.add_listener(misc::mk_cmd(this, &Laser::on_kill));
 }
 
@@ -65,7 +64,7 @@ void Laser::on_kill()
 {
 	hull_hit(get_pos(), phys_data.exp_intensity);
 	gfx::static_light(get_pos(), phys_data.color, phys_data.light_radius,2).insert_release();
-	misc::zero_delete(sound);
+	sound_effect.reset();
 }
 
 void Laser::collide(const CollisionInfo&)
@@ -79,7 +78,7 @@ void Missile::on_kill()
 	gfx::static_light(get_pos() + Vector(0,5,0), phys_data.color,
 			  phys_data.light_radius, .3).insert_release();
 	rd.kill();
-	misc::zero_delete(sound);
+	sound_effect.reset();
 }
 
 void Missile::collide(const CollisionInfo&)
@@ -94,4 +93,3 @@ void ProjectileBase::simulate(double dt)
 
 }
 }
-

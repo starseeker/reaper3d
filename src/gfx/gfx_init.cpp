@@ -49,8 +49,9 @@ Renderer::Renderer(const world::LevelInfo &li) :
 	orphan_effects(li.terrain_min_x, li.terrain_min_z, li.terrain_max_x - li.terrain_min_x),
 	stats(this), simul_effects_size(0), orphan_effects_size(0)
 {
-	for(std::vector<world::LevelInfo::Lake>::const_iterator i = li.lakes.begin(); i != li.lakes.end(); ++i) {
-		lakes.push_back(new Lake(i->mesh, i->texture, i->wave_dir, i->amplitude));
+	for (const auto& lake : li.lakes) {
+		lakes.push_back(std::make_unique<Lake>(
+			lake.mesh, lake.texture, lake.wave_dir, lake.amplitude));
 	}
 }
 
@@ -95,7 +96,6 @@ Renderer::~Renderer()
 	using namespace reaper::misc;
 
 	for_each(seq(orphan_effects), delete_it);
-	for_each(seq(lakes),          delete_it);
 }
 
 //--------------------------------------------------------------------
@@ -173,13 +173,13 @@ pm::Pmd* Renderer::get_pmd()
  * reversed last two revs
  *
  * Revision 1.110  2002/01/16 00:25:27  picon
- * terrängbelysning
+ * terrÃ¤ngbelysning
  *
  * Revision 1.109  2002/01/11 14:28:08  macke
  * no message
  *
  * Revision 1.108  2002/01/10 23:09:08  macke
- * massa bök
+ * massa bÃ¶k
  *
  * Revision 1.107  2002/01/01 23:28:41  peter
  * 3-stage startup..
@@ -188,8 +188,8 @@ pm::Pmd* Renderer::get_pmd()
  * 0.93
  *
  * Revision 1.105  2001/12/17 16:28:32  macke
- * div bök
+ * div bÃ¶k
  *
  * Revision 1.104  2001/12/14 16:31:24  macke
- * meck å pul
+ * meck Ã¥ pul
  */

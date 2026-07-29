@@ -51,7 +51,6 @@ public:
 };
 
 
-typedef std::deque<EventSource*> InputSources;
 using Filters = std::deque<std::unique_ptr<EventFilter>>;
 using PlayerQueues =
 	std::map<PlayerID, std::unique_ptr<EventQueue>>;
@@ -81,7 +80,7 @@ public:
 	~EventDispatcher();
 	void poll_inputs();
 
-	void add_filter(EventFilter*);
+	void add_filter(std::unique_ptr<EventFilter>);
 };
 
 }

@@ -348,15 +348,18 @@ CloudEffect::CloudEffect(std::unique_ptr<CloudMgr> c)
 void CloudEffect::init()
 {
 	cloud->init();
-	ref().insert(this);
-	attached = true;
+	if (auto* renderer = ref()) {
+		renderer->insert(this);
+		attached = true;
+	}
 }
 
 void CloudEffect::detach()
 {
 	if (!attached)
 		return;
-	ref().remove(this);
+	if (auto* renderer = ref())
+		renderer->remove(this);
 	attached = false;
 }
 

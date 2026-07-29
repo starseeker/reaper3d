@@ -4,8 +4,22 @@ set_target_properties(service_handle_test PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
 )
 
+add_executable(mp3_decoder_test mp3_decoder_test.cpp)
+target_link_libraries(mp3_decoder_test PRIVATE
+    -Wl,--start-group hw res misc main ext -Wl,--end-group
+    ${OPENAL_LIBRARIES}
+    Threads::Threads
+)
+target_include_directories(mp3_decoder_test PRIVATE ${OPENAL_INCLUDE_DIRS})
+set_target_properties(mp3_decoder_test PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
+)
+
 if(BUILD_TESTING)
     add_test(NAME service_handles COMMAND service_handle_test)
+    add_test(NAME bundled_mp3_decoder COMMAND mp3_decoder_test)
+    set_tests_properties(bundled_mp3_decoder PROPERTIES
+        WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
 endif()
 
 if(OSMESA_FOUND)
