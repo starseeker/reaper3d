@@ -49,17 +49,17 @@ public:
 //////////////////////////////////////////////////////////////////////////////////////////
 
 template<class T>
-inline VertexArray<T>::VertexArray() : ptr(0)
+inline VertexArray<T>::VertexArray() : ptr(nullptr)
 {
 	if (!ref.valid())
-		VertexRef::create();
+		ref = VertexRef::create();
 }
 
 template<class T>
-inline VertexArray<T>::VertexArray(size_t n) : ptr(0)
+inline VertexArray<T>::VertexArray(size_t n) : ptr(nullptr)
 {
 	if (!ref.valid())
-		VertexRef::create();
+		ref = VertexRef::create();
 	ptr = static_cast<T*>(ref->malloc(n*sizeof(T)));
 }
 
@@ -75,14 +75,13 @@ template<class T>
 inline void VertexArray<T>::free()
 {
 	if(ptr != nullptr) ref->free(ptr);
-	ptr = 0;
-	size = 0;
+	ptr = nullptr;
 }
 
 template<class T>
 inline void VertexArray<T>::resize(size_t n, bool keep_data)
 {
-	if(ptr == 0) {
+	if(ptr == nullptr) {
 		ptr = static_cast<T*>(ref->malloc(n*sizeof(T)));
 	} else {
 		ptr = static_cast<T*>(ref->realloc(ptr, n*sizeof(T), keep_data));
@@ -196,4 +195,3 @@ inline void VertexArray<T>::glDrawElements_stripe(GLenum mode, GLsizei count, co
  * h�pp
  *
  */
-
