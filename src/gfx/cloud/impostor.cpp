@@ -10,7 +10,6 @@
 #include "gfx/matrix_utils.h"
 
 #include "misc/sequence.h"
-#include "misc/free.h"
 
 namespace reaper {
 namespace gfx {
@@ -19,11 +18,6 @@ namespace cloud {
 using namespace reaper::misc;
 
 namespace { debug::DebugOutput derr("cloud"); }
-
-Layer::~Layer()
-{
-	for_each(seq(texmap), delete_it);
-}
 
 Impostor::Impostor(float r)
  : enable_flag(false), regen_flag(false), use_flag(false), scale(1.0),
@@ -43,7 +37,7 @@ void Impostor::setup(float r)
 	def.rel = Vector(0,0,0);
 	def.z_range.first = -r;
 	def.z_range.second = r;
-	layers.push_back(def);
+	layers.push_back(std::move(def));
 }
 
 std::pair<float,float> Impostor::z_range(int k) const 
@@ -105,8 +99,9 @@ texture::DynamicTexture* Impostor::get_tex(int k, float f)
 	int sz = sel_sz(f);
 	Layer& l = layers[k];
 	if (l.texmap.find(sz) == l.texmap.end())
-		l.texmap[sz] = new texture::DynamicTexture(sz,sz);
-	return l.texmap[sz];
+		l.texmap[sz] =
+			std::make_unique<texture::DynamicTexture>(sz, sz);
+	return l.texmap[sz].get();
 }
 
 void Impostor::before_render(const Camera& cam, const Matrix& ply)
@@ -163,8 +158,8 @@ void Impostor::before_render(const Camera& cam, const Matrix& ply)
 		l2.z_range.second = radius;
 		l2.rel = e_a * radius;
 
-		layers.push_back(l2);
-		layers.push_back(l1);
+		layers.push_back(std::move(l2));
+		layers.push_back(std::move(l1));
 
 	} else {
 */
@@ -214,5 +209,4 @@ void Impostor::render(const Point& pos, float radius)
 }
 }
 }
-
 

@@ -284,18 +284,17 @@ WaveDecoder::~WaveDecoder()
 {
 }
 
-bool WaveDecoder::init(res::res_stream* is)
+bool WaveDecoder::init(std::unique_ptr<res::res_stream> is)
 {
 	int size;
 	snd::get(*is, wave_info, size);
 	snd::get(*is, smp, size);
-	delete is;
 	return true;
 }
 
 AudioSourcePtr WaveDecoder::get()
 {
-	return new WaveSource(wave_info, &smp);
+	return std::make_unique<WaveSource>(wave_info, &smp);
 }
 
 

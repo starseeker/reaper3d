@@ -127,19 +127,21 @@ public:
 
 class Mp3Source : public AudioSource
 {
-	std::istream* owned_input;
+	std::unique_ptr<std::istream> owned_input;
 public:
 	StreamInput input;
 	MemOutput output;
 	mpegsound::Mpegtoraw mp3dec;
 
-	Mp3Source(std::istream* i)
-	 : owned_input(i), input(i), mp3dec(&input, &output)
+	explicit Mp3Source(std::unique_ptr<std::istream> i)
+	 : owned_input(std::move(i)),
+	   input(owned_input.get()),
+	   mp3dec(&input, &output)
 	{
 		mp3dec.initialize();
 		mp3dec.run(-1);
 	}
-	~Mp3Source() { delete owned_input; }
+	~Mp3Source() = default;
 
 	SoundInfo info()
 	{
@@ -156,37 +158,24 @@ public:
 	}
 };
 
-Mp3Decoder::Mp3Decoder()
- : rs(0), src(0)
-{
-}
+Mp3Decoder::Mp3Decoder() = default;
 
-Mp3Decoder::~Mp3Decoder()
-{
-	delete src;
-	delete rs;
-}
+Mp3Decoder::~Mp3Decoder() = default;
 
 
-bool Mp3Decoder::init(res::res_stream* is)
+bool Mp3Decoder::init(std::unique_ptr<res::res_stream> is)
 {
-	delete src;
-	delete rs;
-	rs = is;
-	src = new Mp3Source(rs);
-	rs = 0;
+	src.reset();
+	rs = std::move(is);
+	src = std::make_unique<Mp3Source>(std::move(rs));
 	return true;
 }
 
 AudioSourcePtr Mp3Decoder::get()
 {
-	if (src) {
-		AudioSource* as = src;
-		src = 0;
-		return AudioSourcePtr(as);
-	} else {
-		return AudioSourcePtr(new Mp3Source(rs));
-	}
+	if (src)
+		return std::move(src);
+	return std::make_unique<Mp3Source>(std::move(rs));
 }
 
 

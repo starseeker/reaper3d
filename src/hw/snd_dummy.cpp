@@ -143,12 +143,10 @@ public:
 
 	EffectPtr prepare(AudioSourcePtr sd)
 	{
-		delete sd;
 		return EffectPtr(new Dummy("effect", main));
 	}
 	SoundPtr prepare_streaming(AudioSourcePtr sd)
 	{
-		delete sd;
 		return SoundPtr(new Dummy("music", main));
 	}
 	void set_volume(float vol) { }
@@ -167,4 +165,3 @@ void* create_snd_dummy(reaper::hw::ifs::Snd* main)
 	return new reaper::hw::snd::dummy::Subsystem(main);
 }
 }
-

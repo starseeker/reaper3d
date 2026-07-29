@@ -1,6 +1,7 @@
 /* $Id: snd_openal.cpp,v 1.78 2002/06/06 07:57:56 pstrand Exp $ */
 
 
+#include <memory>
 #include <string>
 
 #include "hw/exceptions.h"
@@ -84,8 +85,13 @@ const Vector zero = Vector(0.0, 0.0, 0.0);
 typedef ALuint buffer_id;
 
 struct Buffer {
-	buffer_id id;
-	int use;
+	buffer_id id = 0;
+
+	~Buffer()
+	{
+		if (id)
+			alDeleteBuffers(1, &id);
+	}
 };
 
 ALenum info2format(const SoundInfo& info)
@@ -101,7 +107,7 @@ class WaveEffect : public Effect
 	ifs::Snd* snd;
 	SrcMgr& mgr;
 
-	Buffer* buf;
+	std::shared_ptr<Buffer> buf;
 
 	int src_ix;
 	source_id src_id;
@@ -136,25 +142,22 @@ class WaveEffect : public Effect
 		al_chk_err("stop end");
 	}
 public:
-	WaveEffect(ifs::Snd* s, SrcMgr& m, Buffer* b)
-	 : snd(s), mgr(m), buf(b), src_ix(-1), src_id(0),
+	WaveEffect(ifs::Snd* s, SrcMgr& m, std::shared_ptr<Buffer> b)
+	 : snd(s), mgr(m), buf(std::move(b)), src_ix(-1), src_id(0),
 	   pos(0,0,0), vec(0,0,0), vel(0,0,0), 
 	   pitch(1.0), vol(1.0), loop(false)
 	{
 		al_chk_err("WaveEffect begin");
-		++buf->use;
 		al_chk_err("WaveEffect end");
 	}
 	~WaveEffect()
 	{
-		al_chk_err("~WaveEffect begin");
-		stop();
-		if (--buf->use == 0) {
-			alDeleteBuffers(1, &buf->id);
-			al_chk_err("~WaveEffect 1");
-			delete buf;
+		try {
+			stop();
+		} catch (const std::exception& error) {
+			snd->derr() << "OpenAL effect cleanup failed: "
+			            << error.what() << '\n';
 		}
-		al_chk_err("~WaveEffect end");
 	}
 	void play()
 	{
@@ -389,6 +392,11 @@ bool Subsystem::init()
 	const char* device_name =
 		configured_device.empty() ? nullptr : configured_device.c_str();
 	dev = alcOpenDevice(device_name);
+	if (!dev && device_name) {
+		snd->derr() << "OpenAL device \"" << configured_device
+		            << "\" unavailable; trying the system default\n";
+		dev = alcOpenDevice(nullptr);
+	}
 	if (!dev)
 		return false;
 	cxt = alcCreateContext(dev, 0);
@@ -397,9 +405,8 @@ bool Subsystem::init()
 		dev = nullptr;
 		return false;
 	}
-	alcMakeContextCurrent(cxt);
-
-	if (alcGetCurrentContext() == 0) {
+	if (alcMakeContextCurrent(cxt) == ALC_FALSE ||
+	    alcGetCurrentContext() != cxt) {
 		alcDestroyContext(cxt);
 		cxt = nullptr;
 		alcCloseDevice(dev);
@@ -431,7 +438,12 @@ bool Subsystem::init()
 //	alDopplerVelocity(1.0);
 	al_chk_err("init 6");
 	is_init = true;
-	snd->derr() << "OpenAL sound init\n";
+	const ALCchar* active_device =
+		alcGetString(dev, ALC_DEVICE_SPECIFIER);
+	snd->derr() << "OpenAL sound initialized"
+	            << (active_device ? std::string(" on ") + active_device
+	                              : std::string())
+	            << '\n';
 	if (!mgr.data.init())
 		throw hw_error("OpenAL source initialization error!");
 	mgr.init();
@@ -441,20 +453,22 @@ bool Subsystem::init()
 EffectPtr Subsystem::prepare(AudioSourcePtr sd)
 {
 	if (!is_init) {
-		delete sd;
 		return nullptr;
 	}
 	al_chk_err("prep begin");
 
-	Buffer*  buf = new Buffer;
+	auto buf = std::make_shared<Buffer>();
 	ALenum format = info2format(sd->info());
 
 	alGenBuffers(1, &buf->id);
-	buf->use = 0;
 	Samples smp;
 	sd->read(smp);
-	alBufferData(buf->id, format, &smp[0], smp.size(), sd->info().samplerate);
-	delete sd;
+	alBufferData(
+		buf->id,
+		format,
+		smp.data(),
+		static_cast<ALsizei>(smp.size()),
+		sd->info().samplerate);
 
 	al_chk_err("prep end");
 	EffectPtr eff(new WaveEffect(snd, mgr, buf));
@@ -465,7 +479,6 @@ EffectPtr Subsystem::prepare(AudioSourcePtr sd)
 SoundPtr Subsystem::prepare_streaming(AudioSourcePtr dec)
 {
 	if (!is_init || !dec) {
-		delete dec;
 		return nullptr;
 	}
 	const SoundInfo info = dec->info();
@@ -477,7 +490,6 @@ SoundPtr Subsystem::prepare_streaming(AudioSourcePtr dec)
 		more = dec->read(chunk);
 		samples.insert(samples.end(), chunk.begin(), chunk.end());
 	} while (more);
-	delete dec;
 	return SoundPtr(new BufferedSound(info, samples));
 }
 

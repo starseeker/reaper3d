@@ -83,14 +83,14 @@ public:
 template<class C>
 void cube(C& particles)
 {
-	particles.push_back(new Particle(Point(0, 0, 0), 2));
-	particles.push_back(new Particle(Point(5, 0, 0), 2));
-	particles.push_back(new Particle(Point(0, 5, 0), 2));
-	particles.push_back(new Particle(Point(5, 5, 0), 2));
-	particles.push_back(new Particle(Point(0, 0, 5), 2));
-	particles.push_back(new Particle(Point(5, 0, 5), 2));
-	particles.push_back(new Particle(Point(0, 5, 5), 2));
-	particles.push_back(new Particle(Point(5, 5, 5), 2));
+	particles.push_back(std::make_unique<Particle>(Point(0, 0, 0), 2));
+	particles.push_back(std::make_unique<Particle>(Point(5, 0, 0), 2));
+	particles.push_back(std::make_unique<Particle>(Point(0, 5, 0), 2));
+	particles.push_back(std::make_unique<Particle>(Point(5, 5, 0), 2));
+	particles.push_back(std::make_unique<Particle>(Point(0, 0, 5), 2));
+	particles.push_back(std::make_unique<Particle>(Point(5, 0, 5), 2));
+	particles.push_back(std::make_unique<Particle>(Point(0, 5, 5), 2));
+	particles.push_back(std::make_unique<Particle>(Point(5, 5, 5), 2));
 }
 
 template<class C>
@@ -99,7 +99,8 @@ void medium_cube(C& ps)
 	for (int i = 0; i < 10; i+=3) {
 		for (int j = 0; j < 10; j+=5) {
 			for (int k = 0; k < 10; k+=2) {
-				ps.push_back(new Particle(Point(i, j, k), 3.0));
+				ps.push_back(
+					std::make_unique<Particle>(Point(i, j, k), 3.0));
 			}
 		}
 	}
@@ -111,7 +112,8 @@ void big_cube(C& ps)
 	for (int i = 0; i < 10; ++i) {
 		for (int j = 0; j < 10; ++j) {
 			for (int k = 0; k < 10; ++k) {
-				ps.push_back(new Particle(Point(i, j, k), 1.0));
+				ps.push_back(
+					std::make_unique<Particle>(Point(i, j, k), 1.0));
 			}
 		}
 	}
@@ -122,16 +124,17 @@ void random1(C& ps)
 {
 	reaper::misc::CenterRand rnd(-1.0, 1.0);
 	for (int i = 0; i < 1000; ++i) {
-		ps.push_back(new Particle(Point(5*rnd(), 4*rnd(), 8*rnd()), 1.1 + rnd(), 8.0, 0.9));
+		ps.push_back(std::make_unique<Particle>(
+			Point(5*rnd(), 4*rnd(), 8*rnd()), 1.1 + rnd(), 8.0, 0.9));
 
 	}
 }
 
-Particle* rnd_particle(reaper::misc::FakeRand& rnd)
+std::unique_ptr<Particle> rnd_particle(reaper::misc::FakeRand& rnd)
 {
 	Point p(rnd(), rnd(), rnd());
 	float size = 3.5 + 7*rnd()*(2-length(p));
-	return new Particle(Point(p*Point(40,12,55)), size);
+	return std::make_unique<Particle>(Point(p*Point(40,12,55)), size);
 }
 
 template<class C>
@@ -156,7 +159,7 @@ void simul1(C& sc, P& ps)
 				if (sc.get(x,y,z) > 0.5) {
 					Point p((30.0-x)*3.5, (10.0-y)*2.5, (30.0-z)*4.0);
 					p += Point(rnd(), rnd(), rnd());
-					ps.push_back(new Particle(p, f*25.0));
+					ps.push_back(std::make_unique<Particle>(p, f*25.0));
 				}
 			}
 		}
@@ -177,21 +180,19 @@ Cloud::Cloud(const Point& p, float r)
 	simul1(sc, particles);
 }
 
-void uncolor(Particle* p)
-{
-	p->colors.clear();
-}
-
 void Cloud::init()
 {
-	for_each(seq(particles), uncolor);
+	for (const auto& particle : particles)
+		particle->colors.clear();
 }
 
 struct ZDistMin
 {
 	Vector dir;
 	ZDistMin(const Vector& d) : dir(d) { }
-	bool operator()(const Particle* p1, const Particle* p2) const {
+	bool operator()(
+		const std::unique_ptr<Particle>& p1,
+		const std::unique_ptr<Particle>& p2) const {
 		return dot(p1->pos,dir) < dot(p2->pos,dir);
 	}
 };
@@ -215,7 +216,7 @@ void Cloud::prelight(const Light& light)
 
 	sort(seq(particles), ZDistMin(light.pos - pos));
 	for (int k = particles.size()-1; k >= 0; --k) {
-		Particle* p_k = particles[k];
+		Particle* p_k = particles[k].get();
 
 		Point p = p_k->pos;
 		Point2D p_scr(proj(p+pos));
@@ -251,7 +252,7 @@ int Cloud::render(const Lights& lights, const Camera& cam, float z_min, float z_
 //	derr << "dist: " << e_e << ' ' << z_min << ' ' << z_max << '\n';
 	int n = 0;
 	for (size_t k = 0; k < particles.size(); ++k) {
-		const Particle* p_k = particles[k];
+		const Particle* p_k = particles[k].get();
 		Vector omega = pos+p_k->pos - cam.pos;
 		float len = dot(p_k->pos, e_e);
 		if (len < z_min || len > z_max) {
@@ -338,9 +339,9 @@ void CloudMgr::render(const Point&)
 //	derr << "render real at " << get_pos() << '\n';
 }
 
-CloudEffect::CloudEffect(CloudMgr* c)
- : SimEffect("cloud", "cloud"), cloud(c),
-   sp(cloud->get_pos(), cloud->get_radius())
+CloudEffect::CloudEffect(std::unique_ptr<CloudMgr> c)
+ : SimEffect("cloud", "cloud"), cloud(std::move(c)),
+   sp(cloud->get_pos(), cloud->get_radius()), attached(false)
 {
 }
 
@@ -348,6 +349,15 @@ void CloudEffect::init()
 {
 	cloud->init();
 	ref().insert(this);
+	attached = true;
+}
+
+void CloudEffect::detach()
+{
+	if (!attached)
+		return;
+	ref().remove(this);
+	attached = false;
 }
 
 const world::Sphere& CloudEffect::get_sphere()
@@ -404,12 +414,29 @@ void CloudEffect::update(const Camera& c, const Matrix& mtx)
 	cam = c;
 }
 
+CloudSystem::CloudSystem() = default;
+
 void CloudSystem::init()
 {
-	CloudEffect* eff1 = new ImpostorWrap<CloudEffect>(new CloudMgr(Point(2800, 600, 2800)));
+	auto eff1 = std::make_unique<ImpostorWrap<CloudEffect>>(
+		std::make_unique<CloudMgr>(Point(2800, 600, 2800)));
 	eff1->init();
-	clouds.push_back(eff1);
+	clouds.push_back(std::move(eff1));
 
+}
+
+CloudSystem::~CloudSystem()
+{
+	shutdown();
+}
+
+void CloudSystem::shutdown()
+{
+	if (RendererRef().valid()) {
+		for (const auto& cloud : clouds)
+			cloud->detach();
+	}
+	clouds.clear();
 }
 
 void CloudSystem::simul()

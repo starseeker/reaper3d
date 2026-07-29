@@ -44,12 +44,10 @@ public:
 	virtual ~AudioSource() { }
 };
 
-//typedef std::unique_ptr<AudioSource> AudioSourcePtr;
-typedef AudioSource* AudioSourcePtr;
+using AudioSourcePtr = std::unique_ptr<AudioSource>;
 
-typedef Decoder<AudioSource> AudioDecoder;
-
-typedef AudioDecoder* AudioDecoderPtr;
+using AudioDecoder = Decoder<AudioSource>;
+using AudioDecoderPtr = std::unique_ptr<AudioDecoder>;
 
 struct SoundData
 {
@@ -64,4 +62,3 @@ struct SoundData
 }
 
 #endif
-

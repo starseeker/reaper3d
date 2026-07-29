@@ -331,6 +331,7 @@ Game::Game(hw::gfx::Gfx& g, const Args& args)
 
 Game::~Game()
 {
+	cloud_sys.shutdown();
 	game::scenario::ScenarioRef::destroy();
 	sound::SoundRef::destroy();
 	phys::PhysRef::destroy();

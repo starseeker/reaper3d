@@ -9,6 +9,8 @@
 
 #include <deque>
 #include <map>
+#include <memory>
+#include <utility>
 
 namespace reaper {
 namespace gfx {
@@ -17,9 +19,7 @@ namespace cloud {
 struct Layer {
 	Vector rel;
 	std::pair<float,float> z_range;
-	std::map<int, texture::DynamicTexture*> texmap;
-
-	~Layer();
+	std::map<int, std::unique_ptr<texture::DynamicTexture>> texmap;
 };
 
 class Impostor
@@ -61,9 +61,16 @@ class ImpostorWrap : public T
 public:
 	ImpostorWrap() : imp(this->get_radius()) { }
 	template<class A>
-	ImpostorWrap(A a) : T(a), imp(this->get_radius()) { }
+	explicit ImpostorWrap(A&& a)
+		: T(std::forward<A>(a)), imp(this->get_radius())
+	{
+	}
 	template<class A, class B>
-	ImpostorWrap(A a, B b) : T(a,b), imp(this->get_radius()) { }
+	ImpostorWrap(A&& a, B&& b)
+		: T(std::forward<A>(a), std::forward<B>(b)),
+		  imp(this->get_radius())
+	{
+	}
 
 	void setup() const override {
 		T::setup();

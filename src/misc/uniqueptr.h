@@ -7,54 +7,64 @@
 namespace reaper {
 namespace misc {
 
-// Shared handle to a process-wide service instance. The historical name is
-// retained for source compatibility, but ownership is now explicit and safe:
-// the registry owns one shared reference and every handle owns another.
+// Live handle to a process-wide service instance. Handles share the registry
+// slot rather than taking a snapshot of its current value, so a handle created
+// as a member before service initialization observes the instance once create()
+// registers it. This preserves the service-locator semantics used throughout
+// the engine without exposing a dangling raw pointer after destroy().
 template<class T>
 class UniquePtr
 {
-	std::shared_ptr<T> ptr;
-	inline static std::shared_ptr<T> instance;
+	struct ServiceSlot
+	{
+		std::shared_ptr<T> instance;
+	};
 
-	explicit UniquePtr(std::shared_ptr<T> service)
-		: ptr(std::move(service))
+	inline static std::shared_ptr<ServiceSlot> registry =
+		std::make_shared<ServiceSlot>();
+
+	std::shared_ptr<ServiceSlot> slot;
+
+	explicit UniquePtr(std::shared_ptr<ServiceSlot> service_slot)
+		: slot(std::move(service_slot))
 	{
 	}
 
 public:
 	UniquePtr()
-		: ptr(instance)
+		: slot(registry)
 	{
 	}
 
 	template<class... Args>
 	static UniquePtr create(Args&&... args)
 	{
-		instance = std::shared_ptr<T>(
+		registry->instance = std::shared_ptr<T>(
 			new T(std::forward<Args>(args)...));
-		return UniquePtr(instance);
+		return UniquePtr(registry);
 	}
 
 	static void destroy()
 	{
-		instance.reset();
+		registry->instance.reset();
 	}
 
-	T& operator*() { return *ptr; }
-	T* operator->() { return ptr.get(); }
-	const T& operator*() const { return *ptr; }
-	const T* operator->() const { return ptr.get(); }
+	T& operator*() { return *slot->instance; }
+	T* operator->() { return slot->instance.get(); }
+	const T& operator*() const { return *slot->instance; }
+	const T* operator->() const { return slot->instance.get(); }
 
 	int count() const
 	{
-		if (!ptr)
+		if (!valid())
 			return 0;
-		const bool registry_owns_same_instance = instance == ptr;
-		return static_cast<int>(ptr.use_count()) -
-		       (registry_owns_same_instance ? 1 : 0);
+		return static_cast<int>(slot.use_count()) - 1;
 	}
 
-	bool valid() const { return static_cast<bool>(ptr); }
+	bool valid() const
+	{
+		return slot && static_cast<bool>(slot->instance);
+	}
 	explicit operator bool() const { return valid(); }
 };
 

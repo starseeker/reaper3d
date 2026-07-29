@@ -23,12 +23,12 @@ class Mp3Source;
 
 class Mp3Decoder : public AudioDecoder
 {
-	res::res_stream* rs;
-	Mp3Source* src;
+	std::unique_ptr<res::res_stream> rs;
+	std::unique_ptr<Mp3Source> src;
 public:
 	Mp3Decoder();
 	~Mp3Decoder();
-	bool init(res::res_stream*);
+	bool init(std::unique_ptr<res::res_stream>);
 	AudioSourcePtr get();
 };
 
@@ -38,4 +38,3 @@ public:
 }
 
 #endif
-

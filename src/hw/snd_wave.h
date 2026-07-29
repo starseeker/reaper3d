@@ -31,7 +31,7 @@ class WaveDecoder : public AudioDecoder
 public:
 	WaveDecoder();
 	~WaveDecoder();
-	bool init(res::res_stream*);
+	bool init(std::unique_ptr<res::res_stream>);
 	AudioSourcePtr get();
 };
 
@@ -41,4 +41,3 @@ public:
 }
 
 #endif
-

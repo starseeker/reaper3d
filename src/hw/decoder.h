@@ -8,6 +8,8 @@
 #ifndef REAPER_HW_DECODER_H
 #define REAPER_HW_DECODER_H
 
+#include <memory>
+
 #include "res/res.h"
 
 namespace reaper {
@@ -18,8 +20,8 @@ template<class Source>
 class Decoder
 {
 public:
-	virtual bool init(res::res_stream*) = 0;
-	virtual Source* get() = 0;
+	virtual bool init(std::unique_ptr<res::res_stream>) = 0;
+	virtual std::unique_ptr<Source> get() = 0;
 	virtual ~Decoder() { }
 };
 
@@ -29,4 +31,3 @@ public:
 
 
 #endif
-

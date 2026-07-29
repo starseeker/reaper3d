@@ -560,7 +560,7 @@ public:
 		ConfigEnv hw_snd_system("hw_snd_system");
 		sound_dev = res::withdefault(hw_snd_system, "sound", "openal");
 		music_dev = res::withdefault(hw_snd_system, "music", "simple");
-		openal    = res::withdefault(hw_snd_system, "openal_context", "Wave");
+		openal    = res::withdefault(hw_snd_system, "openal_context", "");
 		misc::push_back(audio_devs_game)
 		 << make_strp("Disabled", "dummy")
 		 << make_strp("Simple", "simple")
@@ -569,19 +569,15 @@ public:
 
 		misc::push_back(audio_devs_stream)
 		 << make_strp("Disabled", "dummy")
-		 << make_strp("Simple", "simple");
-//		 << make_strp("OpenAL", "openal")
-//		 << make_strp("DSound", "dsound");
+		 << make_strp("OpenAL", "openal");
 
 		misc::push_back(openal_context)
-		 << make_strp("Wave", "wave")
-		 << make_strp("DSound", "DirectSound")
-		 << make_strp("DSound3D", "DirectSound3D");
+		 << make_strp("System Default", "");
 
 		misc::push_back(menu)
 		 << std::make_shared<Label>(box, "SFX Device")
 		 << std::make_shared<Label>(box, "Music Device")
-		 << std::make_shared<Label>(box, "OpenAL Context")
+		 << std::make_shared<Label>(box, "OpenAL Device")
 		 << std::make_shared<StringChoice>(box, audio_devs_game.begin(), audio_devs_game.end(), &sound_dev)
 		 << std::make_shared<StringChoice>(box, audio_devs_stream.begin(), audio_devs_stream.end(), &music_dev)
 		 << std::make_shared<StringChoice>(box, openal_context.begin(), openal_context.end(), &openal)
@@ -823,15 +819,15 @@ int MenuItemMeshView<V>::draw_inactive()
 
 namespace game {
 bool run_menu() {
-	gfx::MeshRef::create();
 	gfx::TextureRef::create();
+	gfx::MeshRef::create();
 	bool r;
 	{
 		reaper::ReaperMenu menu;
 		r = menu.run_main();
 	}
-	gfx::TextureRef::destroy();
 	gfx::MeshRef::destroy();
+	gfx::TextureRef::destroy();
 	return r;
 }
 }

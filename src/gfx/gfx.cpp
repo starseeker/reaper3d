@@ -64,7 +64,7 @@ Renderer::Renderer() : i(nullptr)
 //-----------------------------------------------------------------
 void Renderer::shutdown()
 {
-	delete i.release();
+	i.reset();
 
 	for(std::deque<Initializer*>::iterator i = inits.begin(); i != inits.end(); ++i)
 		(*i)->exit();

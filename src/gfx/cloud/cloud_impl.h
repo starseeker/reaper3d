@@ -14,6 +14,7 @@
 
 #include <string>
 #include <deque>
+#include <memory>
 
 namespace reaper {
 namespace gfx {
@@ -37,7 +38,7 @@ class Cloud
 	float radius;
 	float extinction;
 	float albedo;
-	std::deque<Particle*> particles;
+	std::deque<std::unique_ptr<Particle>> particles;
 public:
 	Cloud(const Point& pos, float radius);
 	void init();
@@ -73,12 +74,14 @@ class CloudEffect : public SimEffect, protected impl_accessor
 {
 	Camera cam;
 	
-	CloudMgr* cloud;
+	std::unique_ptr<CloudMgr> cloud;
 	world::Sphere sp;
+	bool attached;
 public:
-	CloudEffect(CloudMgr* c);
+	explicit CloudEffect(std::unique_ptr<CloudMgr> c);
 
 	virtual void init();
+	void detach();
 
 	const world::Sphere& get_sphere();
 	void setup() const;

@@ -5,8 +5,7 @@ music = simple
 sound = openal
 
 
-# DirectSound3D | DirectSound | Wave
+# Optional OpenAL device name. Empty selects the system default.
 
-openal_context = DirectSound3D
-
+openal_context =
 
